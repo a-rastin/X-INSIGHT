@@ -4,7 +4,7 @@
 
 The product name is **X-INSIGHT**.
 
-Use `INSIGHT` for the principal product wordmark. Product-logo treatments should use the uppercase form.
+Use `X-INSIGHT` for the principal product wordmark. Product-logo treatments should use the uppercase form.
 
 ## Current Design Character
 
@@ -235,7 +235,7 @@ Use subtle borders as the primary surface separator. Shadows should remain restr
 
 - Keep browser URLs relative to the gateway.
 
-- In unified deployment, use the gateway-owned application navigation for the `INSIGHT` wordmark, role-appropriate top-level routes, current-route state, authenticated identity, and sign-out. Module-local headers may retain workflow context, but must not reproduce role routing or authentication behavior.
+- In unified deployment, use the gateway-owned application navigation for the `X-INSIGHT` wordmark, role-appropriate top-level routes, current-route state, authenticated identity, and sign-out. Module-local headers may retain workflow context, but must not reproduce role routing or authentication behavior.
 
 - Scope CSS to the module root when embedding or when selector collision is possible.
 
