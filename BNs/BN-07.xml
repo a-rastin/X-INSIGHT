@@ -25,10 +25,10 @@
     <PROPERTY>regulatory_source=https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine</PROPERTY>
     <PROPERTY>runtime_warning=PROPERTY flags are advisory; consumer must reject incomplete models</PROPERTY>
     <VARIABLE TYPE="nature">
-      <NAME>SchizophreniaConfirmed</NAME>
+      <NAME>SchizophreniaEstablished</NAME>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=SchizophreniaConfirmed</PROPERTY>
+      <PROPERTY>label=Schizophrenia Established</PROPERTY>
       <PROPERTY>definition=Clinician-confirmed schizophrenia after diagnostic review; not an automated diagnosis.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -43,7 +43,7 @@
       <NAME>PersistentSignificantSymptoms</NAME>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=PersistentSignificantSymptoms</PROPERTY>
+      <PROPERTY>label=Persistent Significant Symptoms</PROPERTY>
       <PROPERTY>definition=Current clinically significant residual symptoms despite treatment; record symptom domains and validated scale/version. A 20 percent improvement does not automatically make this No.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -60,7 +60,7 @@
       <OUTCOME>AdequateSatisfactoryResponse</OUTCOME>
       <OUTCOME>InadequateExposure</OUTCOME>
       <OUTCOME>TruncatedByIntolerance</OUTCOME>
-      <PROPERTY>label=Trial1Assessment</PROPERTY>
+      <PROPERTY>label=Trial 1 Assessment</PROPERTY>
       <PROPERTY>definition=One documented prior antipsychotic trial. Adequate: therapeutic dose for at least 6 weeks with adherence at least 80 percent, supported by adherence evidence. Suboptimal includes partial response with persistent significant symptoms. If prematurely truncated by intolerance, select TruncatedByIntolerance even if exposure also inadequate; otherwise insufficient dose/duration/adherence is InadequateExposure. Record drug, dates, dose, scale, blood-level and multiple-source adherence evidence. This is a modeler operationalization, not the entire TRRIP definition.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -77,7 +77,7 @@
       <OUTCOME>AdequateSatisfactoryResponse</OUTCOME>
       <OUTCOME>InadequateExposure</OUTCOME>
       <OUTCOME>TruncatedByIntolerance</OUTCOME>
-      <PROPERTY>label=Trial2Assessment</PROPERTY>
+      <PROPERTY>label=Trial 2 Assessment</PROPERTY>
       <PROPERTY>definition=One documented prior antipsychotic trial. Adequate: therapeutic dose for at least 6 weeks with adherence at least 80 percent, supported by adherence evidence. Suboptimal includes partial response with persistent significant symptoms. If prematurely truncated by intolerance, select TruncatedByIntolerance even if exposure also inadequate; otherwise insufficient dose/duration/adherence is InadequateExposure. Record drug, dates, dose, scale, blood-level and multiple-source adherence evidence. This is a modeler operationalization, not the entire TRRIP definition.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -92,7 +92,7 @@
       <NAME>TrialsUseDifferentDrugs</NAME>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=TrialsUseDifferentDrugs</PROPERTY>
+      <PROPERTY>label=Trials Use Different Drugs</PROPERTY>
       <PROPERTY>definition=The two assessed trials used different antipsychotic agents; different classes are not mandatory in this draft.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -107,7 +107,7 @@
       <NAME>SymptomsAtLeast12Weeks</NAME>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=SymptomsAtLeast12Weeks</PROPERTY>
+      <PROPERTY>label=Symptoms At Least 12 Weeks</PROPERTY>
       <PROPERTY>definition=Significant symptoms persisted for at least 12 weeks in total; duration evidence documented.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -122,7 +122,7 @@
       <NAME>ModerateSymptomsAndFunctionalImpairment</NAME>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=ModerateSymptomsAndFunctionalImpairment</PROPERTY>
+      <PROPERTY>label=Moderate Symptoms And Functional Impairment</PROPERTY>
       <PROPERTY>definition=Both symptom severity and functional impairment at least moderate on validated measures; source gives SOFAS below 60 as functioning example. Not a universal clinical eligibility gate.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -134,11 +134,11 @@
       <PROPERTY>parameter_requirement=2 prior entries; population data or elicitation required after dependence review</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>ClozapineContext</NAME>
+      <NAME>ClozapineTreatmentStatus</NAME>
       <OUTCOME>NeverTreated</OUTCOME>
       <OUTCOME>CurrentTreatment</OUTCOME>
       <OUTCOME>PreviouslyTreated</OUTCOME>
-      <PROPERTY>label=ClozapineContext</PROPERTY>
+      <PROPERTY>label=Clozapine Treatment Status</PROPERTY>
       <PROPERTY>definition=Current clozapine treatment status; prior treatment requires individualized review, including why it stopped.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -150,10 +150,10 @@
       <PROPERTY>parameter_requirement=3 prior entries; population data or elicitation required after dependence review</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>PatientWillingToDiscuss</NAME>
+      <NAME>WillingToDiscussClozapine</NAME>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=PatientWillingToDiscuss</PROPERTY>
+      <PROPERTY>label=Willing To Discuss Clozapine</PROPERTY>
       <PROPERTY>definition=Patient currently willing to discuss clozapine; No prompts exploration of concerns, not permanent exclusion.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -165,10 +165,10 @@
       <PROPERTY>parameter_requirement=2 prior entries; population data or elicitation required after dependence review</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>MonitoringPlanAvailable</NAME>
+      <NAME>ClozapineMonitoringPlanAvailable</NAME>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=MonitoringPlanAvailable</PROPERTY>
+      <PROPERTY>label=Clozapine Monitoring Plan Available</PROPERTY>
       <PROPERTY>definition=Clinician confirms feasible current local ANC and other safety monitoring plan; does not mean REMS enrollment.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -180,10 +180,10 @@
       <PROPERTY>parameter_requirement=2 prior entries; population data or elicitation required after dependence review</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>MedicalSuitabilityReviewed</NAME>
+      <NAME>ClozapineInitiationDiscussionAppropriate</NAME>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=MedicalSuitabilityReviewed</PROPERTY>
+      <PROPERTY>label=Clozapine Initiation Discussion Appropriate</PROPERTY>
       <PROPERTY>definition=Clinician has completed individualized contraindication, interaction and medical risk review and considers initiation discussion appropriate; no autonomous medical clearance.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -196,10 +196,10 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>UrgentSafetyConcern</NAME>
-      <OUTCOME>Yes</OUTCOME>
-      <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=UrgentSafetyConcern</PROPERTY>
-      <PROPERTY>definition=Clinician identifies an urgent concern: e.g. suspected severe neutropenia, myocarditis/NMS, severe or unresolved constipation, or acute psychiatric danger. This is a nonexhaustive externally assessed safety input; No is not proof of safety.</PROPERTY>
+      <OUTCOME>Present</OUTCOME>
+      <OUTCOME>Absent</OUTCOME>
+      <PROPERTY>label=Urgent Safety Concern</PROPERTY>
+      <PROPERTY>definition=Clinician identifies an urgent concern: e.g. suspected severe neutropenia, myocarditis/NMS, severe or unresolved constipation, or acute psychiatric danger. This is a nonexhaustive externally assessed safety input; Absent is not proof of safety.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
       <PROPERTY>source_locator=Monitoring for Side Effects During Treatment With Clozapine, pp. 90-93</PROPERTY>
@@ -213,7 +213,7 @@
       <NAME>ExposureInterpretationConcern</NAME>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=ExposureInterpretationConcern</PROPERTY>
+      <PROPERTY>label=Exposure Interpretation Concern</PROPERTY>
       <PROPERTY>definition=Clinician identifies adherence uncertainty, changed smoking/caffeine, interacting drugs, unexpected concentrations or invalid blood-sampling timing; not a numerical toxicity diagnosis. Prior-treatment patients require current relevance to be assessed.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -228,7 +228,7 @@
       <NAME>ClozapineTrialAdequate</NAME>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=ClozapineTrialAdequate</PROPERTY>
+      <PROPERTY>label=Clozapine Trial Adequate</PROPERTY>
       <PROPERTY>definition=Clinician confirms adequate tolerated exposure and duration before labeling nonresponse. Source discusses adequate dose/levels and at least 8 weeks; no universal efficacy cutoff or automated dose escalation is encoded.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -243,7 +243,7 @@
       <NAME>ResidualSymptomsOnClozapine</NAME>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=ResidualSymptomsOnClozapine</PROPERTY>
+      <PROPERTY>label=Residual Symptoms On Clozapine</PROPERTY>
       <PROPERTY>definition=Current clinically significant residual symptoms on clozapine using repeated validated assessments. Leave unobserved when not currently treated.</PROPERTY>
       <PROPERTY>clinical_role=clinician_verified_input</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -258,7 +258,7 @@
       <NAME>TwoAdequateSuboptimalTrials</NAME>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
-      <PROPERTY>label=TwoAdequateSuboptimalTrials</PROPERTY>
+      <PROPERTY>label=Two Adequate Suboptimal Trials</PROPERTY>
       <PROPERTY>definition=Summary of two different adequate trials with inadequate clinical response.</PROPERTY>
       <PROPERTY>clinical_role=derived_review_flag</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -282,10 +282,10 @@
       <PROPERTY>table_order=Child fastest; final GIVEN next; declared OUTCOME order</PROPERTY>
     </DEFINITION>
     <VARIABLE TYPE="nature">
-      <NAME>TRSClinicalReview</NAME>
-      <OUTCOME>Review</OUTCOME>
+      <NAME>TreatmentResistantSchizophreniaReview</NAME>
+      <OUTCOME>Triggered</OUTCOME>
       <OUTCOME>NotTriggered</OUTCOME>
-      <PROPERTY>label=TRSClinicalReview</PROPERTY>
+      <PROPERTY>label=Treatment Resistant Schizophrenia Review</PROPERTY>
       <PROPERTY>definition=Flag to review treatment-resistant schizophrenia and clozapine; not definitive TRS diagnosis or prescription.</PROPERTY>
       <PROPERTY>clinical_role=derived_review_flag</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -296,8 +296,8 @@
       <PROPERTY>time_window=Current review with explicitly documented historical trial dates</PROPERTY>
     </VARIABLE>
     <DEFINITION>
-      <FOR>TRSClinicalReview</FOR>
-      <GIVEN>SchizophreniaConfirmed</GIVEN>
+      <FOR>TreatmentResistantSchizophreniaReview</FOR>
+      <GIVEN>SchizophreniaEstablished</GIVEN>
       <GIVEN>PersistentSignificantSymptoms</GIVEN>
       <GIVEN>TwoAdequateSuboptimalTrials</GIVEN>
       <TABLE>1 0 0 1 0 1 0 1 0 1 0 1 0 1 0 1</TABLE>
@@ -305,14 +305,14 @@
       <PROPERTY>parameter_status=deterministic_review_mapping_not_empirical_probability</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
       <PROPERTY>source_locator=Identification of Treatment-Resistant Schizophrenia, p. 88</PROPERTY>
-      <PROPERTY>rule=Review iff all three parents Yes; NotTriggered does not rule out TRS or other clozapine indications</PROPERTY>
+      <PROPERTY>rule=Triggered iff all three parents Yes; NotTriggered does not rule out TRS or other clozapine indications</PROPERTY>
       <PROPERTY>table_order=Child fastest; final GIVEN next; declared OUTCOME order</PROPERTY>
     </DEFINITION>
     <VARIABLE TYPE="nature">
       <NAME>AdditionalResearchFeatures</NAME>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>NotAllPresent</OUTCOME>
-      <PROPERTY>label=AdditionalResearchFeatures</PROPERTY>
+      <PROPERTY>label=Additional Research Features</PROPERTY>
       <PROPERTY>definition=Additional duration/severity/function features described by TRRIP; not certification of full TRRIP criteria.</PROPERTY>
       <PROPERTY>clinical_role=derived_review_flag</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -336,9 +336,9 @@
     </DEFINITION>
     <VARIABLE TYPE="nature">
       <NAME>PriorTrialAdequacyReview</NAME>
-      <OUTCOME>Review</OUTCOME>
+      <OUTCOME>Triggered</OUTCOME>
       <OUTCOME>NotTriggered</OUTCOME>
-      <PROPERTY>label=PriorTrialAdequacyReview</PROPERTY>
+      <PROPERTY>label=Prior Trial Adequacy Review</PROPERTY>
       <PROPERTY>definition=Review inadequate treatment exposure or intolerance before classifying failed trials as resistance.</PROPERTY>
       <PROPERTY>clinical_role=derived_review_flag</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -357,14 +357,14 @@
       <PROPERTY>parameter_status=deterministic_review_mapping_not_empirical_probability</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
       <PROPERTY>source_locator=Identification of Treatment-Resistant Schizophrenia, p. 88</PROPERTY>
-      <PROPERTY>rule=Review iff either trial inadequate exposure or truncated by intolerance; no automatic LAI mandate</PROPERTY>
+      <PROPERTY>rule=Triggered iff either trial inadequate exposure or truncated by intolerance; no automatic LAI mandate</PROPERTY>
       <PROPERTY>table_order=Child fastest; final GIVEN next; declared OUTCOME order</PROPERTY>
     </DEFINITION>
     <VARIABLE TYPE="nature">
-      <NAME>DiscussionPreparation</NAME>
+      <NAME>ClozapineInitiationDiscussionPreparation</NAME>
       <OUTCOME>AddressBarriers</OUTCOME>
       <OUTCOME>PreparedForDiscussion</OUTCOME>
-      <PROPERTY>label=DiscussionPreparation</PROPERTY>
+      <PROPERTY>label=Clozapine Initiation Discussion Preparation</PROPERTY>
       <PROPERTY>definition=Readiness to discuss a potential initiation plan, not permission to prescribe.</PROPERTY>
       <PROPERTY>clinical_role=derived_review_flag</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -375,10 +375,10 @@
       <PROPERTY>time_window=Current review with explicitly documented historical trial dates</PROPERTY>
     </VARIABLE>
     <DEFINITION>
-      <FOR>DiscussionPreparation</FOR>
-      <GIVEN>PatientWillingToDiscuss</GIVEN>
-      <GIVEN>MonitoringPlanAvailable</GIVEN>
-      <GIVEN>MedicalSuitabilityReviewed</GIVEN>
+      <FOR>ClozapineInitiationDiscussionPreparation</FOR>
+      <GIVEN>WillingToDiscussClozapine</GIVEN>
+      <GIVEN>ClozapineMonitoringPlanAvailable</GIVEN>
+      <GIVEN>ClozapineInitiationDiscussionAppropriate</GIVEN>
       <TABLE>0 1 1 0 1 0 1 0 1 0 1 0 1 0 1 0</TABLE>
       <PROPERTY>parameter_method=modeler_assumption</PROPERTY>
       <PROPERTY>parameter_status=deterministic_review_mapping_not_empirical_probability</PROPERTY>
@@ -388,14 +388,14 @@
       <PROPERTY>table_order=Child fastest; final GIVEN next; declared OUTCOME order</PROPERTY>
     </DEFINITION>
     <VARIABLE TYPE="nature">
-      <NAME>ClozapineReviewPathway</NAME>
+      <NAME>TreatmentResistanceClozapineReviewPathway</NAME>
       <OUTCOME>UrgentClinicalAssessment</OUTCOME>
       <OUTCOME>ReviewCurrentTreatment</OUTCOME>
       <OUTCOME>IndividualizedPriorClozapineReview</OUTCOME>
       <OUTCOME>ReviewEvidenceAndOtherIndications</OUTCOME>
       <OUTCOME>DiscussClozapine</OUTCOME>
       <OUTCOME>AddressDiscussionBarriers</OUTCOME>
-      <PROPERTY>label=ClozapineReviewPathway</PROPERTY>
+      <PROPERTY>label=Treatment Resistance Clozapine Review Pathway</PROPERTY>
       <PROPERTY>definition=Proposed workflow routing, never an automated start/stop order.</PROPERTY>
       <PROPERTY>clinical_role=derived_review_flag</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -406,11 +406,11 @@
       <PROPERTY>time_window=Current review with explicitly documented historical trial dates</PROPERTY>
     </VARIABLE>
     <DEFINITION>
-      <FOR>ClozapineReviewPathway</FOR>
+      <FOR>TreatmentResistanceClozapineReviewPathway</FOR>
       <GIVEN>UrgentSafetyConcern</GIVEN>
-      <GIVEN>ClozapineContext</GIVEN>
-      <GIVEN>TRSClinicalReview</GIVEN>
-      <GIVEN>DiscussionPreparation</GIVEN>
+      <GIVEN>ClozapineTreatmentStatus</GIVEN>
+      <GIVEN>TreatmentResistantSchizophreniaReview</GIVEN>
+      <GIVEN>ClozapineInitiationDiscussionPreparation</GIVEN>
       <TABLE>1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0</TABLE>
       <PROPERTY>parameter_method=modeler_assumption</PROPERTY>
       <PROPERTY>parameter_status=deterministic_review_mapping_not_empirical_probability</PROPERTY>
@@ -421,9 +421,9 @@
     </DEFINITION>
     <VARIABLE TYPE="nature">
       <NAME>ClozapineExposureReview</NAME>
-      <OUTCOME>Review</OUTCOME>
+      <OUTCOME>Triggered</OUTCOME>
       <OUTCOME>NotTriggered</OUTCOME>
-      <PROPERTY>label=ClozapineExposureReview</PROPERTY>
+      <PROPERTY>label=Clozapine Exposure Review</PROPERTY>
       <PROPERTY>definition=Review drug exposure and concentration interpretation during current treatment. Numerical dosing and restart protocols excluded.</PROPERTY>
       <PROPERTY>clinical_role=derived_review_flag</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -435,14 +435,14 @@
     </VARIABLE>
     <DEFINITION>
       <FOR>ClozapineExposureReview</FOR>
-      <GIVEN>ClozapineContext</GIVEN>
+      <GIVEN>ClozapineTreatmentStatus</GIVEN>
       <GIVEN>ExposureInterpretationConcern</GIVEN>
       <TABLE>0 1 0 1 1 0 0 1 0 1 0 1</TABLE>
       <PROPERTY>parameter_method=modeler_assumption</PROPERTY>
       <PROPERTY>parameter_status=deterministic_review_mapping_not_empirical_probability</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
       <PROPERTY>source_locator=Use of Clozapine Levels During Treatment With Clozapine, p. 90</PROPERTY>
-      <PROPERTY>rule=Review iff current treatment and exposure concern Yes</PROPERTY>
+      <PROPERTY>rule=Triggered iff current treatment and exposure concern Yes</PROPERTY>
       <PROPERTY>table_order=Child fastest; final GIVEN next; declared OUTCOME order</PROPERTY>
     </DEFINITION>
     <VARIABLE TYPE="nature">
@@ -451,7 +451,7 @@
       <OUTCOME>ContinuePeriodicReview</OUTCOME>
       <OUTCOME>ReviewTrialAdequacy</OUTCOME>
       <OUTCOME>SpecialistPersistentSymptomsReview</OUTCOME>
-      <PROPERTY>label=PersistentSymptomsReview</PROPERTY>
+      <PROPERTY>label=Persistent Symptoms Review</PROPERTY>
       <PROPERTY>definition=Persistent symptoms prompt adequacy review, then specialist review of psychosocial care and augmentation options; no automatic ECT or polypharmacy. Urgent pathway takes precedence.</PROPERTY>
       <PROPERTY>clinical_role=derived_review_flag</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-07.md</PROPERTY>
@@ -463,7 +463,7 @@
     </VARIABLE>
     <DEFINITION>
       <FOR>PersistentSymptomsReview</FOR>
-      <GIVEN>ClozapineContext</GIVEN>
+      <GIVEN>ClozapineTreatmentStatus</GIVEN>
       <GIVEN>ResidualSymptomsOnClozapine</GIVEN>
       <GIVEN>ClozapineTrialAdequate</GIVEN>
       <TABLE>1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 1 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0</TABLE>

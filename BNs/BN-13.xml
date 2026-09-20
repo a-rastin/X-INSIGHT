@@ -30,6 +30,7 @@
     <PROPERTY>design_note=wiki/questions/Statement 13 Bayesian network design.md</PROPERTY>
     <VARIABLE TYPE="nature">
       <NAME>AkathisiaAssessment</NAME>
+      <PROPERTY>label=Akathisia Assessment</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <OUTCOME>Unresolved</OUTCOME>
@@ -45,7 +46,8 @@
       <PROPERTY>parameter_requirement=3 prior entries after dependence and measurement review</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>AntipsychoticAssociation</NAME>
+      <NAME>AkathisiaAntipsychoticAssociation</NAME>
+      <PROPERTY>label=Akathisia Antipsychotic Association</PROPERTY>
       <OUTCOME>Established</OUTCOME>
       <OUTCOME>NotEstablished</OUTCOME>
       <PROPERTY>definition=Assessed medication association using timing, dose changes, reductions in EPS treatment and alternative explanations; not diagnosed by this graph.</PROPERTY>
@@ -61,6 +63,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>DoseReductionFeasible</NAME>
+      <PROPERTY>label=Dose Reduction Feasible</PROPERTY>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
       <PROPERTY>definition=Clinician-assessed feasibility of antipsychotic dose reduction; no automatic dose change.</PROPERTY>
@@ -75,7 +78,8 @@
       <PROPERTY>parameter_requirement=2 prior entries after dependence and measurement review</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>SwitchFeasible</NAME>
+      <NAME>LowerAkathisiaRiskSwitchFeasible</NAME>
+      <PROPERTY>label=Lower Akathisia Risk Switch Feasible</PROPERTY>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
       <PROPERTY>definition=Clinician-assessed feasibility of switching to an agent with lower akathisia propensity.</PROPERTY>
@@ -91,6 +95,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>PsychoticWorseningConcern</NAME>
+      <PROPERTY>label=Psychotic Worsening Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Assessed concern about psychotic worsening after regimen change; absence does not remove monitoring requirements.</PROPERTY>
@@ -105,7 +110,8 @@
       <PROPERTY>parameter_requirement=2 prior entries after dependence and measurement review</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>PatientPreferenceConcern</NAME>
+      <NAME>AkathisiaTreatmentPreferenceConcern</NAME>
+      <PROPERTY>label=Akathisia Treatment Preference Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Patient expresses a concern about options or tradeoffs; absence does not establish consent.</PROPERTY>
@@ -121,6 +127,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>UrgentSafetyConcern</NAME>
+      <PROPERTY>label=Urgent Safety Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Clinician-identified current urgent safety concern, including suicidality; no suicide prediction or automatic causation attributed to akathisia.</PROPERTY>
@@ -136,6 +143,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>DistressOrAdherenceConcern</NAME>
+      <PROPERTY>label=Distress Or Adherence Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Assessed distress or threatened adherence related to symptoms; retain individual findings outside this aggregate flag.</PROPERTY>
@@ -151,6 +159,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>BenzodiazepineRespiratoryConcern</NAME>
+      <PROPERTY>label=Benzodiazepine Respiratory Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Assessed respiratory concern: high-dose exposure, alcohol, opioids, other sedatives or sleep apnea. Requires detailed medication review; no numerical threshold supplied.</PROPERTY>
@@ -166,6 +175,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>BenzodiazepineFallsCognitiveConcern</NAME>
+      <PROPERTY>label=Benzodiazepine Falls Cognitive Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Assessed vulnerability to somnolence, cognitive effects, coordination impairment or falls, including older patients.</PROPERTY>
@@ -181,6 +191,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>BenzodiazepineMisuseConcern</NAME>
+      <PROPERTY>label=Benzodiazepine Misuse Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Assessed misuse or substance-use-disorder vulnerability, including current or past alcohol or other substance use disorder.</PROPERTY>
@@ -196,6 +207,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>PropranololBloodPressureConcern</NAME>
+      <PROPERTY>label=Propranolol Blood Pressure Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Assessed blood-pressure concern relevant to propranolol; not a complete contraindication screen.</PROPERTY>
@@ -211,6 +223,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>PropranololExposureConcern</NAME>
+      <PROPERTY>label=Propranolol Exposure Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Assessed interaction or food-related exposure concern; source names CYP1A2, CYP2D6, CYP2C19, CYP3A4 and protein-rich food effects. No dose adjustment inferred.</PROPERTY>
@@ -225,7 +238,8 @@
       <PROPERTY>parameter_requirement=2 prior entries after dependence and measurement review</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>IndicationReview</NAME>
+      <NAME>AkathisiaIndicationReview</NAME>
+      <PROPERTY>label=Akathisia Indication Review</PROPERTY>
       <OUTCOME>EstablishedCurrentAssociation</OUTCOME>
       <OUTCOME>AssessDifferentialAndAssociation</OUTCOME>
       <OUTCOME>NoCurrentTreatmentRule</OUTCOME>
@@ -240,7 +254,8 @@
       <PROPERTY>parameter_status=modeler_proposed_deterministic_mapping</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>RegimenReview</NAME>
+      <NAME>AkathisiaAntipsychoticRegimenReview</NAME>
+      <PROPERTY>label=Akathisia Antipsychotic Regimen Review</PROPERTY>
       <OUTCOME>ReviewDoseAndSwitch</OUTCOME>
       <OUTCOME>ReviewDose</OUTCOME>
       <OUTCOME>ReviewSwitch</OUTCOME>
@@ -259,6 +274,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>AdjunctDiscussion</NAME>
+      <PROPERTY>label=Adjunct Discussion</PROPERTY>
       <OUTCOME>DiscussOptionsAndPatientConcerns</OUTCOME>
       <OUTCOME>DiscussOptionsAndPreferences</OUTCOME>
       <OUTCOME>EstablishIndicationFirst</OUTCOME>
@@ -274,6 +290,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>UrgentSafetyReview</NAME>
+      <PROPERTY>label=Urgent Safety Review</PROPERTY>
       <OUTCOME>UrgentClinicianAssessment</OUTCOME>
       <OUTCOME>RoutineSafetyAssessment</OUTCOME>
       <PROPERTY>definition=Urgent safety review remains independent of established medication association; routine state never rules out suicide risk.</PROPERTY>
@@ -288,6 +305,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>BurdenReview</NAME>
+      <PROPERTY>label=Burden Review</PROPERTY>
       <OUTCOME>ReviewDistressAndAdherence</OUTCOME>
       <OUTCOME>AssessBurdenAndDifferential</OUTCOME>
       <OUTCOME>RoutineBurdenAssessment</OUTCOME>
@@ -303,6 +321,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>BenzodiazepineSafetyReview</NAME>
+      <PROPERTY>label=Benzodiazepine Safety Review</PROPERTY>
       <OUTCOME>EnhancedIndividualizedReview</OUTCOME>
       <OUTCOME>RoutineIndividualizedReview</OUTCOME>
       <PROPERTY>definition=Parallel safety topic, not permission to prescribe; each respiratory, falls/cognitive and misuse concern remains separately visible.</PROPERTY>
@@ -317,6 +336,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>PropranololSafetyReview</NAME>
+      <PROPERTY>label=Propranolol Safety Review</PROPERTY>
       <OUTCOME>EnhancedIndividualizedReview</OUTCOME>
       <OUTCOME>RoutineIndividualizedReview</OUTCOME>
       <PROPERTY>definition=Parallel blood pressure and exposure review; monitor blood pressure with dose increases regardless of concern state. Full safety screening is external.</PROPERTY>
@@ -330,9 +350,9 @@
       <PROPERTY>parameter_status=modeler_proposed_deterministic_mapping</PROPERTY>
     </VARIABLE>
     <DEFINITION>
-      <FOR>IndicationReview</FOR>
+      <FOR>AkathisiaIndicationReview</FOR>
       <GIVEN>AkathisiaAssessment</GIVEN>
-      <GIVEN>AntipsychoticAssociation</GIVEN>
+      <GIVEN>AkathisiaAntipsychoticAssociation</GIVEN>
       <TABLE>1 0 0 0 1 0 0 0 1 0 0 1 0 1 0 0 1 0</TABLE>
       <PROPERTY>parameter_method=modeler_assumption</PROPERTY>
       <PROPERTY>parameter_status=proposed_deterministic_review_mapping_not_clinically_validated</PROPERTY>
@@ -343,10 +363,10 @@
       <PROPERTY>table_order=Child fastest, last GIVEN next; declaration order</PROPERTY>
     </DEFINITION>
     <DEFINITION>
-      <FOR>RegimenReview</FOR>
-      <GIVEN>IndicationReview</GIVEN>
+      <FOR>AkathisiaAntipsychoticRegimenReview</FOR>
+      <GIVEN>AkathisiaIndicationReview</GIVEN>
       <GIVEN>DoseReductionFeasible</GIVEN>
-      <GIVEN>SwitchFeasible</GIVEN>
+      <GIVEN>LowerAkathisiaRiskSwitchFeasible</GIVEN>
       <GIVEN>PsychoticWorseningConcern</GIVEN>
       <TABLE>0 0 0 0 1 0 1 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1</TABLE>
       <PROPERTY>parameter_method=modeler_assumption</PROPERTY>
@@ -359,8 +379,8 @@
     </DEFINITION>
     <DEFINITION>
       <FOR>AdjunctDiscussion</FOR>
-      <GIVEN>IndicationReview</GIVEN>
-      <GIVEN>PatientPreferenceConcern</GIVEN>
+      <GIVEN>AkathisiaIndicationReview</GIVEN>
+      <GIVEN>AkathisiaTreatmentPreferenceConcern</GIVEN>
       <TABLE>1 0 0 0 1 0 0 0 1 0 0 1 0 0 1 0 0 1</TABLE>
       <PROPERTY>parameter_method=modeler_assumption</PROPERTY>
       <PROPERTY>parameter_status=proposed_deterministic_review_mapping_not_clinically_validated</PROPERTY>
@@ -384,7 +404,7 @@
     </DEFINITION>
     <DEFINITION>
       <FOR>BurdenReview</FOR>
-      <GIVEN>IndicationReview</GIVEN>
+      <GIVEN>AkathisiaIndicationReview</GIVEN>
       <GIVEN>DistressOrAdherenceConcern</GIVEN>
       <TABLE>1 0 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 1</TABLE>
       <PROPERTY>parameter_method=modeler_assumption</PROPERTY>

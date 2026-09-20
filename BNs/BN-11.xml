@@ -27,9 +27,10 @@
     <PROPERTY>missingness_policy=Absent data remain unobserved, never default to Absent, No, NotEstablished or Resolved; no partial-evidence inference supplied</PROPERTY>
     <PROPERTY>display_contract=All review outputs and individual clinical concerns remain visible in parallel. Airway concerns must be handled independently of diagnosis confirmation and model execution</PROPERTY>
     <PROPERTY>clinical_limit=No automatic prescribing, withholding, dose, route, duration, stopping, routine prophylaxis or treatment-response prediction</PROPERTY>
-    <PROPERTY>evidence_contract=Clinician-verified dated inputs only; derived nodes are not independent observations. PriorEpisode association refers to the same episode as EpisodePhase</PROPERTY>
+    <PROPERTY>evidence_contract=Clinician-verified dated inputs only; derived nodes are not independent observations. PriorEpisode association refers to the same episode as AcuteDystoniaEpisodePhase</PROPERTY>
     <VARIABLE TYPE="nature">
       <NAME>AirwayConcern</NAME>
+      <PROPERTY>label=Airway Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Clinician-observed or suspected airway compromise, including possible laryngeal dystonia. Absence requires assessment; this is not a diagnosis of laryngospasm.</PROPERTY>
@@ -43,7 +44,8 @@
       <PROPERTY>parameter_requirement=2 prior entries after dependency and measurement review; documented data or expert elicitation required</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>EpisodePhase</NAME>
+      <NAME>AcuteDystoniaEpisodePhase</NAME>
+      <PROPERTY>label=Acute Dystonia Episode Phase</PROPERTY>
       <OUTCOME>Active</OUTCOME>
       <OUTCOME>Resolved</OUTCOME>
       <OUTCOME>NoEpisode</OUTCOME>
@@ -58,7 +60,8 @@
       <PROPERTY>parameter_requirement=3 prior entries after dependency and measurement review; documented data or expert elicitation required</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>AntipsychoticAssociation</NAME>
+      <NAME>AcuteDystoniaAntipsychoticAssociation</NAME>
+      <PROPERTY>label=Acute Dystonia Antipsychotic Association</PROPERTY>
       <OUTCOME>Established</OUTCOME>
       <OUTCOME>NotEstablished</OUTCOME>
       <PROPERTY>definition=Clinician assessment of association of the same current/recent episode with antipsychotic therapy, considering timing and differential diagnoses. NotEstablished is an assessed conclusion, not missing documentation.</PROPERTY>
@@ -73,6 +76,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>AnticholinergicSafetyConcern</NAME>
+      <PROPERTY>label=Anticholinergic Safety Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Clinician identifies patient-specific anticholinergic adverse effects or susceptibility needing review, including cognitive, urinary, bowel, ocular, cardiac and thermoregulatory concerns. Preserve specifics; no blanket glaucoma exclusion.</PROPERTY>
@@ -87,6 +91,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>OlderAgeVulnerability</NAME>
+      <PROPERTY>label=Older Age Vulnerability</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Clinician-assessed age-related vulnerability, without an invented numeric age threshold.</PROPERTY>
@@ -101,6 +106,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>OtherAnticholinergicBurden</NAME>
+      <PROPERTY>label=Other Anticholinergic Burden</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Clinician-reviewed concomitant anticholinergic exposure of concern, including antipsychotics, antidepressants, urological drugs and antihistamines; no invented burden-score cutoff.</PROPERTY>
@@ -115,6 +121,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>RecurrencePreventionNeed</NAME>
+      <PROPERTY>label=Recurrence Prevention Need</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=After resolution, clinician assesses an ongoing need to consider recurrence prevention while the causative regimen is reviewed; not a measured recurrence probability.</PROPERTY>
@@ -128,7 +135,8 @@
       <PROPERTY>parameter_requirement=2 prior entries after dependency and measurement review; documented data or expert elicitation required</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>ContinuationPreferenceConcern</NAME>
+      <NAME>AnticholinergicContinuationPreferenceConcern</NAME>
+      <PROPERTY>label=Anticholinergic Continuation Preference Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=An assessed patient concern or preference against continued anticholinergic treatment. Absence does not establish consent.</PROPERTY>
@@ -142,7 +150,8 @@
       <PROPERTY>parameter_requirement=2 prior entries after dependency and measurement review; documented data or expert elicitation required</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>AcuteReviewPathway</NAME>
+      <NAME>AcuteDystoniaReviewPathway</NAME>
+      <PROPERTY>label=Acute Dystonia Review Pathway</PROPERTY>
       <OUTCOME>UrgentAirwayAssessment</OUTCOME>
       <OUTCOME>ReviewAcuteAnticholinergicTreatment</OUTCOME>
       <OUTCOME>AssessEpisodeAndDifferential</OUTCOME>
@@ -158,7 +167,8 @@
       <PROPERTY>parameter_status=proposed_deterministic_mapping</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>SafetyReviewFocus</NAME>
+      <NAME>AnticholinergicSafetyReviewFocus</NAME>
+      <PROPERTY>label=Anticholinergic Safety Review Focus</PROPERTY>
       <OUTCOME>ReviewPatientSpecificConcernAndBurden</OUTCOME>
       <OUTCOME>ReviewPatientSpecificConcern</OUTCOME>
       <OUTCOME>ReviewAgeOrMedicationBurden</OUTCOME>
@@ -173,7 +183,8 @@
       <PROPERTY>parameter_status=proposed_deterministic_mapping</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>ContinuationReview</NAME>
+      <NAME>AcuteDystoniaAnticholinergicContinuationReview</NAME>
+      <PROPERTY>label=Acute Dystonia Anticholinergic Continuation Review</PROPERTY>
       <OUTCOME>NotPostResolutionReview</OUTCOME>
       <OUTCOME>EstablishEpisodeAssociation</OUTCOME>
       <OUTCOME>ReviewNeedAndPatientConcerns</OUTCOME>
@@ -189,7 +200,8 @@
       <PROPERTY>parameter_status=proposed_deterministic_mapping</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>AntipsychoticRegimenReview</NAME>
+      <NAME>AcuteDystoniaAntipsychoticRegimenReview</NAME>
+      <PROPERTY>label=Acute Dystonia Antipsychotic Regimen Review</PROPERTY>
       <OUTCOME>ReviewDoseOrAlternative</OUTCOME>
       <OUTCOME>AssessMedicationAssociation</OUTCOME>
       <OUTCOME>NoEpisodeSpecificReview</OUTCOME>
@@ -203,10 +215,10 @@
       <PROPERTY>parameter_status=proposed_deterministic_mapping</PROPERTY>
     </VARIABLE>
     <DEFINITION>
-      <FOR>AcuteReviewPathway</FOR>
+      <FOR>AcuteDystoniaReviewPathway</FOR>
       <GIVEN>AirwayConcern</GIVEN>
-      <GIVEN>EpisodePhase</GIVEN>
-      <GIVEN>AntipsychoticAssociation</GIVEN>
+      <GIVEN>AcuteDystoniaEpisodePhase</GIVEN>
+      <GIVEN>AcuteDystoniaAntipsychoticAssociation</GIVEN>
       <TABLE>
       1 0 0 0 0
       1 0 0 0 0
@@ -230,7 +242,7 @@
       <PROPERTY>table_order=Child outcome fastest; last GIVEN next; declaration order throughout</PROPERTY>
     </DEFINITION>
     <DEFINITION>
-      <FOR>SafetyReviewFocus</FOR>
+      <FOR>AnticholinergicSafetyReviewFocus</FOR>
       <GIVEN>AnticholinergicSafetyConcern</GIVEN>
       <GIVEN>OlderAgeVulnerability</GIVEN>
       <GIVEN>OtherAnticholinergicBurden</GIVEN>
@@ -253,11 +265,11 @@
       <PROPERTY>table_order=Child outcome fastest; last GIVEN next; declaration order throughout</PROPERTY>
     </DEFINITION>
     <DEFINITION>
-      <FOR>ContinuationReview</FOR>
-      <GIVEN>EpisodePhase</GIVEN>
-      <GIVEN>AntipsychoticAssociation</GIVEN>
+      <FOR>AcuteDystoniaAnticholinergicContinuationReview</FOR>
+      <GIVEN>AcuteDystoniaEpisodePhase</GIVEN>
+      <GIVEN>AcuteDystoniaAntipsychoticAssociation</GIVEN>
       <GIVEN>RecurrencePreventionNeed</GIVEN>
-      <GIVEN>ContinuationPreferenceConcern</GIVEN>
+      <GIVEN>AnticholinergicContinuationPreferenceConcern</GIVEN>
       <TABLE>
       1 0 0 0 0
       1 0 0 0 0
@@ -293,9 +305,9 @@
       <PROPERTY>table_order=Child outcome fastest; last GIVEN next; declaration order throughout</PROPERTY>
     </DEFINITION>
     <DEFINITION>
-      <FOR>AntipsychoticRegimenReview</FOR>
-      <GIVEN>EpisodePhase</GIVEN>
-      <GIVEN>AntipsychoticAssociation</GIVEN>
+      <FOR>AcuteDystoniaAntipsychoticRegimenReview</FOR>
+      <GIVEN>AcuteDystoniaEpisodePhase</GIVEN>
+      <GIVEN>AcuteDystoniaAntipsychoticAssociation</GIVEN>
       <TABLE>
       1 0 0
       0 1 0

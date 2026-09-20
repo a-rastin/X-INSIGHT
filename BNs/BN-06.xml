@@ -24,6 +24,7 @@
     <PROPERTY>source_version=Supplied Markdown derivative of APA 2020 guideline; PDF not verified</PROPERTY>
     <VARIABLE TYPE="nature">
       <NAME>SchizophreniaEstablished</NAME>
+      <PROPERTY>label=Schizophrenia Established</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=Clinician-confirmed schizophrenia. No means assessed as not established; not an automated diagnosis.</PROPERTY>
@@ -36,7 +37,8 @@
       <PROPERTY>missingness_policy=Do not enter evidence when unassessed; workflow outputs are not patient observations</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>ImprovedOnCurrentAgent</NAME>
+      <NAME>SymptomImprovementOnCurrentAntipsychotic</NAME>
+      <PROPERTY>label=Symptom Improvement On Current Antipsychotic</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=Documented symptom improvement attributable to the current antipsychotic; assessment period and scale to be agreed.</PROPERTY>
@@ -49,9 +51,10 @@
       <PROPERTY>missingness_policy=Do not enter evidence when unassessed; workflow outputs are not patient observations</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>UrgentClinicalConcern</NAME>
-      <OUTCOME>No</OUTCOME>
-      <OUTCOME>Yes</OUTCOME>
+      <NAME>UrgentSafetyConcern</NAME>
+      <PROPERTY>label=Urgent Safety Concern</PROPERTY>
+      <OUTCOME>Absent</OUTCOME>
+      <OUTCOME>Present</OUTCOME>
       <PROPERTY>definition=Clinician identifies an urgent safety concern requiring a separate assessment pathway; this model does not detect emergencies. Modeler safety boundary.</PROPERTY>
       <PROPERTY>clinical_role=clinical_variable</PROPERTY>
       <PROPERTY>time_window=Baseline clinician review</PROPERTY>
@@ -63,6 +66,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>ResidualClinicalBurden</NAME>
+      <PROPERTY>label=Residual Clinical Burden</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=Significant residual symptoms or functional difficulties despite some response; composite requires operational criteria.</PROPERTY>
@@ -76,6 +80,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>MetabolicConcern</NAME>
+      <PROPERTY>label=Metabolic Concern</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=Clinically significant weight gain, diabetes or metabolic syndrome prompting benefit-harm review; no numeric diagnostic thresholds supplied.</PROPERTY>
@@ -89,6 +94,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>OtherTolerabilityConcern</NAME>
+      <PROPERTY>label=Other Tolerability Concern</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=Clinically significant nonmetabolic adverse effects, including possible tardive syndromes; not a diagnosis.</PROPERTY>
@@ -101,7 +107,8 @@
       <PROPERTY>missingness_policy=Do not enter evidence when unassessed; workflow outputs are not patient observations</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>PatientPreference</NAME>
+      <NAME>SameAntipsychoticContinuationPreference</NAME>
+      <PROPERTY>label=Same Antipsychotic Continuation Preference</PROPERTY>
       <OUTCOME>ContinueSame</OUTCOME>
       <OUTCOME>DiscussChange</OUTCOME>
       <OUTCOME>NoExpressedPreference</OUTCOME>
@@ -116,6 +123,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>CurrentAgentAvailable</NAME>
+      <PROPERTY>label=Current Agent Available</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=Same active antipsychotic remains accessible; includes access/formulary barriers, not just stock.</PROPERTY>
@@ -129,6 +137,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>LAIUnderConsideration</NAME>
+      <PROPERTY>label=LAI Under Consideration</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=LAI formulation is being considered through clinical discussion; does not itself establish an indication.</PROPERTY>
@@ -142,6 +151,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>SameAgentLAIAvailable</NAME>
+      <PROPERTY>label=Same Agent LAI Available</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=An appropriate LAI of the current active molecule is available; independently verified formulary information.</PROPERTY>
@@ -154,7 +164,8 @@
       <PROPERTY>missingness_policy=Do not enter evidence when unassessed; workflow outputs are not patient observations</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>StatementScope</NAME>
+      <NAME>SameAntipsychoticContinuationScope</NAME>
+      <PROPERTY>label=Same Antipsychotic Continuation Scope</PROPERTY>
       <OUTCOME>OutsideScope</OUTCOME>
       <OUTCOME>WithinScope</OUTCOME>
       <OUTCOME>UrgentSeparateAssessment</OUTCOME>
@@ -167,11 +178,12 @@
       <PROPERTY>parameter_status=deterministic_modeler_formalization</PROPERTY>
       <PROPERTY>missingness_policy=Do not enter evidence when unassessed; workflow outputs are not patient observations</PROPERTY>
       <PROPERTY>proposed_parent=SchizophreniaEstablished</PROPERTY>
-      <PROPERTY>proposed_parent=ImprovedOnCurrentAgent</PROPERTY>
-      <PROPERTY>proposed_parent=UrgentClinicalConcern</PROPERTY>
+      <PROPERTY>proposed_parent=SymptomImprovementOnCurrentAntipsychotic</PROPERTY>
+      <PROPERTY>proposed_parent=UrgentSafetyConcern</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>LAIAgentMismatch</NAME>
+      <PROPERTY>label=LAI Agent Mismatch</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=An LAI is considered but the same molecule has no available appropriate LAI; formulation change alone is not molecule change.</PROPERTY>
@@ -187,6 +199,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>TolerabilityReview</NAME>
+      <PROPERTY>label=Tolerability Review</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=Either metabolic or other tolerability concerns warrant discussion, without selecting treatment.</PROPERTY>
@@ -202,6 +215,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>ClinicalChangeReason</NAME>
+      <PROPERTY>label=Clinical Change Reason</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=Residual clinical burden or tolerability concerns provide a reason to review alternatives; not an instruction to switch.</PROPERTY>
@@ -217,6 +231,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>PracticalChangeReason</NAME>
+      <PROPERTY>label=Practical Change Reason</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=Access barrier or LAI molecule mismatch warrants review; does not endorse nonclinical switching.</PROPERTY>
@@ -232,6 +247,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>SameAgentDiscussion</NAME>
+      <PROPERTY>label=Same Agent Discussion</PROPERTY>
       <OUTCOME>OutsideScope</OUTCOME>
       <OUTCOME>ContinuationDiscussion</OUTCOME>
       <OUTCOME>IndividualizedChangeReview</OUTCOME>
@@ -244,13 +260,14 @@
       <PROPERTY>source_locator=Implementation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_modeler_formalization</PROPERTY>
       <PROPERTY>missingness_policy=Do not enter evidence when unassessed; workflow outputs are not patient observations</PROPERTY>
-      <PROPERTY>proposed_parent=StatementScope</PROPERTY>
+      <PROPERTY>proposed_parent=SameAntipsychoticContinuationScope</PROPERTY>
       <PROPERTY>proposed_parent=ClinicalChangeReason</PROPERTY>
       <PROPERTY>proposed_parent=PracticalChangeReason</PROPERTY>
-      <PROPERTY>proposed_parent=PatientPreference</PROPERTY>
+      <PROPERTY>proposed_parent=SameAntipsychoticContinuationPreference</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>ObservedStrategy</NAME>
+      <NAME>ObservedSameAntipsychoticStrategy</NAME>
+      <PROPERTY>label=Observed Same Antipsychotic Strategy</PROPERTY>
       <OUTCOME>ContinueSameAgent</OUTCOME>
       <OUTCOME>SwitchAgent</OUTCOME>
       <OUTCOME>OtherStrategy</OUTCOME>
@@ -264,10 +281,11 @@
       <PROPERTY>missingness_policy=Do not enter evidence when unassessed; workflow outputs are not patient observations</PROPERTY>
       <PROPERTY>proposed_parent=ClinicalChangeReason</PROPERTY>
       <PROPERTY>proposed_parent=PracticalChangeReason</PROPERTY>
-      <PROPERTY>proposed_parent=PatientPreference</PROPERTY>
+      <PROPERTY>proposed_parent=SameAntipsychoticContinuationPreference</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>SwitchMonitoringContext</NAME>
+      <PROPERTY>label=Switch Monitoring Context</PROPERTY>
       <OUTCOME>RoutineReview</OUTCOME>
       <OUTCOME>SwitchMonitoringDiscussion</OUTCOME>
       <OUTCOME>SeparatePlanReview</OUTCOME>
@@ -279,10 +297,11 @@
       <PROPERTY>source_locator=Implementation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_modeler_formalization</PROPERTY>
       <PROPERTY>missingness_policy=Do not enter evidence when unassessed; workflow outputs are not patient observations</PROPERTY>
-      <PROPERTY>proposed_parent=ObservedStrategy</PROPERTY>
+      <PROPERTY>proposed_parent=ObservedSameAntipsychoticStrategy</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>AssignedRegimenDiscontinued</NAME>
+      <PROPERTY>label=Assigned Regimen Discontinued</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=All-cause discontinuation of the regimen assigned at baseline within 24 weeks; switching off that regimen counts, not necessarily cessation of all antipsychotic therapy. Event ascertainment and censoring rules unresolved.</PROPERTY>
@@ -293,11 +312,12 @@
       <PROPERTY>source_locator=Implementation</PROPERTY>
       <PROPERTY>parameter_status=missing_requires_data_or_elicitation</PROPERTY>
       <PROPERTY>missingness_policy=Do not enter evidence when unassessed; workflow outputs are not patient observations</PROPERTY>
-      <PROPERTY>proposed_parent=ObservedStrategy</PROPERTY>
-      <PROPERTY>proposed_parent=PatientPreference</PROPERTY>
+      <PROPERTY>proposed_parent=ObservedSameAntipsychoticStrategy</PROPERTY>
+      <PROPERTY>proposed_parent=SameAntipsychoticContinuationPreference</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>ClinicalDestabilization</NAME>
+      <PROPERTY>label=Clinical Destabilization</PROPERTY>
       <OUTCOME>No</OUTCOME>
       <OUTCOME>Yes</OUTCOME>
       <PROPERTY>definition=Clinically meaningful symptom worsening during follow-up; scale and threshold unresolved. Distinct from all-cause regimen discontinuation.</PROPERTY>
@@ -308,11 +328,12 @@
       <PROPERTY>source_locator=Implementation</PROPERTY>
       <PROPERTY>parameter_status=missing_requires_data_or_elicitation</PROPERTY>
       <PROPERTY>missingness_policy=Do not enter evidence when unassessed; workflow outputs are not patient observations</PROPERTY>
-      <PROPERTY>proposed_parent=ObservedStrategy</PROPERTY>
+      <PROPERTY>proposed_parent=ObservedSameAntipsychoticStrategy</PROPERTY>
       <PROPERTY>proposed_parent=ResidualClinicalBurden</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>MetabolicTrajectory</NAME>
+      <PROPERTY>label=Metabolic Trajectory</PROPERTY>
       <OUTCOME>Improved</OUTCOME>
       <OUTCOME>NoMeaningfulChange</OUTCOME>
       <OUTCOME>Worsened</OUTCOME>
@@ -324,14 +345,14 @@
       <PROPERTY>source_locator=Implementation</PROPERTY>
       <PROPERTY>parameter_status=missing_requires_data_or_elicitation</PROPERTY>
       <PROPERTY>missingness_policy=Do not enter evidence when unassessed; workflow outputs are not patient observations</PROPERTY>
-      <PROPERTY>proposed_parent=ObservedStrategy</PROPERTY>
+      <PROPERTY>proposed_parent=ObservedSameAntipsychoticStrategy</PROPERTY>
       <PROPERTY>proposed_parent=MetabolicConcern</PROPERTY>
     </VARIABLE>
     <DEFINITION>
-      <FOR>StatementScope</FOR>
+      <FOR>SameAntipsychoticContinuationScope</FOR>
       <GIVEN>SchizophreniaEstablished</GIVEN>
-      <GIVEN>ImprovedOnCurrentAgent</GIVEN>
-      <GIVEN>UrgentClinicalConcern</GIVEN>
+      <GIVEN>SymptomImprovementOnCurrentAntipsychotic</GIVEN>
+      <GIVEN>UrgentSafetyConcern</GIVEN>
       <TABLE>
       1 0 0
       0 0 1
@@ -414,10 +435,10 @@
     </DEFINITION>
     <DEFINITION>
       <FOR>SameAgentDiscussion</FOR>
-      <GIVEN>StatementScope</GIVEN>
+      <GIVEN>SameAntipsychoticContinuationScope</GIVEN>
       <GIVEN>ClinicalChangeReason</GIVEN>
       <GIVEN>PracticalChangeReason</GIVEN>
-      <GIVEN>PatientPreference</GIVEN>
+      <GIVEN>SameAntipsychoticContinuationPreference</GIVEN>
       <TABLE>
       1 0 0 0
       1 0 0 0
@@ -464,7 +485,7 @@
     </DEFINITION>
     <DEFINITION>
       <FOR>SwitchMonitoringContext</FOR>
-      <GIVEN>ObservedStrategy</GIVEN>
+      <GIVEN>ObservedSameAntipsychoticStrategy</GIVEN>
       <TABLE>
       1 0 0
       0 1 0

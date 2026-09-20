@@ -74,3 +74,136 @@
 
 **Treatment as usual** Treatment that is consistent with care received for a specific condition in a real-world nonresearch context. Treatment as usual, sometimes referred to as usual care or standard care, is often used as an active comparison condition for studies of new interventions. Elements of treatment as usual are heterogeneous and differ with each study but can include medication treatment, medication management, case management, rehabilitation services, and psychotherapy (McDonagh et al. 2017).
 
+## Bayesian-network terminology (BN-04–BN-14)
+
+This project supplement reconciles variable terminology with Statements 4–14. The clinical definitions above remain authoritative; the entries below describe local model usage, not new guideline recommendations. Each XML variable's `definition`, `time_window`, and source metadata retain its precise scope.
+
+### Naming and state conventions
+
+- Machine identifiers use PascalCase; `label` properties provide readable names. LAI and VMAT2 are retained as defined abbreviations. Generic “agent” or “drug” names are made explicit where needed to identify antipsychotic medication.
+- Equivalent concepts share a name. Different clinical targets carry a qualifier: suicide risk versus aggression risk, individual movement syndromes, and the treatment to which a preference applies. A shared name does not by itself authorize merging evidence across networks or assessment periods.
+- Presence of a concern uses `Present`/`Absent` for reconciled shared inputs; yes/no predicates retain `Yes`/`No`. Binary trigger flags use `Triggered`/`NotTriggered`; yes/no review predicates retain their original states. Multicategory review pathways keep their distinct meanings.
+- Outcome **order is preserved**, including existing differences such as `Yes, No` versus `No, Yes`. Read states by name, not by a fixed index across networks. No table entries or parent ordering were changed.
+- `Absent`, `No`, and `NotTriggered` require their documented assessment and do not mean missing evidence or guaranteed safety. `Unresolved`, `Uncertain`, `NotEstablished`, and `Undecided` remain distinct assessed states; unavailable observations remain unobserved.
+
+### Clinical terms and distinctions
+
+| Term | Meaning in these networks and source |
+|---|---|
+| Established schizophrenia | A clinician-established diagnosis, not a diagnosis inferred by these networks. `SchizophreniaEstablished` reconciles the former “confirmed” wording in BN-07–10 with BN-05–06. |
+| Symptom improvement; symptom response; adequate response | Improvement with any antipsychotic ([Statement 5](STATEMENT-05.md)), improvement with the current antipsychotic ([Statement 6](STATEMENT-06.md)), and graded target-symptom response (BN-04) are distinct. The glossary's **Adequate response** also requires clinically significant benefit in functioning and/or quality of life; BN-04's `SymptomResponse=Adequate` alone does not establish that broader concept. Partial improvement is not automatically an adequate response. |
+| Adequate antipsychotic trial | Assessment of dose, duration, adherence and response, not just **Adequate dose**. BN-07 preserves its separate prior-trial and clozapine-trial operationalizations from [Statement 7](STATEMENT-07.md); BN-04's provisional response window is not an equivalent adequacy criterion. |
+| Treatment-resistant schizophrenia (TRS) | [Statement 7](STATEMENT-07.md) discusses persistent symptoms and functional impairment despite adequate antipsychotic trials. `TreatmentResistantSchizophreniaReview` is a review flag, not a diagnosis. Persistent suicide or aggression risk despite other treatments (Statements 8–9) is not synonymous with TRS. |
+| Adherence | Taking treatment as prescribed. `AdherenceDifficulty` records assessed difficulty (BN-04–05); `AdherenceConcern` also includes uncertainty about exposure (BN-08–09); `AdherenceHistory` distinguishes adequate, poor and uncertain history (BN-10). These are related, not interchangeable observations. |
+| Significant antipsychotic side effects | Clinically important medication side effects, represented by `SignificantAntipsychoticSideEffects` in BN-04–05. BN-06 separately records metabolic and other tolerability concerns. Intolerability, urgent safety concerns and contraindications remain distinct. |
+| Urgent safety concern | A clinician-identified concern requiring prompt or urgent assessment. `UrgentSafetyConcern` has the same presence terminology across BN-04, BN-06–09 and BN-13–14; examples and assessment context remain network-specific. It is not a complete emergency screen. |
+| Clozapine treatment status | `ClozapineTreatmentStatus` distinguishes never, current and previous treatment in BN-07–09. Current treatment takes precedence; previous treatment requires its own review. |
+| Clozapine review and discussion readiness | `ClozapineMedicalReviewCompleted` (BN-08–09) means a review was performed. `ClozapineInitiationDiscussionAppropriate` (BN-07) additionally records the clinician's conclusion that initiation discussion is appropriate. Neither is treatment consent or an administration order. Discussion preparation and review pathways remain distinct where their criteria differ. |
+| Long-acting injectable antipsychotic medication (LAI) | An injectable antipsychotic formulation with prolonged action (Statements 6 and 10). LAI preference, treatment status, availability and delivery barriers are separate variables. BN-05's extended-action preparation also includes long-half-life medications and is not synonymous with LAI. |
+| Neuroleptic malignant syndrome (NMS) | The syndrome referred to by NMS in the source statements. `PriorNeurolepticMalignantSyndrome` (BN-10) records a history, not a current diagnosis. |
+| Acute dystonia | The acute dystonic episode discussed in [Statement 11](STATEMENT-11.md). `AcuteDystoniaEpisodePhase` distinguishes active, resolved and no episode. It is not tardive dystonia. |
+| Parkinsonism | The motor and potentially cognitive/emotional manifestations discussed in [Statement 12](STATEMENT-12.md). Assessment of parkinsonism and attribution to antipsychotic therapy are separate; the node does not establish Parkinson's disease. |
+| Akathisia | Subjective restlessness, often with observed excessive movement ([Statement 13](STATEMENT-13.md)). It must be distinguished from psychotic agitation; `AkathisiaAssessment` does not itself establish medication causation. |
+| Tardive dyskinesia (TD) | The persistent involuntary movement syndrome discussed in [Statement 14](STATEMENT-14.md). `TardiveDyskinesiaAssessment` is distinct from suspected/coexisting TD in BN-12 and from other tardive syndromes. Motor severity and disabling impact remain separate. |
+| Antipsychotic association | Clinician attribution of the specified syndrome to antipsychotic therapy. Separate acute-dystonia, parkinsonism, akathisia and tardive-dyskinesia identifiers prevent attribution of one syndrome from being reused as evidence for another. |
+| Anticholinergic effects, burden and treatment | Side-effect attributes of an antipsychotic (BN-04), burden from concomitant medications (BN-11–12), current treatment specifically for parkinsonism (BN-12), and any current anticholinergic exposure (BN-14) are different concepts. A safety concern is not automatically a **Contraindication**. |
+| Vesicular monoamine transporter 2 (VMAT2) inhibitor | The reversible inhibitor class discussed in [Statement 14](STATEMENT-14.md). Candidate safety assessment, treatment preference and review outputs are explicitly qualified with `VMAT2Inhibitor`. |
+| Suicidal ideas | The glossary's preferred wording; suicidal thoughts and suicidal ideation in model descriptions refer to this concept. Ideas, attempts, suicide and clinician-assessed substantial suicide risk remain distinct. |
+| Source category | BN-04's `…SourceCategory` nodes reproduce historical Table 6 ordinal drug attributes (`Seldom`, `Sometimes`, `Often`), not patient diagnoses or individual event probabilities. |
+
+### Identifier migration
+
+All occurrences of renamed identifiers in `NAME`, `FOR`, `GIVEN`, proposed-parent metadata and other textual references have been updated. External consumers must migrate identifiers using this table. Unlisted identifiers are unchanged.
+
+| Network | Previous identifier | Reconciled identifier |
+|---|---|---|
+| BN-04 | `OralAgent` | `OralAntipsychoticMedication` |
+| BN-04 | `TroublesomeSideEffects` | `SignificantAntipsychoticSideEffects` |
+| BN-04 | `SafetyConcern` | `UrgentSafetyConcern` |
+| BN-04 | `AnticholinergicSourceCategory` | `AnticholinergicEffectsSourceCategory` |
+| BN-05 | `CurrentSignificantSideEffects` | `SignificantAntipsychoticSideEffects` |
+| BN-06 | `UrgentClinicalConcern` | `UrgentSafetyConcern` |
+| BN-06 | `ImprovedOnCurrentAgent` | `SymptomImprovementOnCurrentAntipsychotic` |
+| BN-06 | `PatientPreference` | `SameAntipsychoticContinuationPreference` |
+| BN-06 | `ObservedStrategy` | `ObservedSameAntipsychoticStrategy` |
+| BN-06 | `StatementScope` | `SameAntipsychoticContinuationScope` |
+| BN-07 | `SchizophreniaConfirmed` | `SchizophreniaEstablished` |
+| BN-07 | `ClozapineContext` | `ClozapineTreatmentStatus` |
+| BN-07 | `PatientWillingToDiscuss` | `WillingToDiscussClozapine` |
+| BN-07 | `MonitoringPlanAvailable` | `ClozapineMonitoringPlanAvailable` |
+| BN-07 | `MedicalSuitabilityReviewed` | `ClozapineInitiationDiscussionAppropriate` |
+| BN-07 | `TRSClinicalReview` | `TreatmentResistantSchizophreniaReview` |
+| BN-07 | `DiscussionPreparation` | `ClozapineInitiationDiscussionPreparation` |
+| BN-07 | `ClozapineReviewPathway` | `TreatmentResistanceClozapineReviewPathway` |
+| BN-08 | `SchizophreniaConfirmed` | `SchizophreniaEstablished` |
+| BN-08 | `ClozapineContext` | `ClozapineTreatmentStatus` |
+| BN-08 | `PatientWillingToDiscuss` | `WillingToDiscussClozapine` |
+| BN-08 | `MonitoringPlanAvailable` | `ClozapineMonitoringPlanAvailable` |
+| BN-08 | `MedicalSuitabilityReviewed` | `ClozapineMedicalReviewCompleted` |
+| BN-08 | `DiscussionPreparation` | `ClozapineDiscussionPreparation` |
+| BN-08 | `RiskPersistsDespiteOtherTreatments` | `SuicideRiskPersistsDespiteOtherTreatments` |
+| BN-08 | `ModifiableRiskTargetsPresent` | `ModifiableSuicideRiskTargetsPresent` |
+| BN-08 | `Statement08Indication` | `ClozapineSuicideRiskIndication` |
+| BN-08 | `ParallelTreatmentPlanReview` | `SuicideRiskTreatmentPlanReview` |
+| BN-08 | `ClozapineReviewPathway` | `SuicideRiskClozapineReviewPathway` |
+| BN-09 | `SchizophreniaConfirmed` | `SchizophreniaEstablished` |
+| BN-09 | `ClozapineContext` | `ClozapineTreatmentStatus` |
+| BN-09 | `PatientWillingToDiscuss` | `WillingToDiscussClozapine` |
+| BN-09 | `MonitoringPlanAvailable` | `ClozapineMonitoringPlanAvailable` |
+| BN-09 | `MedicalSuitabilityReviewed` | `ClozapineMedicalReviewCompleted` |
+| BN-09 | `DiscussionPreparation` | `ClozapineDiscussionPreparation` |
+| BN-09 | `RiskPersistsDespiteOtherTreatments` | `AggressionRiskPersistsDespiteOtherTreatments` |
+| BN-09 | `ModifiableRiskTargetsPresent` | `ModifiableAggressionRiskTargetsPresent` |
+| BN-09 | `Statement09Indication` | `ClozapineAggressionRiskIndication` |
+| BN-09 | `ParallelTreatmentPlanReview` | `AggressionRiskTreatmentPlanReview` |
+| BN-09 | `ClozapineReviewPathway` | `AggressionRiskClozapineReviewPathway` |
+| BN-10 | `SchizophreniaConfirmed` | `SchizophreniaEstablished` |
+| BN-10 | `PriorNMS` | `PriorNeurolepticMalignantSyndrome` |
+| BN-10 | `LAIContext` | `LAITreatmentStatus` |
+| BN-10 | `Statement10Criterion` | `LAIGuidelineCriterion` |
+| BN-11 | `EpisodePhase` | `AcuteDystoniaEpisodePhase` |
+| BN-11 | `AntipsychoticAssociation` | `AcuteDystoniaAntipsychoticAssociation` |
+| BN-11 | `ContinuationPreferenceConcern` | `AnticholinergicContinuationPreferenceConcern` |
+| BN-11 | `ContinuationReview` | `AcuteDystoniaAnticholinergicContinuationReview` |
+| BN-11 | `AcuteReviewPathway` | `AcuteDystoniaReviewPathway` |
+| BN-11 | `SafetyReviewFocus` | `AnticholinergicSafetyReviewFocus` |
+| BN-11 | `AntipsychoticRegimenReview` | `AcuteDystoniaAntipsychoticRegimenReview` |
+| BN-12 | `AntipsychoticAssociation` | `ParkinsonismAntipsychoticAssociation` |
+| BN-12 | `SwitchFeasible` | `LowerParkinsonismRiskSwitchFeasible` |
+| BN-12 | `PatientPreferenceConcern` | `ParkinsonismMedicationPreferenceConcern` |
+| BN-12 | `CurrentAnticholinergicUse` | `CurrentParkinsonismAnticholinergicUse` |
+| BN-12 | `IndicationReview` | `ParkinsonismIndicationReview` |
+| BN-12 | `RegimenReview` | `ParkinsonismAntipsychoticRegimenReview` |
+| BN-12 | `ContinuationReview` | `ParkinsonismAnticholinergicContinuationReview` |
+| BN-13 | `AntipsychoticAssociation` | `AkathisiaAntipsychoticAssociation` |
+| BN-13 | `SwitchFeasible` | `LowerAkathisiaRiskSwitchFeasible` |
+| BN-13 | `PatientPreferenceConcern` | `AkathisiaTreatmentPreferenceConcern` |
+| BN-13 | `IndicationReview` | `AkathisiaIndicationReview` |
+| BN-13 | `RegimenReview` | `AkathisiaAntipsychoticRegimenReview` |
+| BN-14 | `TDAssessment` | `TardiveDyskinesiaAssessment` |
+| BN-14 | `AntipsychoticAssociation` | `TardiveDyskinesiaAntipsychoticAssociation` |
+| BN-14 | `MotorSeverity` | `TardiveDyskinesiaMotorSeverity` |
+| BN-14 | `DisablingImpact` | `TardiveDyskinesiaDisablingImpact` |
+| BN-14 | `MildTreatmentConsideration` | `MildTardiveDyskinesiaTreatmentConsideration` |
+| BN-14 | `PatientPreference` | `VMAT2InhibitorTreatmentPreference` |
+| BN-14 | `CandidateSafetyAssessment` | `VMAT2InhibitorCandidateSafetyAssessment` |
+| BN-14 | `IndicationReview` | `TardiveDyskinesiaIndicationReview` |
+| BN-14 | `MedicationSafetyReview` | `VMAT2InhibitorSafetyReview` |
+| BN-14 | `SharedDecisionReview` | `VMAT2InhibitorSharedDecisionReview` |
+
+### Outcome migration
+
+These substitutions preserve each outcome's original position and corresponding table values. All unlisted outcomes remain unchanged.
+
+| Network | Reconciled variable | Previous → reconciled outcome |
+|---|---|---|
+| BN-05 | `PreferenceBarrier` | `No` → `Absent`; `Yes` → `Present` |
+| BN-05 | `AdherenceDifficulty` | `No` → `Absent`; `Yes` → `Present` |
+| BN-05 | `SignificantAntipsychoticSideEffects` | `No` → `Absent`; `Yes` → `Present` |
+| BN-06 | `UrgentSafetyConcern` | `Yes` → `Present`; `No` → `Absent` |
+| BN-07 | `UrgentSafetyConcern` | `Yes` → `Present`; `No` → `Absent` |
+| BN-07 | `TreatmentResistantSchizophreniaReview` | `Review` → `Triggered` |
+| BN-07 | `PriorTrialAdequacyReview` | `Review` → `Triggered` |
+| BN-07 | `ClozapineExposureReview` | `Review` → `Triggered` |
+| BN-08 | `UrgentSafetyConcern` | `Yes` → `Present`; `No` → `Absent` |
+| BN-09 | `UrgentSafetyConcern` | `Yes` → `Present`; `No` → `Absent` |

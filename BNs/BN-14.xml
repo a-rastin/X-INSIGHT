@@ -29,7 +29,8 @@
     <PROPERTY>label_review=2026-09-17; see wiki/sources/VMAT2 labels - Current safety corrections.md; historical Table 11 is not a current prescribing rule</PROPERTY>
     <PROPERTY>design_note=wiki/questions/Statement 14 Bayesian network design.md</PROPERTY>
     <VARIABLE TYPE="nature">
-      <NAME>TDAssessment</NAME>
+      <NAME>TardiveDyskinesiaAssessment</NAME>
+      <PROPERTY>label=Tardive Dyskinesia Assessment</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <OUTCOME>Unresolved</OUTCOME>
@@ -44,7 +45,8 @@
       <PROPERTY>parameter_status=missing_prior</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>AntipsychoticAssociation</NAME>
+      <NAME>TardiveDyskinesiaAntipsychoticAssociation</NAME>
+      <PROPERTY>label=Tardive Dyskinesia Antipsychotic Association</PROPERTY>
       <OUTCOME>Established</OUTCOME>
       <OUTCOME>NotEstablished</OUTCOME>
       <PROPERTY>definition=Clinician attribution to antipsychotic exposure after assessment of alternative contributors; no causal inference by this model.</PROPERTY>
@@ -58,7 +60,8 @@
       <PROPERTY>parameter_status=missing_prior</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>MotorSeverity</NAME>
+      <NAME>TardiveDyskinesiaMotorSeverity</NAME>
+      <PROPERTY>label=Tardive Dyskinesia Motor Severity</PROPERTY>
       <OUTCOME>Mild</OUTCOME>
       <OUTCOME>ModerateOrSevere</OUTCOME>
       <PROPERTY>definition=Clinician-rated TD motor severity; meaningful only when TD is present. Do not fabricate a severity observation when TD is absent. No AIMS score cutoff.</PROPERTY>
@@ -72,7 +75,8 @@
       <PROPERTY>parameter_status=missing_prior</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>DisablingImpact</NAME>
+      <NAME>TardiveDyskinesiaDisablingImpact</NAME>
+      <PROPERTY>label=Tardive Dyskinesia Disabling Impact</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Clinician-assessed disabling TD impact, distinct from motor severity; mild motor signs may still be disabling.</PROPERTY>
@@ -86,7 +90,8 @@
       <PROPERTY>parameter_status=missing_prior</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>MildTreatmentConsideration</NAME>
+      <NAME>MildTardiveDyskinesiaTreatmentConsideration</NAME>
+      <PROPERTY>label=Mild Tardive Dyskinesia Treatment Consideration</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=At least one assessed reason to consider treatment of mild TD: patient preference, associated impairment, or psychosocial impact. Absence does not prohibit discussion.</PROPERTY>
@@ -101,6 +106,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>DoseReductionTemporalLink</NAME>
+      <PROPERTY>label=Dose Reduction Temporal Link</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Dyskinesia began or increased around antipsychotic dose reduction; prompts longitudinal review, not an automatic waiting period or exclusion of persistent TD.</PROPERTY>
@@ -115,6 +121,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>UrgentSafetyConcern</NAME>
+      <PROPERTY>label=Urgent Safety Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Clinician-identified urgent concern, including gagging/choking or immediate psychiatric safety risk. Psychiatric urgency is a modeler-proposed extension of source mood/suicidality concerns.</PROPERTY>
@@ -128,7 +135,8 @@
       <PROPERTY>parameter_status=missing_prior</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>CandidateSafetyAssessment</NAME>
+      <NAME>VMAT2InhibitorCandidateSafetyAssessment</NAME>
+      <PROPERTY>label=VMAT2 Inhibitor Candidate Safety Assessment</PROPERTY>
       <OUTCOME>Incomplete</OUTCOME>
       <OUTCOME>ConcernsIdentified</OUTCOME>
       <OUTCOME>ReviewedNoConcernIdentified</OUTCOME>
@@ -143,7 +151,8 @@
       <PROPERTY>parameter_status=missing_prior</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>PatientPreference</NAME>
+      <NAME>VMAT2InhibitorTreatmentPreference</NAME>
+      <PROPERTY>label=VMAT2 Inhibitor Treatment Preference</PROPERTY>
       <OUTCOME>WillingToDiscuss</OUTCOME>
       <OUTCOME>Declines</OUTCOME>
       <OUTCOME>Undecided</OUTCOME>
@@ -159,6 +168,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>AnticholinergicExposure</NAME>
+      <PROPERTY>label=Anticholinergic Exposure</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Current anticholinergic use; review its indication and potential TD worsening without automatic discontinuation, especially with coexisting dystonia or parkinsonism.</PROPERTY>
@@ -172,7 +182,8 @@
       <PROPERTY>parameter_status=missing_prior</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>IndicationReview</NAME>
+      <NAME>TardiveDyskinesiaIndicationReview</NAME>
+      <PROPERTY>label=Tardive Dyskinesia Indication Review</PROPERTY>
       <OUTCOME>RecommendedVMAT2Review</OUTCOME>
       <OUTCOME>ConsiderVMAT2Review</OUTCOME>
       <OUTCOME>MonitorAndDiscuss</OUTCOME>
@@ -189,12 +200,12 @@
       <PROPERTY>parameter_status=modeler_proposed_deterministic</PROPERTY>
     </VARIABLE>
     <DEFINITION>
-      <FOR>IndicationReview</FOR>
-      <GIVEN>TDAssessment</GIVEN>
-      <GIVEN>AntipsychoticAssociation</GIVEN>
-      <GIVEN>MotorSeverity</GIVEN>
-      <GIVEN>DisablingImpact</GIVEN>
-      <GIVEN>MildTreatmentConsideration</GIVEN>
+      <FOR>TardiveDyskinesiaIndicationReview</FOR>
+      <GIVEN>TardiveDyskinesiaAssessment</GIVEN>
+      <GIVEN>TardiveDyskinesiaAntipsychoticAssociation</GIVEN>
+      <GIVEN>TardiveDyskinesiaMotorSeverity</GIVEN>
+      <GIVEN>TardiveDyskinesiaDisablingImpact</GIVEN>
+      <GIVEN>MildTardiveDyskinesiaTreatmentConsideration</GIVEN>
       <PROPERTY>parameter_method=modeler_assumption</PROPERTY>
       <PROPERTY>parameter_status=proposed_deterministic_review_mapping</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-14.md</PROPERTY>
@@ -255,6 +266,7 @@
     </DEFINITION>
     <VARIABLE TYPE="nature">
       <NAME>LongitudinalReview</NAME>
+      <PROPERTY>label=Longitudinal Review</PROPERTY>
       <OUTCOME>ReviewWithdrawalAndCourse</OUTCOME>
       <OUTCOME>ContinueLongitudinalAssessment</OUTCOME>
       <PROPERTY>definition=Parallel course review; never delay urgent care or automatically withhold VMAT2 review.</PROPERTY>
@@ -284,6 +296,7 @@
     </DEFINITION>
     <VARIABLE TYPE="nature">
       <NAME>UrgentSafetyReview</NAME>
+      <PROPERTY>label=Urgent Safety Review</PROPERTY>
       <OUTCOME>UrgentClinicianAssessment</OUTCOME>
       <OUTCOME>RoutineSafetyAssessment</OUTCOME>
       <PROPERTY>definition=Urgent concerns take priority regardless of diagnostic status.</PROPERTY>
@@ -312,7 +325,8 @@
       </TABLE>
     </DEFINITION>
     <VARIABLE TYPE="nature">
-      <NAME>MedicationSafetyReview</NAME>
+      <NAME>VMAT2InhibitorSafetyReview</NAME>
+      <PROPERTY>label=VMAT2 Inhibitor Safety Review</PROPERTY>
       <OUTCOME>CompleteCurrentLabelReview</OUTCOME>
       <OUTCOME>AddressIndividualConcerns</OUTCOME>
       <OUTCOME>ContinueIndividualizedMonitoring</OUTCOME>
@@ -327,8 +341,8 @@
       <PROPERTY>parameter_status=modeler_proposed_deterministic</PROPERTY>
     </VARIABLE>
     <DEFINITION>
-      <FOR>MedicationSafetyReview</FOR>
-      <GIVEN>CandidateSafetyAssessment</GIVEN>
+      <FOR>VMAT2InhibitorSafetyReview</FOR>
+      <GIVEN>VMAT2InhibitorCandidateSafetyAssessment</GIVEN>
       <PROPERTY>parameter_method=modeler_assumption</PROPERTY>
       <PROPERTY>parameter_status=proposed_deterministic_review_mapping</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-14.md</PROPERTY>
@@ -343,7 +357,8 @@
       </TABLE>
     </DEFINITION>
     <VARIABLE TYPE="nature">
-      <NAME>SharedDecisionReview</NAME>
+      <NAME>VMAT2InhibitorSharedDecisionReview</NAME>
+      <PROPERTY>label=VMAT2 Inhibitor Shared Decision Review</PROPERTY>
       <OUTCOME>DiscussVMAT2Options</OUTCOME>
       <OUTCOME>ResolveSafetyAndDiscuss</OUTCOME>
       <OUTCOME>RespectDeclineAndDiscussAlternatives</OUTCOME>
@@ -360,10 +375,10 @@
       <PROPERTY>parameter_status=modeler_proposed_deterministic</PROPERTY>
     </VARIABLE>
     <DEFINITION>
-      <FOR>SharedDecisionReview</FOR>
-      <GIVEN>IndicationReview</GIVEN>
-      <GIVEN>PatientPreference</GIVEN>
-      <GIVEN>MedicationSafetyReview</GIVEN>
+      <FOR>VMAT2InhibitorSharedDecisionReview</FOR>
+      <GIVEN>TardiveDyskinesiaIndicationReview</GIVEN>
+      <GIVEN>VMAT2InhibitorTreatmentPreference</GIVEN>
+      <GIVEN>VMAT2InhibitorSafetyReview</GIVEN>
       <PROPERTY>parameter_method=modeler_assumption</PROPERTY>
       <PROPERTY>parameter_status=proposed_deterministic_review_mapping</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-14.md</PROPERTY>
@@ -421,6 +436,7 @@
     </DEFINITION>
     <VARIABLE TYPE="nature">
       <NAME>AnticholinergicReview</NAME>
+      <PROPERTY>label=Anticholinergic Review</PROPERTY>
       <OUTCOME>ReviewPotentialTDWorsening</OUTCOME>
       <OUTCOME>ReconcileIndicationAndDifferential</OUTCOME>
       <OUTCOME>RoutineMedicationReconciliation</OUTCOME>
@@ -436,7 +452,7 @@
     </VARIABLE>
     <DEFINITION>
       <FOR>AnticholinergicReview</FOR>
-      <GIVEN>TDAssessment</GIVEN>
+      <GIVEN>TardiveDyskinesiaAssessment</GIVEN>
       <GIVEN>AnticholinergicExposure</GIVEN>
       <PROPERTY>parameter_method=modeler_assumption</PROPERTY>
       <PROPERTY>parameter_status=proposed_deterministic_review_mapping</PROPERTY>

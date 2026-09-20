@@ -30,6 +30,7 @@
     <PROPERTY>design_note=wiki/questions/Statement 12 Bayesian network design.md</PROPERTY>
     <VARIABLE TYPE="nature">
       <NAME>ParkinsonismAssessment</NAME>
+      <PROPERTY>label=Parkinsonism Assessment</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <OUTCOME>Unresolved</OUTCOME>
@@ -44,7 +45,8 @@
       <PROPERTY>parameter_requirement=3 entries after dependence and measurement review; data or expert elicitation required</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>AntipsychoticAssociation</NAME>
+      <NAME>ParkinsonismAntipsychoticAssociation</NAME>
+      <PROPERTY>label=Parkinsonism Antipsychotic Association</PROPERTY>
       <OUTCOME>Established</OUTCOME>
       <OUTCOME>NotEstablished</OUTCOME>
       <PROPERTY>definition=Clinician assessment of medication association using timing, dose changes and alternative causes; not inferred from symptoms alone.</PROPERTY>
@@ -59,6 +61,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>TardiveDyskinesiaConcern</NAME>
+      <PROPERTY>label=Tardive Dyskinesia Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Assessed possible or coexisting tardive dyskinesia; not mutually exclusive with parkinsonism. Anticholinergics can worsen TD.</PROPERTY>
@@ -73,6 +76,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>DoseReductionFeasible</NAME>
+      <PROPERTY>label=Dose Reduction Feasible</PROPERTY>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
       <PROPERTY>definition=Clinician-assessed feasibility of dose reduction; no numerical reduction or automatic action implied.</PROPERTY>
@@ -86,7 +90,8 @@
       <PROPERTY>parameter_requirement=2 entries after dependence and measurement review; data or expert elicitation required</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>SwitchFeasible</NAME>
+      <NAME>LowerParkinsonismRiskSwitchFeasible</NAME>
+      <PROPERTY>label=Lower Parkinsonism Risk Switch Feasible</PROPERTY>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
       <PROPERTY>definition=Clinician-assessed feasibility of switching to an antipsychotic with lower parkinsonism propensity; candidate review required.</PROPERTY>
@@ -101,6 +106,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>PsychoticWorseningConcern</NAME>
+      <PROPERTY>label=Psychotic Worsening Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Patient-specific concern about psychotic worsening with dose reduction or switching. Absent does not mean zero risk.</PROPERTY>
@@ -114,7 +120,8 @@
       <PROPERTY>parameter_requirement=2 entries after dependence and measurement review; data or expert elicitation required</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>PatientPreferenceConcern</NAME>
+      <NAME>ParkinsonismMedicationPreferenceConcern</NAME>
+      <PROPERTY>label=Parkinsonism Medication Preference Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Patient expresses concern or reluctance about symptomatic medication; Absent does not establish consent. All options still require shared decisions.</PROPERTY>
@@ -129,6 +136,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>OlderAgeVulnerability</NAME>
+      <PROPERTY>label=Older Age Vulnerability</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Clinician-assessed vulnerability related to older age; no invented age cutoff.</PROPERTY>
@@ -143,6 +151,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>OtherAnticholinergicBurden</NAME>
+      <PROPERTY>label=Other Anticholinergic Burden</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Clinically relevant anticholinergic burden from concomitant medications, excluding the target parkinsonism treatment.</PROPERTY>
@@ -157,6 +166,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>AnticholinergicSafetyConcern</NAME>
+      <PROPERTY>label=Anticholinergic Safety Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Assessed cognitive, urinary, bowel, ocular, cardiac, thermoregulatory or other anticholinergic safety concern. Treated glaucoma is not a blanket prohibition.</PROPERTY>
@@ -170,7 +180,8 @@
       <PROPERTY>parameter_requirement=2 entries after dependence and measurement review; data or expert elicitation required</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>CurrentAnticholinergicUse</NAME>
+      <NAME>CurrentParkinsonismAnticholinergicUse</NAME>
+      <PROPERTY>label=Current Parkinsonism Anticholinergic Use</PROPERTY>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
       <PROPERTY>definition=Current anticholinergic medication specifically used for parkinsonism or its prevention, assessed at this encounter.</PROPERTY>
@@ -185,6 +196,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>PriorSignificantParkinsonism</NAME>
+      <PROPERTY>label=Prior Significant Parkinsonism</PROPERTY>
       <OUTCOME>Yes</OUTCOME>
       <OUTCOME>No</OUTCOME>
       <PROPERTY>definition=Assessed history of significant parkinsonism with prior treatment; illustrative risk context, not a complete risk model.</PROPERTY>
@@ -199,6 +211,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>AmantadineSafetyConcern</NAME>
+      <PROPERTY>label=Amantadine Safety Concern</PROPERTY>
       <OUTCOME>Present</OUTCOME>
       <OUTCOME>Absent</OUTCOME>
       <PROPERTY>definition=Clinician concern including renal impairment, hallucinations, suicidal thoughts, seizure disorder or tolerability; details require current product-label review.</PROPERTY>
@@ -212,7 +225,8 @@
       <PROPERTY>parameter_requirement=2 entries after dependence and measurement review; data or expert elicitation required</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>IndicationReview</NAME>
+      <NAME>ParkinsonismIndicationReview</NAME>
+      <PROPERTY>label=Parkinsonism Indication Review</PROPERTY>
       <OUTCOME>EstablishedCurrentAssociation</OUTCOME>
       <OUTCOME>AssessDifferentialAndAssociation</OUTCOME>
       <OUTCOME>NoCurrentTreatmentRule</OUTCOME>
@@ -224,7 +238,8 @@
       <PROPERTY>interpretation=Review topic only; no treatment choice, clearance or withholding rule</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>RegimenReview</NAME>
+      <NAME>ParkinsonismAntipsychoticRegimenReview</NAME>
+      <PROPERTY>label=Parkinsonism Antipsychotic Regimen Review</PROPERTY>
       <OUTCOME>ReviewDoseAndSwitch</OUTCOME>
       <OUTCOME>ReviewDose</OUTCOME>
       <OUTCOME>ReviewSwitch</OUTCOME>
@@ -240,6 +255,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>AnticholinergicSafetyReview</NAME>
+      <PROPERTY>label=Anticholinergic Safety Review</PROPERTY>
       <OUTCOME>EnhancedIndividualizedReview</OUTCOME>
       <OUTCOME>RoutineIndividualizedReview</OUTCOME>
       <PROPERTY>definition=Review patient-specific concerns, age vulnerability and cumulative burden in parallel. Routine review is not medical clearance; each concern remains separately visible.</PROPERTY>
@@ -251,6 +267,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>SymptomaticMedicationReview</NAME>
+      <PROPERTY>label=Symptomatic Medication Review</PROPERTY>
       <OUTCOME>ReviewTardiveDifferential</OUTCOME>
       <OUTCOME>DiscussPatientConcerns</OUTCOME>
       <OUTCOME>DiscussAnticholinergicOption</OUTCOME>
@@ -263,7 +280,8 @@
       <PROPERTY>interpretation=Review topic only; no treatment choice, clearance or withholding rule</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>ContinuationReview</NAME>
+      <NAME>ParkinsonismAnticholinergicContinuationReview</NAME>
+      <PROPERTY>label=Parkinsonism Anticholinergic Continuation Review</PROPERTY>
       <OUTCOME>ReviewLowestDoseAndDuration</OUTCOME>
       <OUTCOME>ReassessNeedAndDifferential</OUTCOME>
       <OUTCOME>NoCurrentContinuationRule</OUTCOME>
@@ -276,6 +294,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>AmantadineReview</NAME>
+      <PROPERTY>label=Amantadine Review</PROPERTY>
       <OUTCOME>DiscussAlternativeAndSafety</OUTCOME>
       <OUTCOME>ReviewSpecificSafetyConcerns</OUTCOME>
       <OUTCOME>EstablishIndicationFirst</OUTCOME>
@@ -288,6 +307,7 @@
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>ProphylaxisReview</NAME>
+      <PROPERTY>label=Prophylaxis Review</PROPERTY>
       <OUTCOME>IndividualizedExceptionalRiskReview</OUTCOME>
       <OUTCOME>NoRoutineProphylaxisRule</OUTCOME>
       <OUTCOME>AddressCurrentAssessment</OUTCOME>
@@ -299,9 +319,9 @@
       <PROPERTY>interpretation=Review topic only; no treatment choice, clearance or withholding rule</PROPERTY>
     </VARIABLE>
     <DEFINITION>
-      <FOR>IndicationReview</FOR>
+      <FOR>ParkinsonismIndicationReview</FOR>
       <GIVEN>ParkinsonismAssessment</GIVEN>
-      <GIVEN>AntipsychoticAssociation</GIVEN>
+      <GIVEN>ParkinsonismAntipsychoticAssociation</GIVEN>
       <TABLE>
         1 0 0
         0 1 0
@@ -319,10 +339,10 @@
       <PROPERTY>table_order=Child outcome fastest; last GIVEN next; declaration order</PROPERTY>
     </DEFINITION>
     <DEFINITION>
-      <FOR>RegimenReview</FOR>
-      <GIVEN>IndicationReview</GIVEN>
+      <FOR>ParkinsonismAntipsychoticRegimenReview</FOR>
+      <GIVEN>ParkinsonismIndicationReview</GIVEN>
       <GIVEN>DoseReductionFeasible</GIVEN>
-      <GIVEN>SwitchFeasible</GIVEN>
+      <GIVEN>LowerParkinsonismRiskSwitchFeasible</GIVEN>
       <GIVEN>PsychoticWorseningConcern</GIVEN>
       <TABLE>
         0 0 0 0 1 0
@@ -383,9 +403,9 @@
     </DEFINITION>
     <DEFINITION>
       <FOR>SymptomaticMedicationReview</FOR>
-      <GIVEN>IndicationReview</GIVEN>
+      <GIVEN>ParkinsonismIndicationReview</GIVEN>
       <GIVEN>TardiveDyskinesiaConcern</GIVEN>
-      <GIVEN>PatientPreferenceConcern</GIVEN>
+      <GIVEN>ParkinsonismMedicationPreferenceConcern</GIVEN>
       <TABLE>
         1 0 0 0
         1 0 0 0
@@ -409,8 +429,8 @@
       <PROPERTY>table_order=Child outcome fastest; last GIVEN next; declaration order</PROPERTY>
     </DEFINITION>
     <DEFINITION>
-      <FOR>ContinuationReview</FOR>
-      <GIVEN>CurrentAnticholinergicUse</GIVEN>
+      <FOR>ParkinsonismAnticholinergicContinuationReview</FOR>
+      <GIVEN>CurrentParkinsonismAnticholinergicUse</GIVEN>
       <GIVEN>ParkinsonismAssessment</GIVEN>
       <TABLE>
         1 0 0
@@ -430,7 +450,7 @@
     </DEFINITION>
     <DEFINITION>
       <FOR>AmantadineReview</FOR>
-      <GIVEN>IndicationReview</GIVEN>
+      <GIVEN>ParkinsonismIndicationReview</GIVEN>
       <GIVEN>AmantadineSafetyConcern</GIVEN>
       <TABLE>
         0 1 0

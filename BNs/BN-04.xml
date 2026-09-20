@@ -114,7 +114,7 @@
       <PROPERTY>required_table_entries=4</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>OralAgent</NAME>
+      <NAME>OralAntipsychoticMedication</NAME>
       <OUTCOME>Chlorpromazine</OUTCOME>
       <OUTCOME>Fluphenazine</OUTCOME>
       <OUTCOME>Haloperidol</OUTCOME>
@@ -137,7 +137,7 @@
       <OUTCOME>Quetiapine</OUTCOME>
       <OUTCOME>Risperidone</OUTCOME>
       <OUTCOME>Ziprasidone</OUTCOME>
-      <PROPERTY>label=Oral Agent</PROPERTY>
+      <PROPERTY>label=Oral Antipsychotic Medication</PROPERTY>
       <PROPERTY>clinical_role=observed_treatment</PROPERTY>
       <PROPERTY>definition=Observed single oral antipsychotic listed in Table 6. Restrict lookup to these agents and oral formulations; no treatment, other agents and polypharmacy are out of lookup scope.</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-04.md</PROPERTY>
@@ -221,7 +221,7 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=missing_requires_elicitation</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
       <PROPERTY>proposed_parent=DoseExposureCategory</PROPERTY>
       <PROPERTY>proposed_parent=AdherenceDifficulty</PROPERTY>
       <PROPERTY>proposed_parent=ExposureModifier</PROPERTY>
@@ -269,10 +269,10 @@
       <PROPERTY>required_table_entries=12</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>TroublesomeSideEffects</NAME>
+      <NAME>SignificantAntipsychoticSideEffects</NAME>
       <OUTCOME>Absent</OUTCOME>
       <OUTCOME>Present</OUTCOME>
-      <PROPERTY>label=Troublesome Side Effects</PROPERTY>
+      <PROPERTY>label=Significant Antipsychotic Side Effects</PROPERTY>
       <PROPERTY>clinical_role=clinical_outcome</PROPERTY>
       <PROPERTY>definition=Any clinically important side effect affecting functioning or acceptability; does not enumerate or diagnose individual adverse reactions.</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-04.md</PROPERTY>
@@ -283,17 +283,17 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=missing_requires_elicitation</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
       <PROPERTY>proposed_parent=EffectiveExposure</PROPERTY>
       <PROPERTY>proposed_parent=PhysicalVulnerability</PROPERTY>
       <PROPERTY>proposed_parent=TrialDuration</PROPERTY>
       <PROPERTY>required_table_entries=792</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
-      <NAME>SafetyConcern</NAME>
+      <NAME>UrgentSafetyConcern</NAME>
       <OUTCOME>Absent</OUTCOME>
       <OUTCOME>Present</OUTCOME>
-      <PROPERTY>label=Safety Concern</PROPERTY>
+      <PROPERTY>label=Urgent Safety Concern</PROPERTY>
       <PROPERTY>clinical_role=assessed_finding</PROPERTY>
       <PROPERTY>definition=Clinician-recognized potentially serious reaction requiring prompt assessment, including suspected NMS, cardiac toxicity, severe constipation, infection/neutropenia, seizure or other urgent concern. Absent means none identified, not that risk is zero.</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-04.md</PROPERTY>
@@ -355,7 +355,7 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=TroublesomeSideEffects</PROPERTY>
+      <PROPERTY>proposed_parent=SignificantAntipsychoticSideEffects</PROPERTY>
       <PROPERTY>proposed_parent=PreferenceBarrier</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
@@ -373,7 +373,7 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=SafetyConcern</PROPERTY>
+      <PROPERTY>proposed_parent=UrgentSafetyConcern</PROPERTY>
     </VARIABLE>
     <VARIABLE TYPE="nature">
       <NAME>MonitoringReviewFlag</NAME>
@@ -405,7 +405,7 @@
     </DEFINITION>
     <DEFINITION>
       <FOR>TolerabilityReviewFlag</FOR>
-      <GIVEN>TroublesomeSideEffects</GIVEN>
+      <GIVEN>SignificantAntipsychoticSideEffects</GIVEN>
       <GIVEN>PreferenceBarrier</GIVEN>
       <TABLE>1 0 0 1 0 1 0 1</TABLE>
       <PROPERTY>parameter_method=modeler_assumption: deterministic workflow formalization of narrative guidance</PROPERTY>
@@ -417,7 +417,7 @@
     </DEFINITION>
     <DEFINITION>
       <FOR>SafetyAssessmentFlag</FOR>
-      <GIVEN>SafetyConcern</GIVEN>
+      <GIVEN>UrgentSafetyConcern</GIVEN>
       <TABLE>1 0 0 1</TABLE>
       <PROPERTY>parameter_method=modeler_assumption: deterministic workflow formalization of narrative guidance</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -453,11 +453,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
       <FOR>AkathisiaSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>0 1 0 0 0 1 0 0 1 0 1 0 0 1 0 0 1 0 0 0 1 1 0 0 0 0 1 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 1 0 0 1 0 0 0 1 0 0 1 0 0 1 0 1 0 0 0 1 0 0 1 0</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -482,11 +482,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
       <FOR>ParkinsonismSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>0 1 0 0 0 1 0 0 1 0 1 0 0 1 0 0 1 0 0 0 1 1 0 0 0 0 1 0 1 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 0 0 1 0 0 1 0 1 0 0 0 1 0 1 0 0</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -511,11 +511,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
       <FOR>DystoniaSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>0 1 0 0 0 1 0 0 1 0 1 0 0 1 0 0 1 0 0 1 0 1 0 0 0 0 1 0 1 0 1 0 0 0 1 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 1 0 1 0 0</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -540,11 +540,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
       <FOR>TardiveDyskinesiaSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>0 0 1 0 0 1 0 0 1 0 1 0 0 1 0 0 1 0 0 0 1 1 0 0 0 0 1 0 1 0 1 0 0 0 1 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 1 0 1 0 0</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -569,11 +569,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
       <FOR>HyperprolactinemiaSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>1 0 0 0 0 1 0 0 1 0 1 0 0 1 0 0 1 0 0 0 1 0 1 0 0 0 1 0 1 0 1 0 0 0 1 0 1 0 0 1 0 0 1 0 0 0 1 0 1 0 0 0 1 0 0 0 1 1 0 0 0 0 1 0 1 0</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -583,11 +583,11 @@
       <PROPERTY>uncertainty_description=No stochastic uncertainty modeled in this mapping; clinical interpretation still requires review</PROPERTY>
     </DEFINITION>
     <VARIABLE TYPE="nature">
-      <NAME>AnticholinergicSourceCategory</NAME>
+      <NAME>AnticholinergicEffectsSourceCategory</NAME>
       <OUTCOME>Seldom</OUTCOME>
       <OUTCOME>Sometimes</OUTCOME>
       <OUTCOME>Often</OUTCOME>
-      <PROPERTY>label=Anticholinergic Source Category</PROPERTY>
+      <PROPERTY>label=Anticholinergic Effects Source Category</PROPERTY>
       <PROPERTY>clinical_role=source_lookup</PROPERTY>
       <PROPERTY>definition=Historical Table 6 ordinal label for Anticholinergic. A drug attribute, not a patient adverse-event state or risk estimate. Applies only to oral formulations.</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-04.md</PROPERTY>
@@ -598,11 +598,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
-      <FOR>AnticholinergicSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <FOR>AnticholinergicEffectsSourceCategory</FOR>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>0 0 1 1 0 0 1 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0 1 1 0 0 0 1 0 1 0 0 1 0 0 1 0 0 0 1 0 0 0 1 1 0 0 1 0 0 0 1 0 1 0 0 0 1 0 1 0 0 1 0 0</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -627,11 +627,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
       <FOR>SedationSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>0 0 1 1 0 0 1 0 0 0 1 0 0 1 0 0 1 0 1 0 0 0 0 1 1 0 0 1 0 0 1 0 0 0 1 0 0 1 0 0 1 0 0 0 1 0 1 0 0 1 0 0 0 1 1 0 0 0 0 1 0 1 0 0 1 0</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -656,11 +656,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
       <FOR>SeizuresSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>0 1 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0 0 1 0 1 0 0 0 1 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0 0 1 1 0 0 1 0 0 0 1 0 1 0 0 0 1 0 1 0 0 1 0 0</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -685,11 +685,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
       <FOR>OrthostasisSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>0 0 1 1 0 0 1 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0 1 1 0 0 1 0 0 1 0 0 0 1 0 1 0 0 1 0 0 0 0 1 0 0 1 1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -703,7 +703,7 @@
       <OUTCOME>Seldom</OUTCOME>
       <OUTCOME>Sometimes</OUTCOME>
       <OUTCOME>Often</OUTCOME>
-      <PROPERTY>label=Q T Prolongation Source Category</PROPERTY>
+      <PROPERTY>label=QT Prolongation Source Category</PROPERTY>
       <PROPERTY>clinical_role=source_lookup</PROPERTY>
       <PROPERTY>definition=Historical Table 6 ordinal label for QTProlongation. A drug attribute, not a patient adverse-event state or risk estimate. Applies only to oral formulations.</PROPERTY>
       <PROPERTY>source_path=medical-knowledge/02-md/STATEMENT-04.md</PROPERTY>
@@ -714,11 +714,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
       <FOR>QTProlongationSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>0 0 1 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 0 0 1 0 1 0 0 1 0 1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -743,11 +743,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
       <FOR>WeightGainSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>0 1 0 0 1 0 0 1 0 1 0 0 1 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 1 0 0 0 1 0 1 0 1 0 0 0 0 1 0 1 0 0 1 0 0 1 0 1 0 0</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -772,11 +772,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
       <FOR>HyperlipidemiaSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 0 0 1 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 1 0 1 0 0 0 1 1 0 0 1 0 0</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>
@@ -801,11 +801,11 @@
       <PROPERTY>missingness_policy=Leave unobserved if unavailable; never infer absence from missing documentation</PROPERTY>
       <PROPERTY>parameter_status=deterministic_definition_supplied</PROPERTY>
       <PROPERTY>structure_method=modeler_synthesis_of_source</PROPERTY>
-      <PROPERTY>proposed_parent=OralAgent</PROPERTY>
+      <PROPERTY>proposed_parent=OralAntipsychoticMedication</PROPERTY>
     </VARIABLE>
     <DEFINITION>
       <FOR>GlucoseAbnormalitiesSourceCategory</FOR>
-      <GIVEN>OralAgent</GIVEN>
+      <GIVEN>OralAntipsychoticMedication</GIVEN>
       <TABLE>0 1 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 0 1 0 0 1 0 0 0 0 1 0 1 0 0 1 0 0 0 1 1 0 0 0 1 0 0 1 0 1 0 0</TABLE>
       <PROPERTY>parameter_method=source_reported: exact Table 6 category lookup</PROPERTY>
       <PROPERTY>parameter_status=deterministic_not_patient_risk</PROPERTY>

@@ -34,11 +34,13 @@ X-INSIGHT is a research prototype helping physicians/psychiatrists explore treat
 
 **FR-15:** `Initial treatment proposal`= system-generated; includes DDI (drug-drug interaction) checker and Bayesian Networks recommendations. `secondary treatment plan` = physician-edited final with changes and sign-off recorded.
 
-FR-16 Notes on every page: timestamped, physician-attributed; never influence algorithms. Drafts auto-saved and resumable; explicit Discard needs confirmation (revises source discard-on-exit).
+**FR-16:** Notes on every page: timestamped, physician-attributed; never influence algorithms. Drafts auto-saved and resumable; explicit Discard needs confirmation (revises source discard-on-exit).
 
-## 4. Functional Requirements — follow-up and records
-FR-20 Follow-up encounter: update phone, re-assess severity and suicide, update history and meds, record adverse effects, review initial proposal, edit plan, sign secondary plan and log encounter.
-FR-21 Adverse effects: present/absent/not-assessed for tardive dyskinesia, akathisia, parkinsonism, acute dystonia, plus severity. No standardized scale in v1.
+### Follow-up and records
+
+**FR-20:** `Follow-up encounter` update phone, re-assess severity and suicide, update history and meds, record adverse effects, review initial proposal, edit plan, sign secondary plan and log encounter.
+
+**FR-21:** Adverse effects: present/absent/not-assessed for tardive dyskinesia, akathisia, parkinsonism, acute dystonia, plus severity. No standardized scale in v1.
 FR-22 Any physician may create encounters and update demographics; only draft author may edit or sign that draft. Signed encounters immutable; corrections via dated attributed addenda; follow-ups are new encounters.
 FR-23 Patient list search by name, Patient ID, clinical-status filter. Admin can archive/unarchive; no permanent deletion in v1.
 
