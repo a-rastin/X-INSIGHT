@@ -51,22 +51,35 @@ X-INSIGHT is a research prototype helping physicians/psychiatrists explore treat
 **FR-30:** One Bayesian network per clinical question. `Registration`: hospitalization, pharmacotherapy, involuntary care, high-suicide Clozapine, LAI indication+choice, aggression Clozapine, established-case Clozapine. `Follow-up`: tardive dyskinesia, akathisia, parkinsonism, acute dystonia, no-improvement Clozapine, continue-vs-adjust.
 
 **FR-31:** Networks stored as xmlbif; XSD validates structure only (nodes, states, CPT syntax).
-FR-32 App executes networks deterministically. Core CPTs stay fixed. LLM maps patient record to evidence for designated inputs, including documented uncertainty format; unsupported inputs stay unknown (Q13:B, Q19:A).
-FR-33 App runs internal MCP server exposing patient-record tools; internal DB is single source of truth. Runs execute automatically; extracted inputs shown alongside results for review.
-FR-34 LLM also drafts proposal text from network outputs using predefined templates; all output labeled synthetic. Missing or conflicting data marked explicitly; required inputs request clarification, otherwise network missing-data handling applies.
-FR-35 LLM failure: retry 2–3 times, then fail that step with clear error; saved data retained; physician may retry later.
-FR-36 Network management v1: view graph, import/edit/export XML, validate, version, activate, roll back. No graphical editing.
 
-## 6. Functional Requirements — reporting and ops
-FR-40 Exports: CSV for patient/physician lists; printable HTML per-patient report. No PDF in v1.
-FR-41 Backup/restore: admin downloads full backup (database + network XML) and restores from file.
-FR-42 Audit log append-only: logins, network runs, plan sign-offs, admin actions; viewable by admin.
-FR-43 API settings: OpenAI-compatible key, base URL, model name; concurrent users supported with queued LLM calls and fail-soft errors.
+**FR-32:** App executes networks deterministically. Variables, variable types and relavance remains fixed, LLM in MCP environment determines probabilitiy values in CPTs based on the patient records. 
 
-## 7. Non-Functional Requirements
-NFR-01 Deployable self-hosted and on cloud VPS Linux; concurrent multi-user. Research prototype, flexible/adaptive model.
-NFR-02 Security (prototype-basic): auth, no session timeout, HTTPS required for non-localhost. No PHI hardening in v1; synthetic patients only.
-NFR-03 Privacy: Patient IDs stored plaintext as 10-digit strings; no national-ID meaning assumed.
-NFR-04 Usability: English only, desktop latest Chrome/Firefox, theme toggle, explicit validation and confirmations.
-NFR-05 Reliability: drafts preserved across failures; deterministic BN execution reproducible for same inputs+version.
-NFR-06 Maintainability: versioned networks and templates; XSD validation; audit log.
+**FR-33:** App runs internal MCP server exposing patient-record tools; internal DB is single source of truth. Runs execute automatically; extracted inputs and CPT probability percentage, shown alongside results for review and openness.
+
+**FR-34:** LLM also drafts treatment proposal text from network outputs using predefined templates.
+
+**FR-35:** LLM failure: retry 2–3 times, then fail that step with clear error; saved data retained; physician may retry later.
+
+**FR-36:** Network management v1: view graph, import/edit/export XML, validate, version, activate, roll back. No graphical editing.
+
+### Reporting and ops
+
+**FR-40:** Exports: CSV for patient/physician lists; printable HTML per-patient report. No PDF in v1.
+
+**FR-41:** Backup/restore: admin downloads full backup (database + network XML) and restores from file.
+
+**FR-42:** Audit log append-only: logins, network runs, plan sign-offs, admin actions; viewable by admin.
+
+**FR-43:** API settings: OpenAI-compatible key, base URL, model name; concurrent users supported with queued LLM calls and fail-soft errors.
+
+## Non-Functional Requirements
+
+**NFR-01:** Deployable self-hosted and on cloud VPS Linux; concurrent multi-user. Research prototype, flexible/adaptive model.
+
+**NFR-02:** Security (prototype-basic): auth, no session timeout, HTTPS required for non-localhost. No PHI hardening in v1.
+
+**NFR-03:** Usability: English only, desktop latest Chrome/Firefox, theme toggle, explicit validation and confirmations.
+
+**NFR-04:** Reliability: drafts preserved across failures; deterministic BN execution reproducible for same inputs+version.
+
+**NFR-05:** Maintainability: versioned networks and templates; XSD validation; audit log.

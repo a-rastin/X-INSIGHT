@@ -2,7 +2,7 @@
 
 ## 1. Purpose and architectural vocabulary
 
-X-INSIGHT is a research prototype, not an independent treatment system.
+X-INSIGHT is a research prototype helping physicians/psychiatrists explore treatment options for schizophrenia cases. This revision, dated **2026-09-20**, follows [user requirements](../user-requirements.md); [system design](system-design.md) specifies contracts, validation, data storage and deployment. The application does not independently execute treatment decisions.
 
 The following definitions govern this architecture:
 
@@ -14,22 +14,22 @@ The following definitions govern this architecture:
 
 Independence means a subsystem can deliver its own defined value without completing the entire X-INSIGHT workflow. It may consume information or services through explicit relationships. It does not mean every subsystem must have its own application, server, database or deployment.
 
-For example, maintaining a synthetic case record is useful even when proposal generation is unavailable. Conversely, the assessment-entry module is meaningful only within a case and encounter workflow; it is not a separate system.
+For example, maintaining a patient case record is useful even when proposal generation is unavailable. Conversely, the assessment-entry module is meaningful only within a case and encounter workflow; it is not a separate system.
 
 ## 2. System boundary
 
-X-INSIGHT serves one administrator and fewer than ten physicians sharing a patient pool. Its user-facing language is English. All patient records, assessment content, drug information and reasoning models are synthetic demonstration material in v1.
+X-INSIGHT serves one administrator and fewer than ten physicians sharing a patient pool. Its user-facing language is English. The updated requirements specify DSM-5-TR diagnostic criteria, PANSS and C-SSRS assessments, a bundled demo medication catalog and a local DDI database. They no longer impose a synthetic-only patient restriction. After every successful physician login, display the research warning that the app must not be the sole basis for treating patients. Prototype-basic security does not establish clinical validation or PHI hardening.
 
 | Participant | Relationship to X-INSIGHT |
 |---|---|
 | Physician | Creates and updates records, conducts encounters, reviews generated proposals, edits and signs final plans |
 | Administrator | Manages access, network versions and activation, provider configuration, patient archiving, exports, audit inspection and recovery |
-| Configured LLM provider | External dependency used for evidence extraction and proposal wording; it has no authority to finalize records |
+| Configured LLM provider | External dependency used for input preparation, designated CPT estimation and proposal wording; it has no authority to finalize records |
 | Hosting environment | Provides execution and durable storage for the application; it is outside the functional decomposition |
 
-The internal patient record is authoritative. The external LLM provider does not own the record, execute the authoritative Bayesian inference, modify model probability tables, or sign plans.
+The internal patient record is authoritative. The external LLM provider does not own the record, execute the authoritative Bayesian inference, alter network structure or non-designated CPTs, or sign plans. The LLM estimates designated CPT values from authorized record context; the application validates and freezes the complete effective tables before inference.
 
-Excluded from this architecture's v1 scope are real clinical use, autonomous treatment, external health-record integration, self-registration, permanent patient deletion, PDF generation and graphical editing of Bayesian networks.
+Excluded from this architecture's v1 scope are autonomous treatment, external health-record integration, self-registration, permanent patient deletion, PDF generation and graphical editing of Bayesian networks.
 
 ## 3. Subsystem decomposition
 
@@ -37,9 +37,9 @@ X-INSIGHT consists of four proposed subsystems.
 
 | ID | Subsystem | Independent value | Primary owned information |
 |---|---|---|---|
-| S1 | Case and Encounter Management | Maintains and presents a useful longitudinal synthetic case record, even without a generated proposal | Patients, encounters, assessments, history, medications, notes, physician final plans and addenda |
-| S2 | Research Knowledge Management | Maintains a reusable, inspectable collection of versioned synthetic models and supporting content, without requiring a patient encounter or reasoning run | Bayesian network definitions, content versions, validation status and active model selections |
-| S3 | Decision Support | Produces an inspectable reasoning result and synthetic proposal from a defined case snapshot and selected knowledge versions, without finalizing an encounter | Accepted evidence, reasoning runs, network results, generated initial proposals and their provenance |
+| S1 | Case and Encounter Management | Maintains and presents a useful longitudinal patient case record, even without a generated proposal | Patients, encounters, assessments, history, medications, notes, physician final plans and addenda |
+| S2 | Research Knowledge Management | Maintains a reusable, inspectable collection of versioned network definitions and supporting content, without requiring a patient encounter or reasoning run | Bayesian network definitions, content versions, validation status and active model selections |
+| S3 | Decision Support | Produces an inspectable reasoning result and treatment proposal from a defined case snapshot and selected knowledge versions, without finalizing an encounter | Accepted evidence, patient-specific CPT artifacts, reasoning runs, network results, generated initial proposals and their provenance |
 | S4 | Administration and Governance | Maintains an accountable, recoverable operating environment independently of whether an encounter is being conducted | Accounts, access state, provider settings, audit history and recovery operations |
 
 These are logical systems within one product. Their boundaries organize responsibilities; they do not introduce a requirement for four separately installed products.
@@ -57,8 +57,8 @@ flowchart TD
     S2 -->|Versioned models and templates| S3
     S1 -->|Authorized case snapshot| S3
     S3 -->|Results and initial proposal| S1
-    S3 -->|Bounded extraction and drafting requests| L[External LLM provider]
-    L -->|Candidate evidence and proposal text| S3
+    S3 -->|Bounded input, CPT estimation and drafting requests| L[External LLM provider]
+    L -->|Candidate inputs, designated CPT values and proposal text| S3
 ```
 
 All subsystems contribute events to Administration and Governance's audit capability. Those audit relationships are omitted from the diagram for readability. Research Knowledge Management supplies definitions; Decision Support executes reasoning; Case and Encounter Management controls the physician's final record.
@@ -69,14 +69,14 @@ All subsystems contribute events to Administration and Governance's audit capabi
 
 **Purpose:** Maintain the shared case record and coordinate the physician's registration, follow-up and finalization work.
 
-**Independent outcome:** A persisted, searchable and reportable synthetic case history. Recording and reading remain useful when decision support is unavailable, although signing a new plan is blocked until a valid proposal succeeds.
+**Independent outcome:** A persisted, searchable and reportable patient case history. Recording and reading remain useful when decision support is unavailable, although signing a new plan is blocked until a valid proposal succeeds.
 
 | Module | Responsibility | Why it is a module |
 |---|---|---|
 | Patient Registry | Identification, demographics, contact details, search and archive state | Depends on the case identity and record lifecycle |
 | Encounter Workflow | Registration and follow-up progression, draft ownership, autosave, resumption and confirmed discard | Coordinates the other case modules around an encounter |
-| Assessment and History | Diagnostic demonstration, severity, suicide assessment, adverse effects and structured/free-text history | Requires an encounter and content definitions |
-| Medication Review | Medication reconciliation and local synthetic interaction reporting, including unavailable coverage | Requires the encounter's medication set and supplied drug knowledge |
+| Assessment and History | DSM-5-TR diagnosis with reason-free bypass, PANSS severity and C-SSRS suicide assessments with not-assessed skip states, adverse effects and structured history | Requires an encounter and content definitions |
+| Medication Review | Drug-only medication reconciliation and local interaction reporting, including unavailable coverage; no dose/unit/route/frequency/active-stopped fields | Requires the encounter's medication set and supplied drug knowledge |
 | Notes | Timestamped, attributed page notes | Requires a record context and must remain separate from algorithm-visible history |
 | Plan Review and Sign-off | Displays initial proposals, captures physician changes, enforces signing prerequisites and records addenda | Requires an encounter, its author and a successful current proposal |
 | Record Presentation and Reporting | Patient chart, chronology, patient-list export and printable patient report | Presents authoritative case information under access rules |
@@ -85,7 +85,7 @@ All subsystems contribute events to Administration and Governance's audit capabi
 
 ### 4.2 S2 — Research Knowledge Management
 
-**Purpose:** Preserve the synthetic knowledge and model versions on which assessments and reasoning depend.
+**Purpose:** Preserve the assessment content and model versions on which assessments and reasoning depend.
 
 **Independent outcome:** An inspectable and exportable set of research models and supporting content. Models can be maintained without creating cases or calling an LLM.
 
@@ -94,29 +94,30 @@ All subsystems contribute events to Administration and Governance's audit capabi
 | Bayesian Model Library | Import, XML editing, read-only graph inspection and export | Depends on model identity, validation and version history |
 | Model Validation | Distinguishes structural validity from model consistency and suitability for execution | Produces a judgment about an artifact managed by the library |
 | Version and Activation Control | Preserves versions, selects active models and supports rollback | Depends on the managed knowledge collection and validation results |
-| Synthetic Content Catalog | Owns demonstration questionnaires, scoring definitions, drug catalog and interaction coverage | Supplies definitions consumed by case and reasoning workflows |
-| Reasoning Definitions | Owns input/output meanings, applicability rules, uncertainty policies and proposal templates | Gives executable models and generated results their intended interpretation |
+| Assessment and Drug Content | Owns versioned DSM-5-TR/PANSS/C-SSRS definitions and rules, demo drug catalog and interaction coverage | Supplies definitions consumed by case and reasoning workflows |
+| Reasoning Definitions | Owns fixed variable types and relevance mappings, input/output meanings, designated CPT allowlists, applicability rules, uncertainty policies, estimation instructions and proposal templates | Gives executable models and generated results their intended interpretation |
 
-**Boundary:** S2 owns model definitions and fixed probability tables. Editing creates a new version rather than changing a historical run. Content ownership does not imply a new graphical content-authoring feature: bundled content is sufficient where no management UI is required.
+**Boundary:** S2 owns fixed network definitions, versioned default probability tables and the allowlist of designated CPTs. Only designated tables may receive patient-specific LLM estimates; all other tables retain their versioned defaults. S3 owns these run-specific estimates and the complete effective CPT artifact. Administrator XML editing creates a new version rather than changing a historical run. Content ownership does not imply a new graphical content-authoring feature: bundled content is sufficient where no management UI is required.
 
 ### 4.3 S3 — Decision Support
 
-**Purpose:** Transform an authorized case snapshot into reproducible Bayesian results and an explicitly synthetic initial proposal.
+**Purpose:** Transform an authorized case snapshot into replayable Bayesian results and an initial treatment proposal that includes Bayesian recommendations and local DDI findings.
 
-**Independent outcome:** A reviewable analysis artifact containing evidence, results, gaps and provenance. Producing it does not require a physician to sign a plan; S3 cannot sign one itself.
+**Independent outcome:** A reviewable analysis artifact containing inputs, CPT percentages, results, gaps and provenance. Producing it does not require a physician to sign a plan; S3 cannot sign one itself.
 
 | Module | Responsibility | Why it is a module |
 |---|---|---|
 | Analysis Coordination | Controls run progression, automatic execution, retries, clarification and failure state | Organizes the reasoning modules around one analysis request |
 | Authorized Record Access | Obtains permitted case information through internal MCP tools | Requires the run's authorized case context; it is not another record system |
 | Evidence Preparation | Maps facts into designated model inputs and makes missing/conflicting information explicit | Depends on a snapshot and model input definitions |
-| Bayesian Inference | Executes selected fixed models deterministically | Requires validated model versions and accepted evidence |
-| Proposal Generation | Uses templates and LLM assistance to express results as a synthetic proposal | Requires validated reasoning outputs and their limitations |
-| Result Provenance | Retains evidence sources, model/content versions and result history for inspection | Gives the analysis artifact its traceability and replay context |
+| CPT Estimation and Validation | Uses MCP-mediated record context to estimate designated CPTs, copies other tables unchanged, validates and freezes complete effective tables | Requires the pinned network definition, CPT allowlist and authorized snapshot |
+| Bayesian Inference | Executes fixed network structure with the frozen run-specific CPT set deterministically | Requires validated network versions, effective CPT artifacts and accepted evidence |
+| Proposal Generation | Uses templates and LLM assistance to express network results and DDI findings as an initial proposal | Requires validated reasoning outputs and their limitations |
+| Result Provenance | Retains input sources, estimated/default CPT origins, complete effective tables, model/content versions and result history for inspection | Gives the analysis artifact its traceability and replay context |
 
-**Boundary:** S3 owns system-generated proposals, not physician decisions. LLM failure cannot remove saved case data. The LLM supplies candidate evidence and wording; application-controlled inference produces the authoritative model results.
+**Boundary:** S3 owns system-generated proposals, not physician decisions. LLM failure cannot remove saved case data. The LLM supplies candidate inputs, designated CPT probabilities and proposal wording. The application rejects changes to fixed definitions or non-designated CPTs, validates accepted estimates, and executes inference. The same patient record can yield different fresh LLM estimates; reproducible replay uses the stored complete CPT artifact, evidence and pinned engine, without another provider request.
 
-The registration and follow-up clinical questions are configurations of this subsystem, not separate subsystems. Hospitalization, medication selection, LAI, Clozapine-related questions, adverse-effect management, continuation/adjustment and taper feasibility remain distinct model questions within the same reasoning capability.
+The registration and follow-up clinical questions are configurations of this subsystem, not separate subsystems. Hospitalization, medication selection, LAI, Clozapine-related questions, adverse-effect management, continuation/adjustment remain distinct model questions within the same reasoning capability.
 
 ### 4.4 S4 — Administration and Governance
 
@@ -140,7 +141,8 @@ The registration and follow-up clinical questions are configurations of this sub
 |---|---|---|---|
 | Case snapshot | S1 | S3 | Authorized, consistent view; page notes excluded |
 | Assessment and drug definitions | S2 | S1 | Content version and coverage remain identifiable |
-| Models and reasoning definitions | S2 | S3 | A run uses fixed, identifiable versions |
+| Models and reasoning definitions | S2 | S3 | A run pins structure, variable types/relevance, defaults and designated CPT allowlist |
+| Complete effective CPT artifact | S3 | Inference and review within S3; presentation in S1 | Estimated designated tables and unchanged defaults are frozen per run, traceable and replayable |
 | Evidence, results and initial proposal | S3 | S1 | Generated content retains its identity and provenance |
 | Final physician plan | S1 | Chart/report consumers | Original proposal remains distinguishable from physician edits |
 | Identity and permissions | S4 | All subsystems | Each action respects role, ownership and active account state |
@@ -151,9 +153,9 @@ Each category of information has one logical owner, even when a common database 
 
 ## 6. End-to-end responsibility
 
-The physician begins in S1, which records and preserves the encounter using synthetic definitions supplied by S2. When the encounter reaches proposal review, S1 supplies an authorized snapshot to S3. S3 prepares evidence, executes the relevant versioned models, and produces a synthetic proposal with its limitations.
+The physician begins in S1, which records and preserves the encounter using versioned assessment definitions supplied by S2. When the encounter reaches proposal review, S1 supplies an authorized snapshot to S3. S3 prepares inputs, uses the LLM with internal MCP tools to estimate designated CPTs, validates and freezes the effective tables, executes the relevant networks, and drafts a template-based proposal including DDI findings. Non-designated tables remain at the pinned defaults. Failed steps retain saved data and allow bounded retries.
 
-S1 presents the proposal and extracted inputs for review. The physician edits the secondary plan and explicitly signs it. S1 preserves the signed encounter, while S4 records the relevant actions. Follow-up creates a new encounter rather than changing an earlier signed record.
+S1 presents the proposal, extracted inputs and effective CPT percentages for review, clearly separating CPT values from posterior probabilities. The physician edits the secondary plan and explicitly signs it. S1 preserves the signed encounter, while S4 records the relevant actions. Follow-up creates a new encounter rather than changing an earlier signed record.
 
 **Confirmed signing rule:** A physician cannot sign a manual plan when AI proposal generation fails. The draft remains saved for retry. A current successful proposal and physician review are prerequisites for signing; there is no manual bypass.
 
@@ -168,18 +170,18 @@ These are capability boundaries, not promises of independent process-level avail
 
 ## 7. System-wide constraints
 
-1. Synthetic research use and explicit synthetic labeling apply throughout the product.
+1. Research scope and the post-login warning apply throughout the product; standard assessments and the demo drug catalog retain identifiable content versions.
 2. Shared patient access does not override author-only draft editing and signing.
 3. Signed encounters are immutable; corrections are dated, attributed addenda, and subsequent assessments are new encounters.
 4. Page notes never influence algorithms. Designated history fields may do so.
-5. Bayesian probability tables remain fixed during execution. The application executes the networks; the LLM does not.
+5. Variables, types, states, relevance and network structure remain fixed per selected version. The LLM estimates only designated CPTs; the application validates and freezes the complete effective CPT set before deterministic execution.
 6. Missing, conflicting and not-assessed information must remain distinguishable from negative findings.
 7. Saved drafts survive reasoning failures. Leaving a page does not implicitly discard them.
 8. Model/content changes preserve the interpretability of historical results.
 9. Account deactivation and patient archiving preserve records and attribution.
 10. The internal record remains the single source of truth; MCP is an access mechanism.
 
-Access protection, HTTPS for non-localhost use, the initial administrator password-change requirement, the chosen no-session-timeout policy, auditability and recovery apply across subsystem boundaries as specified in the requirements and detailed design.
+Access protection, HTTPS for non-localhost use, the default admin/admin credentials with no password-complexity rules, the no-session-timeout policy, auditability and recovery apply across subsystem boundaries as specified in the requirements and detailed design.
 
 ## 8. Architectural rationale
 
@@ -201,8 +203,16 @@ The cost of these boundaries is explicit coordination: snapshots must agree with
 | Exports — FR-40 | S1 for patients; S4 for physicians | Access rules apply throughout |
 | Backup/restore and audit — FR-41–42 | S4 | All subsystem information owners |
 | Provider configuration and queued calls — FR-43 | S4 for configuration; S3 for execution | — |
-| Quality constraints — NFR-01–06 | System-wide | Refined in the detailed design |
+| Quality constraints — NFR-01–05 | System-wide | Refined in the detailed design |
 
-This architecture groups the existing design's Identity and Operations capabilities into S4, Patient Registry and Encounter capabilities into S1, Demo Content and Model Registry into S2, and Reasoning Orchestration into S3. Export responsibilities follow their information owner. This refines the high-level vocabulary without asserting that new functionality has been approved.
+This architecture groups the existing design's Identity and Operations capabilities into S4, Patient Registry and Encounter capabilities into S1, Assessment and Drug Content and Model Registry into S2, and Reasoning Orchestration into S3. Export responsibilities follow their information owner. This refines the high-level vocabulary without asserting that new functionality has been approved.
 
 Remaining questions in `system-design.md`—including content supply, draft visibility, addendum authority and archive behavior—remain open. They affect policies or lower-level design and do not prevent defining these subsystem boundaries. The prohibition on signing after generation failure is confirmed and is not an open question.
+
+## 10. Decision summary and growth boundaries
+
+The detailed ADRs in [system design, Section 13](system-design.md#13-architecture-decision-records) capture implementation alternatives. The key revised decision is fixed network definitions with LLM-estimated **designated** CPTs and application-owned inference. Fixed CPTs with evidence extraction alone no longer satisfy FR-32; LLM modification of graph structure would also contradict it.
+
+Retaining the complete effective CPT set costs storage and requires probability validation, but makes displayed probabilities and historical inference inspectable. Unchanged tables retain their default-version provenance. A per-run artifact avoids sharing patient-specific probabilities across patients or mutating active models. Mathematical checks do not establish the clinical validity of the LLM estimates.
+
+The proposed modular monolith, database-backed queue and separate worker fit the small shared user pool. Keep LLM calls bounded and queued so failures do not block draft saving. Revisit model/context limits as CPTs grow, worker capacity as queue delays rise, and physical subsystem separation only when measured scale or independent ownership warrants it. A single-host deployment has no high-availability guarantee; backups and tested restore provide recovery.
