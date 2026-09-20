@@ -40,11 +40,14 @@ X-INSIGHT is a research prototype helping physicians/psychiatrists explore treat
 
 **FR-20:** `Follow-up encounter` update phone, re-assess severity and suicide, update history and meds, record adverse effects, review initial proposal, edit plan, sign secondary plan and log encounter.
 
-**FR-21:** Adverse effects: present/absent/not-assessed for tardive dyskinesia, akathisia, parkinsonism, acute dystonia, plus severity. No standardized scale in v1.
-FR-22 Any physician may create encounters and update demographics; only draft author may edit or sign that draft. Signed encounters immutable; corrections via dated attributed addenda; follow-ups are new encounters.
-FR-23 Patient list search by name, Patient ID, clinical-status filter. Admin can archive/unarchive; no permanent deletion in v1.
+**FR-21:** Adverse effects: present/absent/not-assessed for tardive dyskinesia, akathisia, parkinsonism, acute dystonia, plus severity.
 
-## 5. Functional Requirements — reasoning pipeline
+**FR-22:** Any physician may create encounters and update demographics; only draft author may edit or sign that draft. Signed encounters immutable; corrections via dated attributed addenda; follow-ups are new encounters.
+
+**FR-23:** Patient list search by name, Patient ID, clinical-status filter. Admin can archive/unarchive; no permanent deletion in v1.
+
+### Reasoning pipeline
+
 FR-30 One Bayesian network per clinical question. Registration: hospitalization, pharmacotherapy, involuntary care, high-suicide Clozapine, LAI indication+choice, aggression Clozapine, established-case Clozapine. Follow-up: tardive dyskinesia, akathisia, parkinsonism, acute dystonia, no-improvement Clozapine, continue-vs-adjust, taper feasibility.
 FR-31 Networks stored as xmlbif; XSD validates structure only (nodes, states, CPT syntax).
 FR-32 App executes networks deterministically. Core CPTs stay fixed. LLM maps patient record to evidence for designated inputs, including documented uncertainty format; unsupported inputs stay unknown (Q13:B, Q19:A).
