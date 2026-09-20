@@ -2,7 +2,7 @@
 
 ## Product Identity and Branding
 
-The product name is **INSIGHT**.
+The product name is **X-INSIGHT**.
 
 Use `INSIGHT` for the principal product wordmark. Product-logo treatments should use the uppercase form.
 

@@ -50,17 +50,19 @@ X-INSIGHT is a research prototype helping physicians/psychiatrists explore treat
 
 **FR-30:** One Bayesian network per clinical question. `Registration`: hospitalization, pharmacotherapy, involuntary care, high-suicide Clozapine, LAI indication+choice, aggression Clozapine, established-case Clozapine. `Follow-up`: tardive dyskinesia, akathisia, parkinsonism, acute dystonia, no-improvement Clozapine, continue-vs-adjust.
 
-**FR-31:** Networks stored as xmlbif; XSD validates structure only (nodes, states, CPT syntax).
+**FR-31:** Each clinical question has a predefined prompt and a corresponding Bayesian network stored as XMLBIF. XSD validation covers structure only (nodes, states, and CPT syntax).
 
-**FR-32:** App executes networks deterministically. Variables, variable types and relavance remains fixed, LLM in MCP environment determines probabilitiy values in CPTs based on the patient records. 
+**FR-32:** The app processes clinical questions sequentially. For each question, it sends the LLM the question-specific prompt, the structure of the corresponding Bayesian network, and only the patient variables represented in that network. Network variables, variable types, states, and relevance remain fixed.
 
-**FR-33:** App runs internal MCP server exposing patient-record tools; internal DB is single source of truth. Runs execute automatically; extracted inputs and CPT probability percentage, shown alongside results for review and openness.
+**FR-33:** In the MCP environment, the LLM estimates the percentage values for the network's Conditional Probability Tables (CPTs) from the supplied patient-variable values, such as age and underlying conditions, and returns the estimates to the app. The LLM does not execute or modify the network structure.
 
-**FR-34:** LLM also drafts treatment proposal text from network outputs using predefined templates.
+**FR-34:** The app inserts the returned CPT values into the corresponding Bayesian network and executes the network deterministically. The resulting question-specific recommendation is used to generate the relevant part of the initial treatment proposal using predefined templates. The pipeline then repeats for the next clinical question until all applicable questions are processed.
 
-**FR-35:** LLM failure: retry 2–3 times, then fail that step with clear error; saved data retained; physician may retry later.
+**FR-35:** The app runs an internal MCP server that exposes patient-record tools; the internal database is the single source of truth. Each run starts automatically and records the question, network version, patient inputs supplied to the LLM, returned CPT percentages, and network result. These details are shown alongside the recommendation for physician review and transparency.
 
-**FR-36:** Network management v1: view graph, import/edit/export XML, validate, version, activate, roll back. No graphical editing.
+**FR-36:** If an LLM request fails or returns invalid CPT values, the app retries two to three times, then stops the affected clinical-question step with a clear error. Saved patient data and completed question results are retained, and the physician may retry the failed step later.
+
+**FR-37:** Network management v1: view graph, import/edit/export XML, validate, version, activate, roll back. No graphical editing.
 
 ### Reporting and ops
 
