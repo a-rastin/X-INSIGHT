@@ -48,8 +48,9 @@ X-INSIGHT is a research prototype helping physicians/psychiatrists explore treat
 
 ### Reasoning pipeline
 
-FR-30 One Bayesian network per clinical question. Registration: hospitalization, pharmacotherapy, involuntary care, high-suicide Clozapine, LAI indication+choice, aggression Clozapine, established-case Clozapine. Follow-up: tardive dyskinesia, akathisia, parkinsonism, acute dystonia, no-improvement Clozapine, continue-vs-adjust, taper feasibility.
-FR-31 Networks stored as xmlbif; XSD validates structure only (nodes, states, CPT syntax).
+**FR-30:** One Bayesian network per clinical question. `Registration`: hospitalization, pharmacotherapy, involuntary care, high-suicide Clozapine, LAI indication+choice, aggression Clozapine, established-case Clozapine. `Follow-up`: tardive dyskinesia, akathisia, parkinsonism, acute dystonia, no-improvement Clozapine, continue-vs-adjust.
+
+**FR-31:** Networks stored as xmlbif; XSD validates structure only (nodes, states, CPT syntax).
 FR-32 App executes networks deterministically. Core CPTs stay fixed. LLM maps patient record to evidence for designated inputs, including documented uncertainty format; unsupported inputs stay unknown (Q13:B, Q19:A).
 FR-33 App runs internal MCP server exposing patient-record tools; internal DB is single source of truth. Runs execute automatically; extracted inputs shown alongside results for review.
 FR-34 LLM also drafts proposal text from network outputs using predefined templates; all output labeled synthetic. Missing or conflicting data marked explicitly; required inputs request clarification, otherwise network missing-data handling applies.
