@@ -22,12 +22,18 @@ X-INSIGHT is a research prototype helping physicians/psychiatrists explore treat
 
 ### New patient registration
 
-**FR-10:** `Demographics:` first/last name (letters only, required), sex M/F (required), age 18–99 (required), Patient ID 10-digit string unique app-wide with leading zeros preserved (required), visit datetime auto-logged, status first-time vs established. Before creating a new patient, the app checks the 10-digit Patient ID against all previous patients; if it matches an existing ID, registration is denied. Next disabled until valid.
-FR-11 Diagnosis: Standard Schizophrenia diagnosis criteria based on DSM-5-TR; live threshold indicator. Below threshold: save and allow treatment generation only with warning. Bypass without reason allowed.
-FR-12 Severity: Standard PANSS questionare for schizophrenia severity. starts unanswered; skip = "not assessed". Scores computed only when required items complete (revises source minimum-defaults).
-FR-13 Suicide: Standard questionnaire with explicitly nonclinical score; labeled demonstration-only.
-FR-14 History: structured fields. Meds from bundled demo catalog without dose, unit, route, frequency, active/stopped. Interaction report from local bundled DB; unknown drugs marked "coverage unavailable".
-FR-15 Initial proposal = system-generated; secondary plan = physician-edited final with changes and sign-off recorded.
+**FR-10:** `Demographics` first/last name (letters only, required), sex M/F (required), age 18–99 (required), Patient ID 10-digit string unique app-wide with leading zeros preserved (required), visit datetime auto-logged, status first-time vs established. Before creating a new patient, the app checks the 10-digit Patient ID against all previous patients; if it matches an existing ID, registration is denied. Next disabled until valid.
+
+**FR-11:** `Diagnosis` Standard Schizophrenia diagnosis criteria based on DSM-5-TR; live threshold indicator. Below threshold: save and allow treatment generation only with warning. Bypass without reason allowed.
+
+**FR-12"** `Severity` Standard PANSS questionare for schizophrenia severity. starts unanswered; skip = "not assessed". Scores computed only when required items complete (revises source minimum-defaults).
+
+**FR-13:** `Suicide` Standard questionnaire (CSSRS). starts unanswered; skip = "not assessed". Scores computed only when required items complete.
+
+**FR-14:** `History` structured fields. Meds from bundled demo catalog without dose, unit, route, frequency, active/stopped. Interaction report from local bundled DB; unknown drugs marked "coverage unavailable".
+
+**FR-15:** `Initial treatment proposal`= system-generated; includes DDI (drug-drug interaction) checker and Bayesian Networks recommendations. `secondary treatment plan` = physician-edited final with changes and sign-off recorded.
+
 FR-16 Notes on every page: timestamped, physician-attributed; never influence algorithms. Drafts auto-saved and resumable; explicit Discard needs confirmation (revises source discard-on-exit).
 
 ## 4. Functional Requirements — follow-up and records

@@ -1,7 +1,6 @@
 ---
 name: backend
-description: >
-  Expert backend developer.
+description: Expert backend developer.
 ---
 
 ## Tools

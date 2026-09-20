@@ -1,12 +1,9 @@
 ---
 name: architecture
 description: Create or evaluate an architecture decision record (ADR). Use when choosing between technologies (e.g., Kafka vs SQS), documenting a design decision with trade-offs and consequences, reviewing a system design proposal, or designing a new component from requirements and constraints.
-argument-hint: "<decision or system to design>"
 ---
 
 # /architecture
-
-> If you see unfamiliar placeholders or need to check which tools are connected, see [CONNECTORS.md](../../CONNECTORS.md).
 
 Create an Architecture Decision Record (ADR) or evaluate a system design.
 
@@ -67,16 +64,6 @@ See the **system-design** skill for detailed frameworks on requirements gatherin
 1. [ ] [Implementation step]
 2. [ ] [Follow-up]
 ```
-
-## If Connectors Available
-
-If **~~knowledge base** is connected:
-- Search for prior ADRs and design docs
-- Find relevant technical context
-
-If **~~project tracker** is connected:
-- Link to related epics and tickets
-- Create implementation tasks
 
 ## Tips
 
