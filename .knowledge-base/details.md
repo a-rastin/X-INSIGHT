@@ -1,0 +1,814 @@
+# Details
+
+## Part 1 — Page catalog
+
+### entities
+- [entities/schizophrenia.md](pages/entities/schizophrenia.md) — DSM-5-TR schizophrenia criteria and initial assessment. (2 sources; revised 2026-09-20)
+- [entities/panss.md](pages/entities/panss.md) — PANSS 30-item scale and quantitative measurement role. (2 sources; revised 2026-09-20)
+- [entities/c-ssrs.md](pages/entities/c-ssrs.md) — C-SSRS ideation/behavior scale and suicide-risk use. (3 sources; revised 2026-09-20)
+- [entities/acute-dystonia.md](pages/entities/acute-dystonia.md) — Acute dystonia features and anticholinergic treatment. (2 sources; revised 2026-09-20)
+- [entities/akathisia.md](pages/entities/akathisia.md) — Akathisia features, BARS scoring, and treatment options. (2 sources; revised 2026-09-20)
+- [entities/parkinsonism.md](pages/entities/parkinsonism.md) — Parkinsonism features, SAS scoring, and treatment options. (2 sources; revised 2026-09-20)
+- [entities/tardive-dyskinesia.md](pages/entities/tardive-dyskinesia.md) — Tardive dyskinesia features and VMAT2 inhibitor treatment. (2 sources; revised 2026-09-20)
+### concepts
+- [concepts/requirements.md](pages/concepts/requirements.md) — FR/NFR requirements, registration rules, pipeline, tracker status. (3 sources; revised 2026-09-20)
+- [concepts/system-architecture.md](pages/concepts/system-architecture.md) — Four subsystems S1-S4, ownership, signing rule. (1 source; revised 2026-09-20)
+- [concepts/system-design.md](pages/concepts/system-design.md) — Modular monolith, BN registry, queue, APIs, ADRs. (1 source; revised 2026-09-20)
+- [concepts/mcp-design.md](pages/concepts/mcp-design.md) — Internal read-only MCP, sequential protocol, CPT validation. (1 source; revised 2026-09-20)
+- [concepts/ddi-module.md](pages/concepts/ddi-module.md) — Deterministic DDI knowledge base strategy, no LLM at runtime. (1 source; revised 2026-09-20)
+- [concepts/ui-tokens.md](pages/concepts/ui-tokens.md) — Light-only theme, teal tokens, type, spacing, motion. (1 source; revised 2026-09-20)
+### topics
+- [topics/reasoning-pipeline.md](pages/topics/reasoning-pipeline.md) — LLM CPT estimation plus deterministic execution synthesis. (5 sources; revised 2026-09-20)
+- [topics/guideline-statements.md](pages/topics/guideline-statements.md) — Map of all 24 APA recommendations with grades. (15 sources; revised 2026-09-20)
+- [topics/assessment-workflow.md](pages/topics/assessment-workflow.md) — Assessment, measures, and person-centered planning synthesis. (7 sources; revised 2026-09-20)
+- [topics/antipsychotic-pharmacotherapy.md](pages/topics/antipsychotic-pharmacotherapy.md) — Antipsychotic selection, maintenance, clozapine, LAI, EPS care. (12 sources; revised 2026-09-20)
+### sources
+- [sources/statement-04-digest.md](pages/sources/statement-04-digest.md) — STATEMENT-04 tables 3-9 and monitoring digest. (1 source; revised 2026-09-20)
+- [sources/appendix-c-digest.md](pages/sources/appendix-c-digest.md) — Appendix-C graded evidence digest. (1 source; revised 2026-09-20)
+- [sources/appendix-d-glossary-digest.md](pages/sources/appendix-d-glossary-digest.md) — Appendix-D tables, glossary, methods, acronyms digest. (4 sources; revised 2026-09-20)
+
+## Part 2 — Source record
+
+### `AGENTS.md`
+- File: AGENTS.md; path: `AGENTS.md`; fingerprint: `c5e776a1d3d20d3898498507d5898f18…` (full in index.md).
+- Description: Defines X-INSIGHT research prototype scope, repo layout, BN authoring profile, verification commands, reasoning pipeline constraints, UI tokens, and pitfalls.
+- Headings (8, explicit, source order):
+  - L1: AGENTS.md
+  - L2: SOUL
+  - L2: Goal
+  - L2: Session Instruction
+  - L3: Layout
+  - L3: Implementation and Verification Rules:
+  - L3: Documentation
+  - L3: Pitfalls
+- Keywords (8): x-insight, agent instructions, bn authoring, xmlbif 0.3, schema validation, reasoning pipeline, ui tokens, research prototype
+- Pages drawing on it: [topics/reasoning-pipeline.md](pages/topics/reasoning-pipeline.md), [concepts/requirements.md](pages/concepts/requirements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/dev/progress-tracker.md`
+- File: progress-tracker.md; path: `docs/dev/progress-tracker.md`; fingerprint: `0f0069f5484f26df36e22f14ba05da64…` (full in index.md).
+- Description: Template-dominated tracker with empty MODULE-000 placeholder; directs per-packet detail to Git history and per-packet files.
+- Headings (3, explicit, source order):
+  - L1: INSIGHT Progress Tracker
+  - L2: MODULE-000 -
+  - L2: Tracker Maintenance Rule
+- Keywords (5): progress tracker, implementation status, risks, git history, packet ledger
+- Pages drawing on it: [concepts/requirements.md](pages/concepts/requirements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/dev/system-design/DDI-Module.md`
+- File: DDI-Module.md; path: `docs/dev/system-design/DDI-Module.md`; fingerprint: `bc1ec4b52a447485259578fc8aa3e451…` (full in index.md).
+- Description: Proposes deterministic offline ingestion of drug monographs into versioned relational DDI knowledge base with simple runtime pairwise lookup.
+- Headings (31, explicit, source order):
+  - L1: Recommended strategy for the DDI module
+  - L1: 1. Requirements
+  - L2: Functional requirements
+  - L1: 2. High-level architecture
+  - L1: 3. Do not make an LLM the DDI engine
+  - L1: 4. Your source requires more than a simple `drugA → drugB → severity` table
+  - L1: 5. Recommended data model
+  - L2: `drug`
+  - L2: `drug_alias`
+  - L2: `source_document`
+  - L2: `interaction_evidence`
+  - L1: 6. Keep `severity` separate from `recommended action`
+  - L1: 7. Parsing strategy
+  - L3: Preprocessing
+  - L1: 8. Use the source counts as automatic integrity checks
+  - L1: 9. Drug normalization is probably the hardest part
+  - L1: 10. Canonical pair keys
+  - L1: 11. Do not force one record per pair
+  - L1: 12. Runtime checking algorithm
+  - L1: 13. Recommended API
+  - L1: 14. Storage choice
+  - L1: 15. What should happen when both monographs exist?
+  - L1: 16. Validation system
+  - L1: 17. Preserve the original interaction description
+  - L1: 18. Suggested severity model
+  - L1: 19. The ingestion tool should be its own program
+  - L1: 20. Best vibecoding workflow
+  - L1: 21. One particularly useful artifact: ingestion report
+  - L1: 22. What I would explicitly avoid
+  - L1: 23. Final architecture
+  - L2: The key design principle
+- Keywords (10): drug-drug interaction, ddi knowledge base, deterministic parser, drug normalization, interaction evidence, severity model, validation, runtime checker, relational database, ingestion pipeline
+- Pages drawing on it: [concepts/ddi-module.md](pages/concepts/ddi-module.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/dev/system-design/MCP-design.md`
+- File: MCP-design.md; path: `docs/dev/system-design/MCP-design.md`; fingerprint: `7d2a163afc0f5db3dd5ffe8555f667ad…` (full in index.md).
+- Description: Specifies internal read-only MCP server, single patient-input tool, sequential question protocol, CPT validation, retries, and persistence.
+- Headings (13, explicit, source order):
+  - L1: X-INSIGHT — MCP Server Design
+  - L2: 1. Scope and requirements
+  - L2: 2. Component boundaries and deployment
+  - L2: 3. Snapshot and question scope
+  - L2: 4. Patient-record tool contract
+  - L2: 5. Sequential run protocol
+  - L2: 6. CPT response and validation
+  - L2: 7. Retry, recovery and queue contracts
+  - L2: 8. Persistence and deterministic replay
+  - L2: 9. Application API and physician transparency
+  - L2: 10. Security and audit boundaries
+  - L2: 11. Capacity, trade-offs and growth
+  - L2: 12. Verification criteria
+- Keywords (9): mcp server, reasoning pipeline, cpt estimation, patient projection, sequential questions, validation, retry policy, deterministic replay, transparency
+- Pages drawing on it: [concepts/mcp-design.md](pages/concepts/mcp-design.md), [topics/reasoning-pipeline.md](pages/topics/reasoning-pipeline.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/dev/system-design/system-architecture.md`
+- File: system-architecture.md; path: `docs/dev/system-design/system-architecture.md`; fingerprint: `415175ed01259f0751fd501c9762898a…` (full in index.md).
+- Description: Defines four subsystems S1-S4, ownership boundaries, end-to-end schizophrenia decision-support flow, constraints, and requirement mapping.
+- Headings (16, explicit, source order):
+  - L1: X-INSIGHT — System Architecture
+  - L2: 1. Purpose and architectural vocabulary
+  - L2: 2. System boundary
+  - L2: 3. Subsystem decomposition
+  - L3: 3.1 High-level relationships
+  - L2: 4. Subsystems and their modules
+  - L3: 4.1 S1 — Case and Encounter Management
+  - L3: 4.2 S2 — Research Knowledge Management
+  - L3: 4.3 S3 — Decision Support
+  - L3: 4.4 S4 — Administration and Governance
+  - L2: 5. Collaboration and ownership rules
+  - L2: 6. End-to-end responsibility
+  - L2: 7. System-wide constraints
+  - L2: 8. Architectural rationale
+  - L2: 9. Relationship to requirements and detailed design
+  - L2: 10. Decision summary and growth boundaries
+- Keywords (8): system architecture, subsystems, case management, knowledge management, decision support, governance, ownership boundaries, signing rule
+- Pages drawing on it: [concepts/system-architecture.md](pages/concepts/system-architecture.md), [topics/reasoning-pipeline.md](pages/topics/reasoning-pipeline.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/dev/system-design/system-design.md`
+- File: system-design.md; path: `docs/dev/system-design/system-design.md`; fingerprint: `5d0f70275010e22fdb70550e9d38e7ad…` (full in index.md).
+- Description: Detailed modular-monolith design with worker, PostgreSQL, internal MCP, registration and follow-up workflows, BN registry, APIs, and ADRs.
+- Headings (40, explicit, source order):
+  - L1: X-INSIGHT — System Design
+  - L2: 1. Basis, precedence, and boundaries
+  - L3: 1.1 Explicit exclusions
+  - L2: 2. Proposed architecture and deployment
+  - L3: 2.1 Module boundaries
+  - L2: 3. Access, identity, and initialization
+  - L2: 4. Patient and encounter workflows
+  - L3: 4.1 Registration
+  - L3: 4.2 Follow-up
+  - L3: 4.3 Notes and algorithm-visible history
+  - L3: 4.4 State, autosave, and concurrency
+  - L2: 5. Persistence and invariants
+  - L2: 6. Assessment content and local interactions
+  - L2: 7. Bayesian model registry and execution
+  - L3: 7.1 Question inventory and applicability
+  - L3: 7.2 Import, validation, and versioning
+  - L3: 7.3 Evidence contract and uncertainty
+  - L3: 7.4 Patient-specific CPT estimation and deterministic inference
+  - L2: 8. MCP and LLM orchestration
+  - L2: 9. Jobs, failures, caching, and capacity
+  - L3: 9.1 Durable queue
+  - L3: 9.2 Retry and failure policy
+  - L3: 9.3 Caching
+  - L3: 9.4 Sizing assumptions and proposed targets
+  - L2: 10. External API contracts
+  - L2: 11. Security, audit, exports, and recovery
+  - L3: 11.1 Prototype security boundary
+  - L3: 11.2 Audit
+  - L3: 11.3 CSV and printable HTML
+  - L3: 11.4 Backup and restore
+  - L2: 12. Deployment, operations, and growth
+  - L2: 13. Architecture decision records
+  - L3: ADR-01: Modular monolith with a separate worker
+  - L3: ADR-02: PostgreSQL for records and the initial durable queue
+  - L3: ADR-03: Fixed network structure with run-specific LLM-estimated CPTs
+  - L3: ADR-04: Internal read-only MCP with application mediation
+  - L3: ADR-05: Immutable signed snapshots with append-only corrections
+  - L2: 14. Requirement traceability and acceptance evidence
+  - L2: 15. Confirmed decisions and remaining questions
+  - L2: 16. Technical references
+- Keywords (9): system design, modular monolith, postgresql, fastapi, bayesian networks, mcp orchestration, job queue, api contracts, audit
+- Pages drawing on it: [concepts/system-design.md](pages/concepts/system-design.md), [topics/reasoning-pipeline.md](pages/topics/reasoning-pipeline.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/dev/ui-context.md`
+- File: ui-context.md; path: `docs/dev/ui-context.md`; fingerprint: `9256d91c52d73d5400ad7b50cc7ecdfe…` (full in index.md).
+- Description: Specifies X-INSIGHT light-only theme, teal and neutral tokens, typography, spacing, radius, shadows, motion, and clinical workspace character.
+- Headings (16, explicit, source order):
+  - L1: UI Context
+  - L2: Product Identity and Branding
+  - L2: Current Design Character
+  - L2: Theme
+  - L3: Theme-mode status
+  - L2: Canonical Color System
+  - L3: Color roles
+  - L3: Color usage rules
+  - L3: Verified contrast constraint
+  - L2: Typography
+  - L3: Type roles
+  - L2: Border Radius
+  - L2: Spacing, Elevation, and Motion
+  - L3: Spacing scale
+  - L3: Shadows
+  - L3: Motion
+- Keywords (8): ui context, light theme, teal palette, design tokens, typography, spacing, border radius, clinical workspace
+- Pages drawing on it: [concepts/ui-tokens.md](pages/concepts/ui-tokens.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/dev/user-requirements.md`
+- File: user-requirements.md; path: `docs/dev/user-requirements.md`; fingerprint: `d50724f604ac3f61d6a54211f9310912…` (full in index.md).
+- Description: Source-of-truth FR and NFR requirements for schizophrenia research prototype covering login, registration, assessments, reasoning, and reporting.
+- Headings (9, explicit, source order):
+  - L1: User Requirements
+  - L2: X-INSIGHT
+  - L2: Functional Requirements
+  - L3: Users & log-in
+  - L3: New patient registration
+  - L3: Follow-up and records
+  - L3: Reasoning pipeline
+  - L3: Reporting and ops
+  - L2: Non-Functional Requirements
+- Keywords (9): user requirements, functional requirements, schizophrenia, dsm-5-tr, panss, c-ssrs, reasoning pipeline, bayesian networks, audit
+- Pages drawing on it: [concepts/requirements.md](pages/concepts/requirements.md), [topics/assessment-workflow.md](pages/topics/assessment-workflow.md), [topics/reasoning-pipeline.md](pages/topics/reasoning-pipeline.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/CSSRS.md`
+- File: CSSRS.md; path: `docs/medical-docs/CSSRS.md`; fingerprint: `610ecf937795c695828d15376a2555e3…` (full in index.md).
+- Description: Clinician-administered assessment of suicidal ideation severity, intensity dimensions, behavior categories, lethality coding, and triage flags.
+- Headings (9, explicit, source order):
+  - L1: Columbia-Suicide Severity Rating Scale (C-SSRS)
+  - L2: Questions
+  - L3: 1. Suicidal ideation severity
+  - L3: 2. Intensity of ideation
+  - L3: 3. Suicidal behavior
+  - L2: Scoring system
+  - L3: Ideation severity
+  - L3: Intensity and behavior
+  - L2: Interpretation
+- Keywords (9): c-ssrs, suicidal ideation, suicide attempt, interrupted attempt, aborted attempt, preparatory acts, lethality, severity 0-5, triage
+- Pages drawing on it: [entities/c-ssrs.md](pages/entities/c-ssrs.md), [topics/assessment-workflow.md](pages/topics/assessment-workflow.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/PANSS.md`
+- File: PANSS.md; path: `docs/medical-docs/PANSS.md`; fingerprint: `644a291ac807533b78cec4a20b40acd2…` (full in index.md).
+- Description: Clinician-rated 30-item schizophrenia symptom severity measure over the prior 7 days, with positive, negative, and general subscales.
+- Headings (8, explicit, source order):
+  - L1: Positive and Negative Syndrome Scale (PANSS)
+  - L2: Questions
+  - L3: Positive symptoms (P)
+  - L3: Negative symptoms (N)
+  - L3: General psychopathology (G)
+  - L2: Scoring system
+  - L2: Interpretation
+  - L3: Approximate total-score anchors
+- Keywords (8): panss, schizophrenia, positive symptoms, negative symptoms, general psychopathology, clinician-rated, 1-7 scale, total 30-210
+- Pages drawing on it: [entities/panss.md](pages/entities/panss.md), [topics/assessment-workflow.md](pages/topics/assessment-workflow.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/acute-dystonia-criteria.md`
+- File: acute-dystonia-criteria.md; path: `docs/medical-docs/acute-dystonia-criteria.md`; fingerprint: `495a60d767a32558583b092fcf072ec1…` (full in index.md).
+- Description: Diagnostic features, medication timeline assessment, exclusions, and urgency guidance for sustained medication-induced abnormal postures.
+- Headings (4, explicit, source order):
+  - L1: Medication-Induced Acute Dystonia
+  - L2: Diagnostic features
+  - L2: Clinical assessment and exclusions
+  - L2: Urgency and documentation
+- Keywords (7): acute dystonia, antipsychotics, oculogyric crisis, laryngeal dystonia, extrapyramidal symptoms, abnormal posture, stridor
+- Pages drawing on it: [entities/acute-dystonia.md](pages/entities/acute-dystonia.md), [topics/antipsychotic-pharmacotherapy.md](pages/topics/antipsychotic-pharmacotherapy.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/akathisia-criteria.md`
+- File: akathisia-criteria.md; path: `docs/medical-docs/akathisia-criteria.md`; fingerprint: `93ae8c76a2b26b2af79ea3a9e2027108…` (full in index.md).
+- Description: Diagnostic criteria, exclusions, and Barnes Akathisia Rating Scale administration and scoring for medication-induced restlessness.
+- Headings (13, explicit, source order):
+  - L1: Medication-Induced Acute Akathisia
+  - L2: Diagnostic features
+  - L2: Clinical assessment and exclusions
+  - L2: Assessment tool and documentation
+  - L2: Barnes Akathisia Rating Scale (BARS)
+  - L3: Administration and physical examination
+  - L3: Suggested interview questions
+  - L3: Item 1: Objective restlessness (0–3)
+  - L3: Item 2: Subjective awareness of restlessness (0–3)
+  - L3: Item 3: Distress related to restlessness (0–3)
+  - L3: Item 4: Global clinical assessment (0–5)
+  - L3: Scoring and interpretation
+  - L3: Recording template
+- Keywords (7): akathisia, barnes akathisia rating scale, bars, subjective restlessness, objective restlessness, global score, antipsychotics
+- Pages drawing on it: [entities/akathisia.md](pages/entities/akathisia.md), [topics/antipsychotic-pharmacotherapy.md](pages/topics/antipsychotic-pharmacotherapy.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/Appendix-C.md`
+- File: Appendix-C.md; path: `docs/medical-docs/guideline/Appendix-C.md`; fingerprint: `998b64d7aa093adaf8b48e825f9a7b6b…` (full in index.md).
+- Description: Evidence synthesis grading efficacy and harms for guideline statements, centered on AHRQ review plus RCTs, registries, and meta-analyses.
+- Headings (81, explicit, source order):
+  - L1: Appendix C.
+  - L2: Review of Research Evidence
+  - L2: Supporting Guideline Statements
+  - L3: Assessment and Determination of Treatment Plan
+  - L2: STATEMENT 1: Assessment of Possible Schizophrenia
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Assessment of Possible Schizophrenia
+  - L2: STATEMENT 2: Use of Quantitative Measures
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Use of Quantitative Measures
+  - L2: STATEMENT 3: Evidence-Based Treatment Planning
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Evidence-Based Treatment Planning
+  - L3: Pharmacotherapy
+  - L2: STATEMENT 4: Antipsychotic Medications
+  - L3: TABLE C–1. Results of meta-analysis on placebo-controlled trials of antipsychotic treatment
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Efficacy of Antipsychotic Medications
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Harms of Antipsychotic Medications
+  - L3: Antipsychotic Medications in First-Episode Schizophrenia
+  - L3: Treatment Approaches to Partial Response or Nonresponse
+  - L3: High Doses of Antipsychotic Medication
+  - L3: Augmentation Pharmacotherapy
+  - L2: STATEMENT 5: Continuing Medications
+  - L3: Grading of the Overall Supporting Body of Research Evidence for the Efficacy of Continuing Treatment With an Antipsychotic Medication
+  - L3: Grading of the Overall Supporting Body of Research Evidence for the Harms of Continuing Treatment With an Antipsychotic Medication
+  - L2: STATEMENT 6: Continuing the Same Medications
+  - L3: Grading of the Overall Supporting Body of Research Evidence for the Efficacy of Continuing the Same Antipsychotic Medication
+  - L3: Grading of the Overall Supporting Body of Research Evidence for the Harms of Continuing the Same Antipsychotic Medication
+  - L2: STATEMENT 7: Clozapine in Treatment-Resistant Schizophrenia
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Efficacy of Clozapine in Treatment-Resistant Schizophrenia
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Harms of Clozapine
+  - L3: Other Interventions for Treatment-Resistant Schizophrenia
+  - L3: Use of Antipsychotic Medications Other Than Clozapine
+  - L3: Electroconvulsive Therapy
+  - L2: STATEMENT 8: Clozapine in Suicide Risk
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Efficacy of Clozapine in Individuals With Substantial Risk Factors
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Harms of Clozapine in Individuals With Substantial Risk Factors
+  - L2: STATEMENT 9: Clozapine in Aggressive Behavior
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Efficacy of Clozapine in Individuals With Substantial Risk Factors
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Harms of Clozapine in Individuals With Substantial Risk Factors
+  - L2: STATEMENT 10: Long-Acting Injectable Antipsychotic
+  - L3: Grading of the Overall Supporting Body of Research Evidence for the Efficacy of LAI Antipsychotic Medications
+  - L3: Grading of the Overall Supporting Body of Research Evidence for the Harms of LAI Antipsychotic Medications
+  - L2: STATEMENT 11: Anticholinergic Medications for Acute Dystonia
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Anticholinergic Medications for Acute Dystonia
+  - L2: STATEMENT 12: Treatments for Parkinsonism
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Treatments for Parkinsonism
+  - L2: STATEMENT 13: Treatments for Akathisia
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Treatments for Akathisia
+  - L2: STATEMENT 14: VMAT2 Medications for Tardive Dyskinesia
+  - L3: TABLE C–2. Other systematic reviews of treatments for tardive dyskinesia
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Efficacy of VMAT2 Inhibitors
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Harms of VMAT2 Inhibitors
+  - L3: Psychosocial Interventions
+  - L2: STATEMENT 15: Coordinated Specialty Care Programs
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Efficacy of Coordinated Specialty Care Programs
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Harms of Coordinated Specialty Care Programs
+  - L2: STATEMENT 16: Cognitive-Behavioral Therapy
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Efficacy of Cognitive-Behavioral Therapy for Psychosis
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Harms of Cognitive-Behavioral Therapy for Psychosis
+  - L2: STATEMENT 17: Psychoeducation
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Efficacy of Psychoeducation
+  - L3: Grading of the Overall Supporting Body of Research Evidence for Harms of Psychoeducation
+  - … (21 more headings; see source)
+- Keywords (8): evidence review, ahrq, strength of evidence, rct, meta-analysis, clozapine, lai, vmat2
+- Pages drawing on it: [sources/appendix-c-digest.md](pages/sources/appendix-c-digest.md), [topics/antipsychotic-pharmacotherapy.md](pages/topics/antipsychotic-pharmacotherapy.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/Appendix-D.md`
+- File: Appendix-D.md; path: `docs/medical-docs/guideline/Appendix-D.md`; fingerprint: `a52e60305a236eb876f912a5a40debc8…` (full in index.md).
+- Description: AHRQ-adapted evidence tables rating study limitations, consistency, directness, precision, and effect sizes across prioritized outcomes.
+- Headings (14, explicit, source order):
+  - L1: Appendix D. Strength of Evidence
+  - L2: TABLE D–1. Pharmacological treatment
+  - L2: TABLE D–2. Assertive community treatment (ACT)
+  - L2: TABLE D–3. Cognitive-behavioral therapy (CBT)
+  - L2: TABLE D–4. Cognitive remediation
+  - L2: TABLE D–5. Family interventions
+  - L2: TABLE D–6. Intensive case management
+  - L2: TABLE D–7. Illness management and recovery
+  - L2: TABLE D–8. Psychoeducation
+  - L2: TABLE D–9. Social skills training
+  - L2: TABLE D–10. Supported employment
+  - L2: TABLE D–11. Supportive therapy
+  - L2: TABLE D–12. Early interventions for patients with first-episode psychosis
+  - L2: TABLE D–13. Co-occurring substance use and schizophrenia
+- Keywords (7): strength of evidence, ahrq, evidence tables, act, cbt, supported employment, effect size
+- Pages drawing on it: [sources/appendix-d-glossary-digest.md](pages/sources/appendix-d-glossary-digest.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/Glossary-of-Terms.md`
+- File: Glossary-of-Terms.md; path: `docs/medical-docs/guideline/Glossary-of-Terms.md`; fingerprint: `c7dbf6c27a770bc2483c615148b6bade…` (full in index.md).
+- Description: Defines schizophrenia treatment terms plus BN-04 to BN-14 naming, state, and migration conventions for the project networks.
+- Headings (6, explicit, source order):
+  - L1: Glossary of Terms
+  - L2: Bayesian-network terminology (BN-04–BN-14)
+  - L3: Naming and state conventions
+  - L3: Clinical terms and distinctions
+  - L3: Identifier migration
+  - L3: Outcome migration
+- Keywords (6): glossary, definitions, adequate response, suicidality, bayesian network, state conventions
+- Pages drawing on it: [sources/appendix-d-glossary-digest.md](pages/sources/appendix-d-glossary-digest.md), [entities/schizophrenia.md](pages/entities/schizophrenia.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/Guideline-Development-Process.md`
+- File: Guideline-Development-Process.md; path: `docs/medical-docs/guideline/Guideline-Development-Process.md`; fingerprint: `6df813c7f7884c5659791399b532120c…` (full in index.md).
+- Description: Describes IOM-compliant process: conflicts, writing group, AHRQ systematic review, evidence ratings, Delphi voting, and 2019 approval.
+- Headings (9, explicit, source order):
+  - L1: Guideline Development Process
+  - L2: Management of Potential Conflicts of Interest
+  - L2: Guideline Writing Group Composition
+  - L2: Systematic Review Methodology
+  - L2: Rating the Strength of Supporting Research Evidence
+  - L2: Rating the Strength of Guideline Statements
+  - L2: Use of Guidelines to Enhance Quality of Care
+  - L2: External Review
+  - L2: Funding and Approval
+- Keywords (6): guideline methods, iom, conflicts of interest, ahrq systematic review, evidence grading, delphi voting
+- Pages drawing on it: [sources/appendix-d-glossary-digest.md](pages/sources/appendix-d-glossary-digest.md), [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-01.md`
+- File: STATEMENT-01.md; path: `docs/medical-docs/guideline/STATEMENT-01.md`; fingerprint: `6546051ec9f79eec2f7d2a85cba3833d…` (full in index.md).
+- Description: APA 1C recommendation for comprehensive initial assessment of possible psychosis, covering history, examination, risk, and physical health.
+- Headings (26, explicit, source order):
+  - L1: Guideline Statements and Implementation — Assessment and Determination of Treatment Plan
+  - L2: STATEMENT 1: Assessment of Possible Schizophrenia
+  - L2: Implementation
+  - L2: TABLE 1. Recommended aspects of the initial psychiatric evaluation
+  - L3: History of present illness
+  - L3: Psychiatric history
+  - L3: Substance use history
+  - L3: Medical history
+  - L3: Family history
+  - L3: Personal and social history
+  - L2: TABLE 1. Recommended aspects of the initial psychiatric evaluation (continued)
+  - L3: Examination, including mental status examination
+  - L2: TABLE 2. Suggested physical and laboratory assessments for patients with schizophrenia
+  - L3: Assessments to monitor physical status and detect concomitant physical conditions
+  - L3: Assessments related to other specific side effects of treatment
+  - L2: TABLE 2. Suggested physical and laboratory assessments for patients with schizophrenia (continued)
+  - L3: Assessments related to other specific side effects of treatment (continued)
+  - L3: Table 2 Notes
+  - L2: Balancing of Potential Benefits and Harms in Rating the Strength of the Guideline Statement
+  - L3: Benefits
+  - L3: Harms*
+  - L3: Patient Preferences
+  - L3: Balancing of Benefits and Harms
+  - L3: Differences of Opinion Among Writing Group Members
+  - L3: Review of Available Guidelines From Other Organizations
+  - L3: Quality Measurement Considerations
+- Keywords (8): assessment, psychiatric evaluation, risk assessment, suicide, substance use, mental status, physical health, differential diagnosis
+- Pages drawing on it: [entities/schizophrenia.md](pages/entities/schizophrenia.md), [topics/assessment-workflow.md](pages/topics/assessment-workflow.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-02.md`
+- File: STATEMENT-02.md; path: `docs/medical-docs/guideline/STATEMENT-02.md`; fingerprint: `5d9345617734bb6afe042cd6e331662f…` (full in index.md).
+- Description: APA 1C recommendation to include a quantitative measure of symptoms and functioning at initial evaluation to set baselines and track response.
+- Headings (11, explicit, source order):
+  - L1: Guideline Statements and Implementation — Assessment and Determination of Treatment Plan
+  - L2: STATEMENT 2: Use of Quantitative Measures
+  - L2: Implementation
+  - L2: Balancing of Potential Benefits and Harms in Rating the Strength of the Guideline Statement
+  - L3: Benefits
+  - L3: Harms
+  - L3: Patient Preferences
+  - L3: Balancing of Benefits and Harms
+  - L3: Differences of Opinion Among Writing Group Members
+  - L3: Review of Available Guidelines From Other Organizations
+  - L3: Quality Measurement Considerations
+- Keywords (7): quantitative measures, rating scales, baseline, treatment planning, monitoring, functioning, shared decision-making
+- Pages drawing on it: [entities/panss.md](pages/entities/panss.md), [entities/c-ssrs.md](pages/entities/c-ssrs.md), [topics/assessment-workflow.md](pages/topics/assessment-workflow.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-03.md`
+- File: STATEMENT-03.md; path: `docs/medical-docs/guideline/STATEMENT-03.md`; fingerprint: `1ae43f00ac64d3498d9fe707b06d87c2…` (full in index.md).
+- Description: APA 1C recommendation for a documented comprehensive person-centered plan combining evidence-based pharmacological and nonpharmacological treatments.
+- Headings (9, explicit, source order):
+  - L1: STATEMENT 3: Evidence-Based Treatment Planning
+  - L2: Implementation
+  - L2: Aims of Treatment Planning
+  - L2: Benefits
+  - L2: Harms
+  - L2: Balancing of Benefits and Harms
+  - L2: Differences of Opinion Among Writing Group Members
+  - L2: Review of Available Guidelines From Other Organizations
+  - L2: Quality Measurement Considerations
+- Keywords (6): treatment plan, person-centered, shared decision-making, evidence-based, adherence, recovery
+- Pages drawing on it: [topics/assessment-workflow.md](pages/topics/assessment-workflow.md), [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-04.md`
+- File: STATEMENT-04.md; path: `docs/medical-docs/guideline/STATEMENT-04.md`; fingerprint: `08f963e7b8ee138b0c69c25c0d824569…` (full in index.md).
+- Description: APA 1A recommendation to treat schizophrenia with an antipsychotic and monitor benefits and side effects, with dosing and safety tables.
+- Headings (71, explicit, source order):
+  - L1: STATEMENT 4: Antipsychotic Medications
+  - L3: APA Practice Guideline for the Treatment of Patients With Schizophrenia
+  - L2: Implementation
+  - L3: Selection of an Antipsychotic Medication — General Principles
+  - L2: Table 3
+  - L3: Table 3. Antipsychotic medications: available oral and short-acting intramuscular formulations and dosing considerations
+  - L2: Table 4
+  - L3: Table 4. Antipsychotic medications: pharmacokinetics/pharmacodynamics of oral and short-acting IM formulations
+  - L2: Table 5
+  - L3: Table 5. Antipsychotic receptor binding properties (visually verified — `/` = partial agonist)
+  - L2: Table 6
+  - L3: Table 6. Antipsychotic medications: relative side effects of oral formulations
+  - L2: Table 7
+  - L3: Table 7. Long-acting injectable antipsychotic medications: availability and injection-related considerations
+  - L2: Table 8
+  - L3: Table 8. Long-acting injectable antipsychotic medications: dosing
+  - L2: Table 9
+  - L3: Table 9. Long-acting injectable antipsychotic medications: pharmacological characteristics
+  - L2: Narrative guidance
+  - L2: Balancing of Benefits and Harms
+  - L2: Differences of Opinion Among Writing Group Members
+  - L2: Review of Available Guidelines From Other Organizations
+  - L2: Quality Measurement Considerations
+  - L2: Pharmacotherapy
+  - L2: Implementation
+  - L2: Selection of an Antipsychotic Medication
+  - L2: General Principles
+  - L2: Factors Influencing Choice of an Antipsychotic Medication
+  - L2: Available Drug Formulations
+  - L2: Drug-Drug Interactions and Metabolism
+  - L2: Pharmacokinetic Properties
+  - L2: Side-Effect Profile
+  - L2: Initiation of Treatment With an Antipsychotic Medication
+  - L2: Strategies to Address Initial Nonresponse or Partial Response
+  - L2: Monitoring During Treatment With an Antipsychotic Medication
+  - L2: Treatment-Emergent Side Effects of Antipsychotic Medications
+  - L2: Allergic and Dermatological Side Effects
+  - L2: Cardiovascular Effects
+  - L2: Hyperlipidemia
+  - L2: Myocarditis and Cardiomyopathy
+  - L2: Orthostatic Hypotension
+  - L2: QTc Prolongation
+  - L2: Tachycardia
+  - L2: Endocrine Side Effects
+  - L2: Glucose Dysregulation and Diabetes Mellitus
+  - L2: Hyperprolactinemia
+  - L2: Sexual Function Disturbances
+  - L2: Gastrointestinal Side Effects
+  - L2: Hematological Effects
+  - L2: Neurological Side Effects
+  - L2: Acute Dystonia
+  - L2: Akathisia
+  - L2: Parkinsonism
+  - L2: Neuroleptic Malignant Syndrome
+  - L2: Seizures
+  - L2: Tardive Syndromes, Including Tardive Dyskinesia
+  - L2: Ophthalmological Effects
+  - L2: Other Side Effects
+  - L2: Anticholinergic Effects
+  - L2: Fever
+  - … (11 more headings; see source)
+- Keywords (8): antipsychotic, dosing, lai, side effects, monitoring, drug interactions, receptor binding, nonresponse
+- Pages drawing on it: [topics/antipsychotic-pharmacotherapy.md](pages/topics/antipsychotic-pharmacotherapy.md), [sources/statement-04-digest.md](pages/sources/statement-04-digest.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-05.md`
+- File: STATEMENT-05.md; path: `docs/medical-docs/guideline/STATEMENT-05.md`; fingerprint: `3c1e65c840f3510792459691e1f3c952…` (full in index.md).
+- Description: APA 1A recommendation to continue antipsychotic maintenance after symptom improvement, balancing reduced relapse and mortality against side effects.
+- Headings (10, explicit, source order):
+  - L1: STATEMENT 5: Continuing Medications
+  - L2: Implementation
+  - L2: Balancing of Potential Benefits and Harms in Rating the Strength of the Guideline Statement
+  - L3: Benefits
+  - L3: Harms
+  - L3: Patient Preferences
+  - L2: Balancing of Benefits and Harms
+  - L2: Differences of Opinion Among Writing Group Members
+  - L2: Review of Available Guidelines From Other Organizations
+  - L2: Quality Measurement Considerations
+- Keywords (7): maintenance, continuation, relapse prevention, rehospitalization, mortality, adherence, dose optimization
+- Pages drawing on it: [topics/antipsychotic-pharmacotherapy.md](pages/topics/antipsychotic-pharmacotherapy.md), [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-06.md`
+- File: STATEMENT-06.md; path: `docs/medical-docs/guideline/STATEMENT-06.md`; fingerprint: `8cdf5bf124996870dd1212f9851a36fc…` (full in index.md).
+- Description: APA 2B suggestion to stay on the same effective antipsychotic rather than switch, avoiding destabilization unless change is required.
+- Headings (10, explicit, source order):
+  - L1: STATEMENT 6: Continuing the Same Medications
+  - L2: Implementation
+  - L2: Balancing of Potential Benefits and Harms in Rating the Strength of the Guideline Statement
+  - L3: Benefits
+  - L3: Harms
+  - L3: Patient Preferences
+  - L3: Balancing of Benefits and Harms
+  - L2: Differences of Opinion Among Writing Group Members
+  - L2: Review of Available Guidelines From Other Organizations
+  - L2: Quality Measurement Considerations
+- Keywords (6): same medication, continuation, switching, destabilization, tolerability, patient preference
+- Pages drawing on it: [topics/antipsychotic-pharmacotherapy.md](pages/topics/antipsychotic-pharmacotherapy.md), [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-07.md`
+- File: STATEMENT-07.md; path: `docs/medical-docs/guideline/STATEMENT-07.md`; fingerprint: `b17d50118726361c28fc612f15e6b5c6…` (full in index.md).
+- Description: APA 1B recommendation for clozapine in treatment-resistant schizophrenia, covering TRRIP criteria, titration, blood levels, and REMS monitoring.
+- Headings (7, explicit, source order):
+  - L1: STATEMENT 7: Clozapine in Treatment-Resistant Schizophrenia
+  - L2: Implementation
+  - L2: Identification of Treatment-Resistant Schizophrenia
+  - L2: Balancing of Benefits and Harms
+  - L2: Differences of Opinion Among Writing Group Members
+  - L2: Review of Available Guidelines From Other Organizations
+  - L2: Quality Measurement Considerations
+- Keywords (7): clozapine, treatment-resistant, trrip, anc monitoring, rems, neutropenia, blood levels
+- Pages drawing on it: [topics/antipsychotic-pharmacotherapy.md](pages/topics/antipsychotic-pharmacotherapy.md), [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-08.md`
+- File: STATEMENT-08.md; path: `docs/medical-docs/guideline/STATEMENT-08.md`; fingerprint: `f0c62a3259176cbb49cc069580f0fb67…` (full in index.md).
+- Description: APA recommends (1B) clozapine when suicide attempt or suicide risk remains substantial despite other treatments, with monitoring.
+- Headings (10, explicit, source order):
+  - L1: STATEMENT 8: Clozapine in Suicide Risk
+  - L2: Implementation
+  - L2: Balancing of Potential Benefits and Harms in Rating the Strength of the Guideline Statement
+  - L3: Benefits
+  - L3: Harms
+  - L2: Patient Preferences
+  - L2: Balancing of Benefits and Harms
+  - L2: Differences of Opinion Among Writing Group Members
+  - L2: Review of Available Guidelines From Other Organizations
+  - L2: Quality Measurement Considerations
+- Keywords (5): clozapine, suicide risk, self-harm, anc monitoring, hospitalization
+- Pages drawing on it: [entities/c-ssrs.md](pages/entities/c-ssrs.md), [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-09.md`
+- File: STATEMENT-09.md; path: `docs/medical-docs/guideline/STATEMENT-09.md`; fingerprint: `73f9dcc0f619739feb3baf159a3fe55b…` (full in index.md).
+- Description: APA suggests (2C) clozapine when aggressive behavior risk remains substantial despite other treatments, weighing modest efficacy against harms.
+- Headings (11, explicit, source order):
+  - L1: STATEMENT-09 — Clozapine in Aggressive Behavior
+  - L1: STATEMENT 9: Clozapine in Aggressive Behavior
+  - L2: Implementation
+  - L2: Balancing of Potential Benefits and Harms in Rating the Strength of the Guideline Statement
+  - L3: Benefits
+  - L3: Harms
+  - L2: Patient Preferences
+  - L2: Balancing of Benefits and Harms
+  - L2: Differences of Opinion Among Writing Group Members
+  - L2: Review of Available Guidelines From Other Organizations
+  - L2: Quality Measurement Considerations
+- Keywords (5): clozapine, aggression, hostility, adherence, anc monitoring
+- Pages drawing on it: [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-10.md`
+- File: STATEMENT-10.md; path: `docs/medical-docs/guideline/STATEMENT-10.md`; fingerprint: `3450e0bcafd525f9b861c7173bea13c2…` (full in index.md).
+- Description: APA suggests (2B) long-acting injectable antipsychotics when patients prefer them or adherence is poor or uncertain.
+- Headings (10, explicit, source order):
+  - L1: STATEMENT 10: Long-Acting Injectable Antipsychotic Medications
+  - L2: Implementation
+  - L2: Balancing of Potential Benefits and Harms in Rating the Strength of the Guideline Statement
+  - L3: Benefits
+  - L3: Harms
+  - L3: Patient Preferences
+  - L3: Balancing of Benefits and Harms
+  - L2: Differences of Opinion Among Writing Group Members
+  - L2: Review of Available Guidelines From Other Organizations
+  - L2: Quality Measurement Considerations
+- Keywords (6): long-acting injectable, lai, adherence, hospitalization, mortality, shared decision-making
+- Pages drawing on it: [topics/antipsychotic-pharmacotherapy.md](pages/topics/antipsychotic-pharmacotherapy.md), [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-11.md`
+- File: STATEMENT-11.md; path: `docs/medical-docs/guideline/STATEMENT-11.md`; fingerprint: `626e38cff8c805b8fcb5ac7a9408cc71…` (full in index.md).
+- Description: APA recommends (1C) anticholinergic treatment for acute dystonia from antipsychotics, using lowest effective dose for shortest duration.
+- Headings (10, explicit, source order):
+  - L1: STATEMENT 11: Anticholinergic Medications for Acute Dystonia
+  - L2: Implementation
+  - L2: Balancing of Potential Benefits and Harms in Rating the Strength of the Guideline Statement
+  - L3: Benefits
+  - L3: Harms
+  - L3: Patient Preferences
+  - L3: Balancing of Benefits and Harms
+  - L2: Differences of Opinion Among Writing Group Members
+  - L2: Review of Available Guidelines From Other Organizations
+  - L2: Quality Measurement Considerations
+- Keywords (6): acute dystonia, anticholinergic, diphenhydramine, benztropine, oculogyric crisis, laryngospasm
+- Pages drawing on it: [entities/acute-dystonia.md](pages/entities/acute-dystonia.md), [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-12.md`
+- File: STATEMENT-12.md; path: `docs/medical-docs/guideline/STATEMENT-12.md`; fingerprint: `79490eff4830bd90d3cdd4b60b5158d2…` (full in index.md).
+- Description: APA suggests (2C) lowering dose, switching antipsychotic, or adding anticholinergic or amantadine for medication-induced parkinsonism.
+- Headings (11, explicit, source order):
+  - L1: STATEMENT 12: Treatments for Parkinsonism
+  - L2: Implementation
+  - L2: TABLE 10. Medications for treatment of medication-induced parkinsonism
+  - L2: Balancing of Potential Benefits and Harms in Rating the Strength of the Guideline Statement
+  - L3: Benefits
+  - L3: Harms
+  - L3: Patient Preferences
+  - L3: Balancing of Benefits and Harms
+  - L2: Differences of Opinion Among Writing Group Members
+  - L2: Review of Available Guidelines From Other Organizations
+  - L2: Quality Measurement Considerations
+- Keywords (6): parkinsonism, anticholinergic, amantadine, dose reduction, switch antipsychotic, table 10
+- Pages drawing on it: [entities/parkinsonism.md](pages/entities/parkinsonism.md), [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-13.md`
+- File: STATEMENT-13.md; path: `docs/medical-docs/guideline/STATEMENT-13.md`; fingerprint: `59a0502ee13b5a971a7f4338b683533b…` (full in index.md).
+- Description: APA suggests (2C) lowering dose, switching antipsychotic, or adding benzodiazepine or beta-blocker such as propranolol for akathisia.
+- Headings (10, explicit, source order):
+  - L1: STATEMENT 13: Treatments for Akathisia
+  - L2: Implementation
+  - L2: Balancing of Potential Benefits and Harms in Rating the Strength of the Guideline Statement
+  - L3: Benefits
+  - L3: Harms
+  - L3: Patient Preferences
+  - L3: Balancing of Benefits and Harms
+  - L2: Differences of Opinion Among Writing Group Members
+  - L2: Review of Available Guidelines From Other Organizations
+  - L2: Quality Measurement Considerations
+- Keywords (6): akathisia, benzodiazepine, propranolol, beta-blocker, dose reduction, restlessness
+- Pages drawing on it: [entities/akathisia.md](pages/entities/akathisia.md), [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/STATEMENT-14.md`
+- File: STATEMENT-14.md; path: `docs/medical-docs/guideline/STATEMENT-14.md`; fingerprint: `896a311d5654137f97d272db8922a641…` (full in index.md).
+- Description: APA recommends (1B) reversible VMAT2 inhibitors for moderate to severe or disabling tardive dyskinesia, preferring deutetrabenazine or valbenazine.
+- Headings (11, explicit, source order):
+  - L1: STATEMENT 14: VMAT2 Medications for Tardive Dyskinesia
+  - L2: Implementation
+  - L2: TABLE 11. Reversible inhibitors of human vesicular monoamine transporter type 2^a^
+  - L2: Balancing of Potential Benefits and Harms in Rating the Strength of the Guideline Statement
+  - L3: Benefits
+  - L3: Harms
+  - L3: Patient Preferences
+  - L3: Balancing of Benefits and Harms
+  - L2: Differences of Opinion Among Writing Group Members
+  - L2: Review of Available Guidelines From Other Organizations
+  - L2: Quality Measurement Considerations
+- Keywords (6): tardive dyskinesia, vmat2, valbenazine, deutetrabenazine, aims, table 11
+- Pages drawing on it: [entities/tardive-dyskinesia.md](pages/entities/tardive-dyskinesia.md), [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/acronyms_abbreviations.md`
+- File: acronyms_abbreviations.md; path: `docs/medical-docs/guideline/acronyms_abbreviations.md`; fingerprint: `a61a76929e915be8013c2bfe36875cae…` (full in index.md).
+- Description: Lookup table expanding clinical, methodological, and organizational abbreviations from ACT and AIMS through VMAT2.
+- Headings (1, explicit, source order):
+  - L1: Acronyms and Abbreviations
+- Keywords (9): acronyms, abbreviations, act, aims, lai, vmat2, rct, soe, panss
+- Pages drawing on it: [sources/appendix-d-glossary-digest.md](pages/sources/appendix-d-glossary-digest.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/guideline/guideline-statement-summary.md`
+- File: guideline-statement-summary.md; path: `docs/medical-docs/guideline/guideline-statement-summary.md`; fingerprint: `99e77fd3fa4d7b977db58b87a93baaa8…` (full in index.md).
+- Description: Condensed list of all 24 APA schizophrenia recommendations across assessment, pharmacotherapy, and psychosocial interventions with grades.
+- Headings (4, explicit, source order):
+  - L1: Guideline Statement Summary
+  - L2: Assessment and Determination of Treatment Plan
+  - L2: Pharmacotherapy
+  - L2: Psychosocial Interventions
+- Keywords (6): summary, 24 statements, assessment, pharmacotherapy, psychosocial, recommendations
+- Pages drawing on it: [topics/guideline-statements.md](pages/topics/guideline-statements.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/parkinsonism-criteria.md`
+- File: parkinsonism-criteria.md; path: `docs/medical-docs/parkinsonism-criteria.md`; fingerprint: `d1b7fe5fcc820c54aebb06aba5372f47…` (full in index.md).
+- Description: Diagnostic features, differential, and Simpson-Angus Scale 10-item examination and scoring for drug-induced parkinsonian signs.
+- Headings (19, explicit, source order):
+  - L1: Medication-Induced Parkinsonism
+  - L2: Diagnostic features
+  - L2: Clinical assessment and exclusions
+  - L2: Assessment tool and documentation
+  - L2: Simpson–Angus Scale (SAS)
+  - L3: Suggested questions (not scored)
+  - L3: Physical examination and item scoring
+  - L4: 1. Gait
+  - L4: 2. Arm dropping
+  - L4: 3. Shoulder shaking
+  - L4: 4. Elbow rigidity
+  - L4: 5. Wrist rigidity (fixation of position)
+  - L4: 6. Leg pendulousness
+  - L4: 7. Head dropping
+  - L4: 8. Glabellar tap
+  - L4: 9. Tremor
+  - L4: 10. Salivation
+  - L3: Scoring and interpretation
+  - L3: Recording template
+- Keywords (9): parkinsonism, bradykinesia, rigidity, tremor, simpson-angus scale, sas, dopamine blockers, salivation, gait
+- Pages drawing on it: [entities/parkinsonism.md](pages/entities/parkinsonism.md), [topics/antipsychotic-pharmacotherapy.md](pages/topics/antipsychotic-pharmacotherapy.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/schizophrenia-criteria.md`
+- File: schizophrenia-criteria.md; path: `docs/medical-docs/schizophrenia-criteria.md`; fingerprint: `6d47f73b853e39ac89ae8e2cb5c514f3…` (full in index.md).
+- Description: Six-requirement DSM-5-TR-based guideline covering characteristic symptoms, functional decline, 6-month course, and mood, substance, developmental exclusions.
+- Headings (9, explicit, source order):
+  - L1: Schizophrenia: DSM-5-TR–Based Diagnostic Guideline
+  - L2: Diagnostic overview
+  - L2: Required criteria
+  - L3: A. Characteristic symptoms
+  - L3: B. Functional decline
+  - L3: C. Duration
+  - L3: D. Mood-disorder and schizoaffective exclusion
+  - L3: E. Substance, medication, and medical exclusion
+  - L3: F. Autism-spectrum and childhood communication disorders
+- Keywords (8): schizophrenia, dsm-5-tr, delusions, hallucinations, disorganized speech, negative symptoms, functional decline, 6-month duration
+- Pages drawing on it: [entities/schizophrenia.md](pages/entities/schizophrenia.md), [topics/assessment-workflow.md](pages/topics/assessment-workflow.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
+
+### `docs/medical-docs/tardive-dyskinesia-criteria.md`
+- File: tardive-dyskinesia-criteria.md; path: `docs/medical-docs/tardive-dyskinesia-criteria.md`; fingerprint: `ca9bd22fb0064d3ae24b61ecc20bacdd…` (full in index.md).
+- Description: Diagnostic features, differential diagnosis, Schooler-Kane research thresholds, and AIMS measurement guidance for dopamine-blocker dyskinesia.
+- Headings (4, explicit, source order):
+  - L1: Tardive Dyskinesia
+  - L2: Diagnostic features
+  - L2: Differential diagnosis
+  - L2: Research criteria and assessment
+- Keywords (6): tardive dyskinesia, dopamine receptor blocker, choreiform, schooler-kane, aims, differential diagnosis
+- Pages drawing on it: [entities/tardive-dyskinesia.md](pages/entities/tardive-dyskinesia.md), [topics/antipsychotic-pharmacotherapy.md](pages/topics/antipsychotic-pharmacotherapy.md)
+- Locators: section headings as listed; tables numbered in source (e.g. STATEMENT-04 Tables 3-9, STATEMENT-12 Table 10, STATEMENT-14 Table 11, Appendix-D Tables D-1-D-13).
