@@ -315,7 +315,8 @@ def change_password(body: PasswordChangeRequest, request: Request) -> JSONRespon
         current = (
             conn.execute(
                 text(
-                    "SELECT password_hash, credential_revision FROM users WHERE id = :i"
+                    "SELECT password_hash, credential_revision FROM users "
+                    "WHERE id = :i FOR UPDATE"
                 ),
                 {"i": user_id},
             )
@@ -323,6 +324,11 @@ def change_password(body: PasswordChangeRequest, request: Request) -> JSONRespon
             .first()
         )
         assert current is not None
+        # An admin reset/deactivation may have committed while this request
+        # waited for the account lock. Never revive a revoked session.
+        denied, _ = _require_session(request, conn)
+        if denied is not None:
+            return denied
         # Exact comparison; no trimming, no complexity rule.
         if not verify_password(body.current_password, str(current["password_hash"])):
             return JSONResponse(
@@ -336,7 +342,7 @@ def change_password(body: PasswordChangeRequest, request: Request) -> JSONRespon
         conn.execute(
             text(
                 "UPDATE users SET password_hash = :h, credential_revision = :r, "
-                " updated_at = now() WHERE id = :i"
+                " revision = revision + 1, updated_at = now() WHERE id = :i"
             ),
             {"h": new_hash, "r": new_rev, "i": user_id},
         )

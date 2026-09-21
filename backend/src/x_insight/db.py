@@ -19,7 +19,7 @@ from contextlib import contextmanager
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Connection, Engine
 
-EXPECTED_SCHEMA_REVISION = "0002"
+EXPECTED_SCHEMA_REVISION = "0003"
 
 _DEFAULT_URL = "postgresql://xinsight:xinsight_dev@localhost:5432/xinsight_dev"
 
