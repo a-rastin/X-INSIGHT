@@ -1,41 +1,59 @@
-# physician()
+# physician
 
-> God node · 23 connections · `backend/src/x_insight/identity/accounts.py`
+> 26 nodes
 
-**Community:** [test_drafts.py](test_drafts.py.md)
+## Key Concepts
 
-## Connections by Relation
+- **physician()** (28 connections) — `backend/src/x_insight/identity/accounts.py`
+- **test_drafts.py** (28 connections) — `backend/tests/http/test_drafts.py`
+- **create_patient()** (13 connections) — `backend/tests/http/test_drafts.py`
+- **create_physician()** (13 connections) — `backend/tests/http/test_drafts.py`
+- **login()** (12 connections) — `backend/tests/http/test_drafts.py`
+- **encounter_body()** (9 connections) — `backend/tests/http/test_drafts.py`
+- **test_author_discards_draft_with_confirmation()** (9 connections) — `backend/tests/http/test_drafts.py`
+- **test_malformed_patch_rejected_without_revision_bump()** (8 connections) — `backend/tests/http/test_drafts.py`
+- **discard_headers()** (7 connections) — `backend/tests/http/test_drafts.py`
+- **draft_headers()** (7 connections) — `backend/tests/http/test_drafts.py`
+- **test_author_saves_and_retrieves_draft_across_restart()** (7 connections) — `backend/tests/http/test_drafts.py`
+- **test_discard_requires_explicit_confirmation()** (7 connections) — `backend/tests/http/test_drafts.py`
+- **test_double_discard_conflicts()** (7 connections) — `backend/tests/http/test_drafts.py`
+- **test_discard_forbidden_for_non_author_and_anonymous()** (6 connections) — `backend/tests/http/test_drafts.py`
+- **test_discard_rejects_stale_revision()** (6 connections) — `backend/tests/http/test_drafts.py`
+- **test_revision_precondition_required()** (6 connections) — `backend/tests/http/test_drafts.py`
+- **test_shared_read_but_author_only_write()** (6 connections) — `backend/tests/http/test_drafts.py`
+- **test_terminal_invalid_and_archived_draft_rejected()** (6 connections) — `backend/tests/http/test_drafts.py`
+- **test_unauthenticated_draft_access_denied()** (5 connections) — `backend/tests/http/test_drafts.py`
+- **patient_headers()** (3 connections) — `backend/tests/http/test_drafts.py`
+- **discard_audit_rows()** (2 connections) — `backend/tests/http/test_drafts.py`
+- **S07 slice 1: author saves/retrieves draft; shared read, author-only write.…** (1 connections) — `backend/tests/http/test_drafts.py`
+- **# NOTE: discard route lands in slice 4, so terminal states are set via** (1 connections) — `backend/tests/http/test_drafts.py`
+- **S07 slice 3: failed (malformed) save returns 422, revision stays 1.** (1 connections) — `backend/tests/http/test_drafts.py`
+- **CSRF + optional If-Match headers; never an Idempotency-Key (by design).** (1 connections) — `backend/tests/http/test_drafts.py`
+- *... and 1 more nodes in this community*
 
-### calls
-- change_active() `EXTRACTED`
-- edit_physician() `EXTRACTED`
-- get_physician() `EXTRACTED`
-- review_deactivation() `EXTRACTED`
+## Relationships
 
-### contains
-- [accounts.py](accounts.py.md) `EXTRACTED`
+- [accounts.py](accounts.py.md) (8 shared connections)
+- [http/test_diagnosis.py](http-test_diagnosis.py.md) (5 shared connections)
+- [test_patients.py](test_patients.py.md) (3 shared connections)
+- [test_physicians.py](test_physicians.py.md) (3 shared connections)
+- [encounters.py](encounters.py.md) (2 shared connections)
+- [test_identity.py](test_identity.py.md) (1 shared connections)
+- [app.py](app.py.md) (1 shared connections)
+- [throttle.py](throttle.py.md) (1 shared connections)
+- [test_content.py](test_content.py.md) (1 shared connections)
+- [reset_all](reset_all.md) (1 shared connections)
 
-### indirect_call
-- test_author_discards_draft_with_confirmation() `INFERRED`
-- test_malformed_patch_rejected_without_revision_bump() `INFERRED`
-- test_author_saves_and_retrieves_draft_across_restart() `INFERRED`
-- test_discard_requires_explicit_confirmation() `INFERRED`
-- test_double_discard_conflicts() `INFERRED`
-- test_discard_rejects_stale_revision() `INFERRED`
-- test_revision_precondition_required() `INFERRED`
-- test_terminal_invalid_and_archived_draft_rejected() `INFERRED`
-- test_concurrent_duplicate_archived_and_idempotent_create() `INFERRED`
-- test_unauthenticated_draft_access_denied() `INFERRED`
-- test_patient_field_validation_rejects_bad_demographics() `INFERRED`
-- test_physician_registers_patient_with_registration_draft() `INFERRED`
-- test_account_commands_replay_without_duplicate_mutations_or_secret_audit() `INFERRED`
-- test_admin_manages_safe_physician_accounts_with_stable_identity() `INFERRED`
-- test_deactivation_requires_review_and_explicit_discard_confirmation() `INFERRED`
+## Source Files
 
-### references
-- UUID `EXTRACTED`
-- Any `EXTRACTED`
-- Connection `EXTRACTED`
+- `backend/src/x_insight/identity/accounts.py`
+- `backend/tests/http/test_drafts.py`
+
+## Audit Trail
+
+- EXTRACTED: 93 (82%)
+- INFERRED: 20 (18%)
+- AMBIGUOUS: 0 (0%)
 
 ---
 

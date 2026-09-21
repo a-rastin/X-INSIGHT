@@ -1,33 +1,33 @@
 # Graph Report - X-INSIGHT  (2026-09-21)
 
 ## Corpus Check
-- 121 files · ~1,191,864 words
+- 128 files · ~1,195,240 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 26 file(s) not represented in the graph (top: .xml 13, (none) 8, .example 1)
 
 ## Summary
-- 1709 nodes · 2316 edges · 146 communities (114 shown, 32 thin omitted)
+- 1750 nodes · 2411 edges · 140 communities (110 shown, 30 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 28 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7916eda4`
+- Built from commit: `c747e612`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - STATEMENT 4: Antipsychotic Medications
-- conftest.py
+- test_content.py
 - MCP Server Evaluation Guide
 - X-INSIGHT — MCP Server Design
 - Node/TypeScript MCP Server Implementation Guide
 - X-INSIGHT implementation plan
 - App.tsx
-- patients.py
+- routes.py
 - X-INSIGHT — System Design
 - Python MCP Server Implementation Guide
 - test_drafts.py
-- routes.py
+- _require_session
 - accounts.py
 - DDI-Module.md
 - Dev Backend
@@ -40,7 +40,7 @@
 - Physical examination and item scoring
 - UI Context
 - create_patient
-- main
+- test_definitions.py
 - test_contracts.py
 - Appendix D. Strength of Evidence
 - AGENTS.md
@@ -95,27 +95,27 @@
 - mcp-builder/SKILL.md
 - MCPConnectionStdio
 - 📚 Documentation Library
-- PatientCreate
+- throttle.py
 - 8. Final plans, shared records, and reporting
 - 9. Recovery and Linux operation
 - STATEMENT 7: Clozapine in Treatment-Resistant Schizophrenia
 - Commit
 - .call_tool
 - Phase 1: Deep Research and Planning
-- transaction
+- record_audit
 - X-INSIGHT coding sessions
 - Medication-Induced Acute Dystonia
 - STATEMENT 14: VMAT2 Medications for Tardive Dyskinesia
 - Guideline Statement Summary
 - Tardive Dyskinesia
-- Quality Checklist
+- Quick Reference
 - Dev Manager
 - graphify reference: add a URL and watch a folder
 - graphify reference: commit hook and native CLAUDE.md integration
 - graphify reference: incremental update and cluster-only
-- Advanced FastMCP Features
-- Workflows
-- .valid_username
+- Security Best Practices
+- Phase 4: Create Evaluations
+- Transport Options
 - STATEMENT 21: Self-Management Skills and Recovery-Focused
 - Tools
 - Dev Test
@@ -149,19 +149,13 @@
 - Table 8
 - Table 9
 - x-insight
-- Quick Reference
-- ReadinessError
-- Code Best Practices
-- Tool Implementation
-- health
-- Any
 
 ## God Nodes (most connected - your core abstractions)
 1. `STATEMENT 4: Antipsychotic Medications` - 63 edges
 2. `Appendix C.` - 27 edges
-3. `physician()` - 23 edges
-4. `_require_session()` - 23 edges
-5. `transaction()` - 22 edges
+3. `_require_session()` - 25 edges
+4. `transaction()` - 23 edges
+5. `physician()` - 23 edges
 6. `Node/TypeScript MCP Server Implementation Guide` - 21 edges
 7. `6. Model machinery and content packages` - 21 edges
 8. `login()` - 20 edges
@@ -183,15 +177,15 @@
 ## Import Cycles
 - None detected.
 
-## Communities (146 total, 32 thin omitted)
+## Communities (140 total, 30 thin omitted)
 
 ### Community 0 - "STATEMENT 4: Antipsychotic Medications"
 Cohesion: 0.04
 Nodes (55): Acute Dystonia, Akathisia, Allergic and Dermatological Side Effects, Anticholinergic Effects, APA Practice Guideline for the Treatment of Patients With Schizophrenia, Available Drug Formulations, Balancing of Benefits and Harms, Balancing of Benefits and Harms (+47 more)
 
-### Community 1 - "conftest.py"
-Cohesion: 0.07
-Nodes (16): alembic, alembic_config, _database_url(), Run migrations in 'offline' mode. This configures the context with just a URL…, Run migrations in 'online' mode. In this scenario we need to create an Engine…, run_migrations_offline(), run_migrations_online(), _isolate_audit_rows() (+8 more)
+### Community 1 - "test_content.py"
+Cohesion: 0.06
+Nodes (23): alembic, alembic_config, _database_url(), Run migrations in 'offline' mode. This configures the context with just a URL…, Run migrations in 'online' mode. In this scenario we need to create an Engine…, run_migrations_offline(), run_migrations_online(), _isolate_audit_rows() (+15 more)
 
 ### Community 2 - "MCP Server Evaluation Guide"
 Cohesion: 0.04
@@ -213,29 +207,29 @@ Nodes (40): 10.1 Exports and audit, 10.2 Backup creation, 10.3 Restore workflow,
 Cohesion: 0.06
 Nodes (53): 5. Persistence and invariants, react, react-dom, changeOwnPassword(), createPatient(), createPhysician(), csrfToken(), discardEncounter() (+45 more)
 
-### Community 7 - "patients.py"
-Cohesion: 0.08
-Nodes (34): Attach the standard contract handlers to another app (tests reuse)., Propagate/generate request IDs, enforce body size, echo ID on errors., register_exception_handlers(), RequestContextMiddleware, Author-owned draft persistence (S07 slice 1: GET/PATCH with revisions)., Patient registration (S06 slice 1: create patient + registration draft)., new_request_id(), parse_idempotency_key() (+26 more)
+### Community 7 - "routes.py"
+Cohesion: 0.15
+Nodes (24): Attach the standard contract handlers to another app (tests reuse)., register_exception_handlers(), Released-only assessment content serving., Author-owned draft persistence (S07 slice 1: GET/PATCH with revisions)., Patient registration (S06 slice 1: create patient + registration draft)., Shared HTTP/JSON contracts. Canonical JSON and UTC helpers are documented at…, dispose_engines(), PostgreSQL connection lifecycle and readiness. Roles are logical connection… (+16 more)
 
 ### Community 8 - "X-INSIGHT — System Design"
 Cohesion: 0.05
 Nodes (39): 10. External API contracts, 11.1 Prototype security boundary, 11.2 Audit, 11.3 CSV and printable HTML, 11.4 Backup and restore, 11. Security, audit, exports, and recovery, 12. Deployment, operations, and growth, 13. Architecture decision records (+31 more)
 
 ### Community 9 - "Python MCP Server Implementation Guide"
-Cohesion: 0.15
-Nodes (13): Async/Await Best Practices, Complete Example, Error Handling, MCP Python SDK and FastMCP, Overview, Pagination Implementation, Pydantic v2 Key Features, Python MCP Server Implementation Guide (+5 more)
+Cohesion: 0.06
+Nodes (36): Advanced FastMCP Features, Advanced Features (where applicable), Async/Await Best Practices, Code Best Practices, Code Composability and Reusability, Code Quality, Complete Example, Context Parameter Injection (+28 more)
 
 ### Community 10 - "test_drafts.py"
-Cohesion: 0.07
-Nodes (61): physician(), now(), Injectable clock for identity (throttling windows; sessions have no timeout).…, Return current clock seconds (monkeypatchable in tests)., Override the clock (tests only)., Restore the production clock., reset_now_fn(), set_now_fn() (+53 more)
+Cohesion: 0.11
+Nodes (45): physician(), create_patient(), create_physician(), discard_audit_rows(), discard_headers(), draft_headers(), encounter_body(), login() (+37 more)
 
-### Community 11 - "routes.py"
-Cohesion: 0.10
-Nodes (46): error_body(), Build the standard error envelope (plan section 4.3)., Compare an exact password against a stored hash; False on malformed., verify_password(), change_password(), _check_csrf(), _client_key(), _generic_login_denied() (+38 more)
+### Community 11 - "_require_session"
+Cohesion: 0.14
+Nodes (31): error_body(), Build the standard error envelope (plan section 4.3)., Compare an exact password against a stored hash; False on malformed., verify_password(), change_password(), _check_csrf(), _client_key(), _generic_login_denied() (+23 more)
 
 ### Community 12 - "accounts.py"
-Cohesion: 0.19
-Nodes (35): parse_if_match(), Return the ``If-Match`` revision tag, or None when absent., account_response(), AccountCreate, AccountEdit, change_active(), check_revision(), create_physician() (+27 more)
+Cohesion: 0.11
+Nodes (49): canonical_json(), content_hash(), parse_idempotency_key(), parse_if_match(), Any, Encode canonical UTF-8 JSON: sorted keys, compact, finite numbers. Object keys…, SHA-256 hex of the canonical JSON encoding., Return the ``If-Match`` revision tag, or None when absent. (+41 more)
 
 ### Community 13 - "DDI-Module.md"
 Cohesion: 0.06
@@ -258,8 +252,8 @@ Cohesion: 0.09
 Nodes (21): 1. In-process, 2. Local-substitutable, 3. Remote but owned (Ports & Adapters), 4. True external (Mock), Deepening, Dependency categories, Seam discipline, Testing strategy: replace, don't layer (+13 more)
 
 ### Community 18 - "store.py"
-Cohesion: 0.27
-Nodes (8): hash_password(), Standard password hashing (stdlib PBKDF2-HMAC-SHA256). No new dependency:…, Hash an exact (untrimmed) password; caller rejects empty input., Identity persistence: users, sessions, singleton admin seed. Usernames are…, base64, hashlib, hmac, secrets
+Cohesion: 0.13
+Nodes (20): hash_password(), Standard password hashing (stdlib PBKDF2-HMAC-SHA256). No new dependency:…, Hash an exact (untrimmed) password; caller rejects empty input., create_session(), get_user_by_id(), get_user_by_username(), get_valid_session(), Any (+12 more)
 
 ### Community 19 - "6. Model machinery and content packages"
 Cohesion: 0.10
@@ -278,12 +272,12 @@ Cohesion: 0.12
 Nodes (16): Border Radius, Canonical Color System, Color roles, Color usage rules, Current Design Character, Motion, Product Identity and Branding, Shadows (+8 more)
 
 ### Community 23 - "create_patient"
-Cohesion: 0.14
-Nodes (18): create_patient(), _encounter_payload(), list_patients(), _patient_payload(), Any, ge, get, JSONResponse (+10 more)
+Cohesion: 0.11
+Nodes (21): create_patient(), _encounter_payload(), list_patients(), _patient_payload(), PatientCreate, Any, BaseModel, field_validator (+13 more)
 
-### Community 24 - "main"
-Cohesion: 0.14
-Nodes (11): main(), check(), cross_network_reference(), remove_at(), edit(), two_networks(), Run with python3 test_schema.py; requires lxml (already installed here).…, copy (+3 more)
+### Community 24 - "test_definitions.py"
+Cohesion: 0.07
+Nodes (39): get_assessment_content(), load_released(), _load_with_reason(), Any, get, JSONResponse, Path, Request (+31 more)
 
 ### Community 25 - "test_contracts.py"
 Cohesion: 0.27
@@ -310,12 +304,12 @@ Cohesion: 0.17
 Nodes (8): ABC, MCPConnection, MCPConnectionHTTP, MCP connection using Streamable HTTP., Base class for MCP server connections., Create the connection context based on connection type., Initialize MCP server connection., Clean up MCP server connection resources.
 
 ### Community 31 - "Project Knowledge Base"
-Cohesion: 0.14
-Nodes (13): AGENTS.md, Completion checks, details.md, Grounding, Ignore rules, index.md, Layout, Page conventions (+5 more)
+Cohesion: 0.11
+Nodes (18): AGENTS.md, Completion checks, details.md, Grounding, Ignore rules, index.md, Ingest, Init (+10 more)
 
 ### Community 32 - "MCP Server Best Practices"
-Cohesion: 0.07
-Nodes (28): Authentication and Authorization, DNS Rebinding Protection, Documentation Requirements, Error Handling, Error Handling, Input Validation, JSON Format (`response_format="json"`), Markdown Format (`response_format="markdown"`, typically default) (+20 more)
+Cohesion: 0.15
+Nodes (13): Documentation Requirements, Error Handling, JSON Format (`response_format="json"`), Markdown Format (`response_format="markdown"`, typically default), MCP Server Best Practices, Pagination, Response Formats, Server Naming Conventions (+5 more)
 
 ### Community 33 - "evaluation.py"
 Cohesion: 0.18
@@ -323,7 +317,7 @@ Nodes (12): main(), parse_env_vars(), parse_headers(), MCP Server Evaluation Har
 
 ### Community 34 - "evaluate_single_task"
 Cohesion: 0.22
-Nodes (13): agent_loop(), evaluate_single_task(), extract_xml_content(), parse_evaluation_file(), Any, Evaluate a single QA pair with the given tools., Run evaluation with MCP server tools., Parse XML evaluation file with qa_pair elements. (+5 more)
+Nodes (13): agent_loop(), evaluate_single_task(), extract_xml_content(), parse_evaluation_file(), Any, Path, Evaluate a single QA pair with the given tools., Run evaluation with MCP server tools. (+5 more)
 
 ### Community 35 - "Test-Driven Development"
 Cohesion: 0.15
@@ -414,8 +408,8 @@ Cohesion: 0.22
 Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
 
 ### Community 59 - "🚀 High-Level Workflow"
-Cohesion: 0.14
-Nodes (14): 2.1 Set Up Project Structure, 2.2 Implement Core Infrastructure, 2.3 Implement Tools, 3.1 Code Quality, 3.2 Build and Test, 4.1 Understand Evaluation Purpose, 4.2 Create 10 Evaluation Questions, 4.3 Evaluation Requirements (+6 more)
+Cohesion: 0.22
+Nodes (9): 2.1 Set Up Project Structure, 2.2 Implement Core Infrastructure, 2.3 Implement Tools, 3.1 Code Quality, 3.2 Build and Test, 🚀 High-Level Workflow, Phase 2: Implementation, Phase 3: Review and Test (+1 more)
 
 ### Community 60 - "Ponytail"
 Cohesion: 0.22
@@ -427,7 +421,7 @@ Nodes (8): 1. Requirements Gathering, 2. High-Level Design, 3. Deep Dive, 4. Sca
 
 ### Community 62 - "test_identity.py"
 Cohesion: 0.12
-Nodes (31): Clear all throttle state (tests only)., reset_all(), clean_drafts(), fixture, _audit_rows(), _clean_identity(), _client(), _login() (+23 more)
+Nodes (32): Clear all throttle state (tests only)., reset_all(), clean_drafts(), fixture, _audit_rows(), _clean_identity(), _client(), _login() (+24 more)
 
 ### Community 63 - "Positive and Negative Syndrome Scale (PANSS)"
 Cohesion: 0.22
@@ -438,8 +432,8 @@ Cohesion: 0.25
 Nodes (7): 1. Pin the fixed point, 2. Identify the spec source, 3. Identify the standards sources, 4. Spawn both sub-agents in parallel, 5. Aggregate, Process, Why two axes
 
 ### Community 65 - "get_engine"
-Cohesion: 0.29
-Nodes (8): check_readiness(), database_url_for(), get_engine(), Return the configured URL for a logical role., Return a cached engine for the given URL (or the app role)., Raise ReadinessError(UNAVAILABLE|INCOMPATIBLE_SCHEMA) when not ready., _sqlalchemy_url(), Engine
+Cohesion: 0.18
+Nodes (11): check_readiness(), database_url_for(), get_engine(), Exception, Database readiness failure with a public code., Return the configured URL for a logical role., Return a cached engine for the given URL (or the app role)., Raise ReadinessError(UNAVAILABLE|INCOMPATIBLE_SCHEMA) when not ready. (+3 more)
 
 ### Community 66 - "STATEMENT 4: Antipsychotic Medications"
 Cohesion: 0.25
@@ -466,8 +460,8 @@ Cohesion: 0.29
 Nodes (7): Balancing of Benefits and Harms, Differences of Opinion Among Writing Group Members, Identification of Treatment-Resistant Schizophrenia, Implementation, Quality Measurement Considerations, Review of Available Guidelines From Other Organizations, STATEMENT 7: Clozapine in Treatment-Resistant Schizophrenia
 
 ### Community 73 - "ready"
-Cohesion: 0.21
-Nodes (15): _http_exception_handler(), Exception, JSONResponse, Request, Standard envelope for HTTP errors (shared with handler registration)., Standard 422 envelope with field errors., Safe 500 envelope: no traceback, no secrets., Readiness: database reachable and schema at the expected revision. (+7 more)
+Cohesion: 0.11
+Nodes (23): health(), _http_exception_handler(), Any, Exception, get, JSONResponse, Request, Standard envelope for HTTP errors (shared with handler registration). (+15 more)
 
 ### Community 74 - "/agent-browser"
 Cohesion: 0.33
@@ -485,9 +479,9 @@ Nodes (5): For /graphify explain, For /graphify path, graphify reference: query,
 Cohesion: 0.33
 Nodes (6): Core MCP Documentation (Load First), 📚 Documentation Library, Evaluation Guide (Load During Phase 4), Language-Specific Implementation Guides (Load During Phase 2), Reference Files, SDK Documentation (Load During Phase 1/2)
 
-### Community 81 - "PatientCreate"
-Cohesion: 0.50
-Nodes (3): PatientCreate, BaseModel, field_validator
+### Community 81 - "throttle.py"
+Cohesion: 0.13
+Nodes (16): now(), Injectable clock for identity (throttling windows; sessions have no timeout).…, Return current clock seconds (monkeypatchable in tests)., Override the clock (tests only)., Restore the production clock., reset_now_fn(), set_now_fn(), clear() (+8 more)
 
 ### Community 82 - "8. Final plans, shared records, and reporting"
 Cohesion: 0.33
@@ -513,9 +507,9 @@ Nodes (3): Any, Retrieve available tools from the MCP server., Call a tool on th
 Cohesion: 0.40
 Nodes (5): 1.1 Understand Modern MCP Design, 1.2 Study MCP Protocol Documentation, 1.3 Study Framework Documentation, 1.4 Plan Your Implementation, Phase 1: Deep Research and Planning
 
-### Community 91 - "transaction"
-Cohesion: 0.13
-Nodes (24): discard_encounter(), DiscardRequest, DraftPatch, _get_encounter(), list_encounters(), patch_encounter(), _payload(), Any (+16 more)
+### Community 91 - "record_audit"
+Cohesion: 0.15
+Nodes (21): discard_encounter(), DiscardRequest, DraftPatch, _get_encounter(), list_encounters(), patch_encounter(), _payload(), Any (+13 more)
 
 ### Community 92 - "X-INSIGHT coding sessions"
 Cohesion: 0.22
@@ -537,9 +531,9 @@ Nodes (4): Assessment and Determination of Treatment Plan, Guideline Statement S
 Cohesion: 0.40
 Nodes (4): Diagnostic features, Differential diagnosis, Research criteria and assessment, Tardive Dyskinesia
 
-### Community 97 - "Quality Checklist"
-Cohesion: 0.29
-Nodes (7): Advanced Features (where applicable), Code Quality, Implementation Quality, Quality Checklist, Strategic Design, Testing, Tool Configuration
+### Community 97 - "Quick Reference"
+Cohesion: 0.33
+Nodes (6): Pagination, Quick Reference, Response Formats, Server Naming, Tool Naming, Transport
 
 ### Community 98 - "Dev Manager"
 Cohesion: 0.50
@@ -557,13 +551,17 @@ Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify refer
 Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
-### Community 102 - "Advanced FastMCP Features"
-Cohesion: 0.33
-Nodes (6): Advanced FastMCP Features, Context Parameter Injection, Lifespan Management, Resource Registration, Structured Output Types, Transport Options
-
-### Community 103 - "Workflows"
+### Community 102 - "Security Best Practices"
 Cohesion: 0.40
-Nodes (5): Ingest, Init, Query, Update and maintenance, Workflows
+Nodes (5): Authentication and Authorization, DNS Rebinding Protection, Error Handling, Input Validation, Security Best Practices
+
+### Community 103 - "Phase 4: Create Evaluations"
+Cohesion: 0.40
+Nodes (5): 4.1 Understand Evaluation Purpose, 4.2 Create 10 Evaluation Questions, 4.3 Evaluation Requirements, 4.4 Output Format, Phase 4: Create Evaluations
+
+### Community 104 - "Transport Options"
+Cohesion: 0.50
+Nodes (4): stdio, Streamable HTTP, Transport Options, Transport Selection
 
 ### Community 105 - "STATEMENT 21: Self-Management Skills and Recovery-Focused"
 Cohesion: 0.50
@@ -621,45 +619,25 @@ Nodes (3): Grading of the Overall Supporting Body of Research Evidence for the E
 Cohesion: 0.67
 Nodes (3): Grading of the Overall Supporting Body of Research Evidence for the Efficacy of LAI Antipsychotic Medications, Grading of the Overall Supporting Body of Research Evidence for the Harms of LAI Antipsychotic Medications, STATEMENT 10: Long-Acting Injectable Antipsychotic
 
-### Community 140 - "Quick Reference"
-Cohesion: 0.50
-Nodes (4): Key Imports, Quick Reference, Server Initialization, Tool Registration Pattern
-
-### Community 141 - "ReadinessError"
-Cohesion: 0.50
-Nodes (3): Exception, Database readiness failure with a public code., ReadinessError
-
-### Community 142 - "Code Best Practices"
-Cohesion: 0.67
-Nodes (3): Code Best Practices, Code Composability and Reusability, Python-Specific Best Practices
-
-### Community 143 - "Tool Implementation"
-Cohesion: 0.67
-Nodes (3): Tool Implementation, Tool Naming, Tool Structure with FastMCP
-
-### Community 144 - "health"
-Cohesion: 0.67
-Nodes (3): health(), get, Liveness only; never touches the database.
-
 ## Knowledge Gaps
 - **844 isolated node(s):** `x-insight`, `name`, `version`, `private`, `type` (+839 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1111 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **32 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1119 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **30 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `@playwright/test` connect `identity.spec.ts` to `autosave.spec.ts`, `themes.spec.ts`, `registration.spec.ts`, `accessibility.spec.ts`, `discard.spec.ts`, `draft-safety.spec.ts`, `package.json`?**
-  _High betweenness centrality (0.012) - this node is a cross-community bridge._
-- **Why does `X-INSIGHT — System Design` connect `X-INSIGHT — System Design` to `X-INSIGHT — MCP Server Design`, `App.tsx`?**
-  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+  _High betweenness centrality (0.009) - this node is a cross-community bridge._
 - **Why does `react` connect `App.tsx` to `package.json`?**
-  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+- **Why does `X-INSIGHT — System Design` connect `X-INSIGHT — System Design` to `X-INSIGHT — MCP Server Design`, `App.tsx`?**
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
 - **Are the 15 inferred relationships involving `physician()` (e.g. with `test_author_discards_draft_with_confirmation()` and `test_author_saves_and_retrieves_draft_across_restart()`) actually correct?**
   _`physician()` has 15 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `x-insight`, `name`, `version` to the rest of the system?**
   _844 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `STATEMENT 4: Antipsychotic Medications` be split into smaller, more focused modules?**
   _Cohesion score 0.03571428571428571 - nodes in this community are weakly interconnected._
-- **Should `conftest.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.07196969696969698 - nodes in this community are weakly interconnected._
+- **Should `test_content.py` be split into smaller, more focused modules?**
+  _Cohesion score 0.05807200929152149 - nodes in this community are weakly interconnected._

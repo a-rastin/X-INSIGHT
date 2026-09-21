@@ -1,6 +1,6 @@
 # test_definitions.py
 
-> 46 nodes
+> 45 nodes
 
 ## Key Concepts
 
@@ -9,7 +9,6 @@
 - **load_definition()** (9 connections) — `backend/src/x_insight/assessments/__init__.py`
 - **main()** (9 connections) — `BNs/test_schema.py`
 - **get_assessment_content()** (7 connections) — `backend/src/x_insight/assessments/content.py`
-- **assessments/__init__.py** (7 connections) — `backend/src/x_insight/assessments/__init__.py`
 - **_load_with_reason()** (6 connections) — `backend/src/x_insight/assessments/content.py`
 - **test_schema.py** (6 connections) — `BNs/test_schema.py`
 - **load_released()** (5 connections) — `backend/src/x_insight/assessments/content.py`
@@ -29,14 +28,15 @@
 - **test_max_operator_scores_peak()** (2 connections) — `backend/tests/assessments/test_definitions.py`
 - **test_mixed_skip_rejected()** (2 connections) — `backend/tests/assessments/test_definitions.py`
 - **test_out_of_range_answer_rejected()** (2 connections) — `backend/tests/assessments/test_definitions.py`
-- *... and 21 more nodes in this community*
+- **test_undeclared_item_id_rejected()** (2 connections) — `backend/tests/assessments/test_definitions.py`
+- *... and 20 more nodes in this community*
 
 ## Relationships
 
-- [routes.py](routes.py.md) (7 shared connections)
-- [accounts.py](accounts.py.md) (1 shared connections)
-- [_require_session](_require_session.md) (1 shared connections)
-- [test_content.py](test_content.py.md) (1 shared connections)
+- [encounters.py](encounters.py.md) (10 shared connections)
+- [transaction](transaction.md) (1 shared connections)
+- [routes.py](routes.py.md) (1 shared connections)
+- [test_identity.py](test_identity.py.md) (1 shared connections)
 - [evaluation.py](evaluation.py.md) (1 shared connections)
 
 ## Source Files
@@ -48,7 +48,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 79 (94%)
+- EXTRACTED: 77 (94%)
 - INFERRED: 5 (6%)
 - AMBIGUOUS: 0 (0%)
 

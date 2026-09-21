@@ -1,10 +1,11 @@
 # 🚀 High-Level Workflow
 
-> 9 nodes
+> 14 nodes
 
 ## Key Concepts
 
 - **🚀 High-Level Workflow** (5 connections) — `.agents/skills/mcp-builder/SKILL.md`
+- **Phase 4: Create Evaluations** (5 connections) — `.agents/skills/mcp-builder/SKILL.md`
 - **Phase 2: Implementation** (4 connections) — `.agents/skills/mcp-builder/SKILL.md`
 - **Phase 3: Review and Test** (3 connections) — `.agents/skills/mcp-builder/SKILL.md`
 - **Process** (2 connections) — `.agents/skills/mcp-builder/SKILL.md`
@@ -13,10 +14,13 @@
 - **2.3 Implement Tools** (1 connections) — `.agents/skills/mcp-builder/SKILL.md`
 - **3.1 Code Quality** (1 connections) — `.agents/skills/mcp-builder/SKILL.md`
 - **3.2 Build and Test** (1 connections) — `.agents/skills/mcp-builder/SKILL.md`
+- **4.1 Understand Evaluation Purpose** (1 connections) — `.agents/skills/mcp-builder/SKILL.md`
+- **4.2 Create 10 Evaluation Questions** (1 connections) — `.agents/skills/mcp-builder/SKILL.md`
+- **4.3 Evaluation Requirements** (1 connections) — `.agents/skills/mcp-builder/SKILL.md`
+- **4.4 Output Format** (1 connections) — `.agents/skills/mcp-builder/SKILL.md`
 
 ## Relationships
 
-- [Phase 4: Create Evaluations](Phase_4-_Create_Evaluations.md) (1 shared connections)
 - [Phase 1: Deep Research and Planning](Phase_1-_Deep_Research_and_Planning.md) (1 shared connections)
 - [mcp-builder/SKILL.md](mcp-builder-SKILL.md.md) (1 shared connections)
 
@@ -26,7 +30,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 11 (100%)
+- EXTRACTED: 15 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

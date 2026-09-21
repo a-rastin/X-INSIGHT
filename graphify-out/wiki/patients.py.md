@@ -1,17 +1,18 @@
-# create_patient
+# patients.py
 
-> 23 nodes
+> 26 nodes
 
 ## Key Concepts
 
+- **patients.py** (31 connections) — `backend/src/x_insight/cases/patients.py`
 - **create_patient()** (16 connections) — `backend/src/x_insight/cases/patients.py`
 - **list_patients()** (11 connections) — `backend/src/x_insight/cases/patients.py`
-- **to_utc_z()** (10 connections) — `backend/src/x_insight/contracts.py`
+- **to_utc_z()** (11 connections) — `backend/src/x_insight/contracts.py`
+- **parse_idempotency_key()** (6 connections) — `backend/src/x_insight/contracts.py`
 - **PatientCreate** (5 connections) — `backend/src/x_insight/cases/patients.py`
 - **_patient_payload()** (5 connections) — `backend/src/x_insight/cases/patients.py`
 - **_encounter_payload()** (4 connections) — `backend/src/x_insight/cases/patients.py`
-- **utc_now()** (3 connections) — `backend/src/x_insight/contracts.py`
-- **datetime** (3 connections)
+- **pydantic** (4 connections)
 - **._letters_only()** (2 connections) — `backend/src/x_insight/cases/patients.py`
 - **._patient_id_ascii_digits()** (2 connections) — `backend/src/x_insight/cases/patients.py`
 - **Any** (2 connections)
@@ -25,16 +26,22 @@
 - **le** (1 connections)
 - **post** (1 connections)
 - **Query** (1 connections)
-- **Return the current timezone-aware UTC time (server timestamps).** (1 connections) — `backend/src/x_insight/contracts.py`
+- **Patient registration (S06 slice 1: create patient + registration draft).** (1 connections) — `backend/src/x_insight/cases/patients.py`
 - **Serialize a datetime as UTC ``...Z`` ISO-8601 text.** (1 connections) — `backend/src/x_insight/contracts.py`
+- **Return the ``Idempotency-Key`` value, or None when absent/invalid.** (1 connections) — `backend/src/x_insight/contracts.py`
+- *... and 1 more nodes in this community*
 
 ## Relationships
 
+- [encounters.py](encounters.py.md) (15 shared connections)
 - [routes.py](routes.py.md) (11 shared connections)
-- [accounts.py](accounts.py.md) (6 shared connections)
-- [_require_session](_require_session.md) (5 shared connections)
+- [accounts.py](accounts.py.md) (5 shared connections)
+- [transaction](transaction.md) (4 shared connections)
+- [store.py](store.py.md) (3 shared connections)
 - [record_audit](record_audit.md) (2 shared connections)
-- [store.py](store.py.md) (1 shared connections)
+- [evaluation.py](evaluation.py.md) (1 shared connections)
+- [app.py](app.py.md) (1 shared connections)
+- [test_identity.py](test_identity.py.md) (1 shared connections)
 
 ## Source Files
 
@@ -43,7 +50,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 52 (100%)
+- EXTRACTED: 80 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

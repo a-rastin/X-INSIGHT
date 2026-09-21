@@ -1,52 +1,53 @@
-# ready
+# app.py
 
-> 26 nodes
+> 19 nodes
 
 ## Key Concepts
 
+- **app.py** (32 connections) — `backend/src/x_insight/app.py`
 - **ready()** (9 connections) — `backend/src/x_insight/app.py`
 - **_http_exception_handler()** (8 connections) — `backend/src/x_insight/app.py`
 - **_unhandled_exception_handler()** (8 connections) — `backend/src/x_insight/app.py`
 - **_validation_exception_handler()** (8 connections) — `backend/src/x_insight/app.py`
 - **_request_id()** (7 connections) — `backend/src/x_insight/app.py`
-- **.__call__()** (5 connections) — `backend/src/x_insight/app.py`
-- **new_request_id()** (5 connections) — `backend/src/x_insight/contracts.py`
 - **Request** (5 connections)
-- **RequestContextMiddleware** (4 connections) — `backend/src/x_insight/app.py`
-- **health()** (3 connections) — `backend/src/x_insight/app.py`
-- **Any** (3 connections)
 - **JSONResponse** (3 connections)
 - **exception_handler** (3 connections)
-- **.__init__()** (2 connections) — `backend/src/x_insight/app.py`
-- **get** (2 connections)
-- **send_with_id()** (1 connections) — `backend/src/x_insight/app.py`
+- **index.md** (2 connections) — `.agents/skills/knowledge-base/SKILL.md`
 - **Exception** (1 connections)
 - **RequestValidationError** (1 connections)
 - **StarletteHTTPException** (1 connections)
 - **Standard envelope for HTTP errors (shared with handler registration).** (1 connections) — `backend/src/x_insight/app.py`
 - **Standard 422 envelope with field errors.** (1 connections) — `backend/src/x_insight/app.py`
 - **Safe 500 envelope: no traceback, no secrets.** (1 connections) — `backend/src/x_insight/app.py`
-- **Liveness only; never touches the database.** (1 connections) — `backend/src/x_insight/app.py`
 - **Readiness: database reachable and schema at the expected revision.** (1 connections) — `backend/src/x_insight/app.py`
-- **Propagate/generate request IDs, enforce body size, echo ID on errors.** (1 connections) — `backend/src/x_insight/app.py`
-- *... and 1 more nodes in this community*
+- **fastapi_exceptions** (1 connections)
+- **starlette_exceptions** (1 connections)
 
 ## Relationships
 
-- [routes.py](routes.py.md) (9 shared connections)
-- [_require_session](_require_session.md) (5 shared connections)
+- [encounters.py](encounters.py.md) (9 shared connections)
+- [routes.py](routes.py.md) (6 shared connections)
+- [.__call__](__call__.md) (4 shared connections)
+- [health](health.md) (2 shared connections)
+- [test_content.py](test_content.py.md) (2 shared connections)
 - [get_engine](get_engine.md) (1 shared connections)
-- [Project Knowledge Base](Project_Knowledge_Base.md) (1 shared connections)
+- [patients.py](patients.py.md) (1 shared connections)
+- [accounts.py](accounts.py.md) (1 shared connections)
+- [test_contracts.py](test_contracts.py.md) (1 shared connections)
+- [http/test_diagnosis.py](http-test_diagnosis.py.md) (1 shared connections)
+- [physician](physician.md) (1 shared connections)
+- [test_identity.py](test_identity.py.md) (1 shared connections)
 
 ## Source Files
 
+- `.agents/skills/knowledge-base/SKILL.md`
 - `backend/src/x_insight/app.py`
-- `backend/src/x_insight/contracts.py`
 
 ## Audit Trail
 
-- EXTRACTED: 49 (96%)
-- INFERRED: 2 (4%)
+- EXTRACTED: 63 (98%)
+- INFERRED: 1 (2%)
 - AMBIGUOUS: 0 (0%)
 
 ---

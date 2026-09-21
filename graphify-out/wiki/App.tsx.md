@@ -1,44 +1,46 @@
 # App.tsx
 
-> 64 nodes
+> 25 nodes
 
 ## Key Concepts
 
-- **App.tsx** (41 connections) — `web/src/app/App.tsx`
-- **api.ts** (27 connections) — `web/src/app/api.ts`
-- **DraftEditor()** (11 connections) — `web/src/app/App.tsx`
-- **csrfToken()** (8 connections) — `web/src/app/api.ts`
-- **createPatient()** (6 connections) — `web/src/app/api.ts`
-- **createPhysician()** (6 connections) — `web/src/app/api.ts`
-- **changeOwnPassword()** (5 connections) — `web/src/app/api.ts`
-- **discardEncounter()** (5 connections) — `web/src/app/api.ts`
-- **getEncounter()** (5 connections) — `web/src/app/api.ts`
-- **login()** (5 connections) — `web/src/app/api.ts`
-- **patchEncounter()** (5 connections) — `web/src/app/api.ts`
+- **App.tsx** (48 connections) — `web/src/app/App.tsx`
 - **App()** (5 connections) — `web/src/app/App.tsx`
 - **main.tsx** (5 connections) — `web/src/main.tsx`
-- **logout()** (4 connections) — `web/src/app/api.ts`
-- **mutating()** (4 connections) — `web/src/app/api.ts`
-- **updateTheme()** (4 connections) — `web/src/app/api.ts`
-- **saveNow()** (4 connections) — `web/src/app/App.tsx`
-- **PatientsSection()** (4 connections) — `web/src/app/App.tsx`
-- **Encounter** (3 connections) — `web/src/app/api.ts`
-- **Patient** (3 connections) — `web/src/app/api.ts`
 - **fetchSession()** (3 connections) — `web/src/app/api.ts`
-- **idempotencyKey()** (3 connections) — `web/src/app/api.ts`
-- **listEncounters()** (3 connections) — `web/src/app/api.ts`
-- **listPatients()** (3 connections) — `web/src/app/api.ts`
 - **listPhysicians()** (3 connections) — `web/src/app/api.ts`
-- *... and 39 more nodes in this community*
+- **DiagnosisSection()** (3 connections) — `web/src/app/App.tsx`
+- **navigate()** (3 connections) — `web/src/app/App.tsx`
+- **previewDiagnosis()** (3 connections) — `web/src/app/App.tsx`
+- **react** (3 connections) — `web/package.json`
+- **currentRoute()** (2 connections) — `web/src/app/App.tsx`
+- **NavLink()** (2 connections) — `web/src/app/App.tsx`
+- **PhysiciansPage()** (2 connections) — `web/src/app/App.tsx`
+- **react-dom** (2 connections) — `web/package.json`
+- **DiagAnswers** (1 connections) — `web/src/app/App.tsx`
+- **Route** (1 connections) — `web/src/app/App.tsx`
+- **Dashboard()** (1 connections) — `web/src/app/App.tsx`
+- **toggleDomain()** (1 connections) — `web/src/app/App.tsx`
+- **LoginHint()** (1 connections) — `web/src/app/App.tsx`
+- **PhysiciansGate()** (1 connections) — `web/src/app/App.tsx`
+- **Register()** (1 connections) — `web/src/app/App.tsx`
+- **DIAG_CORE** (1 connections) — `web/src/app/App.tsx`
+- **DIAG_DEFAULTS** (1 connections) — `web/src/app/App.tsx`
+- **DIAG_DOMAINS** (1 connections) — `web/src/app/App.tsx`
+- **root** (1 connections) — `web/src/main.tsx`
+- **web_src_shared_theme** (1 connections)
 
 ## Relationships
 
+- [api.ts](api.ts.md) (12 shared connections)
+- [DraftEditor](DraftEditor.md) (6 shared connections)
+- [csrfToken](csrfToken.md) (6 shared connections)
+- [changeOwnPassword](changeOwnPassword.md) (4 shared connections)
+- [PatientsSection](PatientsSection.md) (2 shared connections)
 - [package.json](package.json.md) (2 shared connections)
-- [X-INSIGHT — System Design](X-INSIGHT_—_System_Design.md) (1 shared connections)
 
 ## Source Files
 
-- `docs/dev/system-design/system-design.md`
 - `web/package.json`
 - `web/src/app/App.tsx`
 - `web/src/app/api.ts`
@@ -46,8 +48,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 121 (97%)
-- INFERRED: 4 (3%)
+- EXTRACTED: 63 (98%)
+- INFERRED: 1 (2%)
 - AMBIGUOUS: 0 (0%)
 
 ---

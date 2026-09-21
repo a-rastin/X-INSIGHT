@@ -34,7 +34,7 @@
 ## Relationships
 
 - [X-INSIGHT — MCP Server Design](X-INSIGHT_—_MCP_Server_Design.md) (1 shared connections)
-- [App.tsx](App.tsx.md) (1 shared connections)
+- [api.ts](api.ts.md) (1 shared connections)
 
 ## Source Files
 

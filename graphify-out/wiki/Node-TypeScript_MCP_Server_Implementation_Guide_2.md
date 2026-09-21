@@ -7,13 +7,13 @@
 ## Connections by Relation
 
 ### contains
-- Quality Checklist `EXTRACTED`
+- [Quality Checklist](Quality_Checklist.md) `EXTRACTED`
 - Advanced MCP Features `EXTRACTED`
 - [Quick Reference](Quick_Reference.md) `EXTRACTED`
 - Package Configuration `EXTRACTED`
-- Tool Implementation `EXTRACTED`
+- [Tool Implementation](Tool_Implementation.md) `EXTRACTED`
 - node_mcp_server.md `EXTRACTED`
-- Code Best Practices `EXTRACTED`
+- [Code Best Practices](Code_Best_Practices.md) `EXTRACTED`
 - Zod Schemas for Input Validation `EXTRACTED`
 - Overview `EXTRACTED`
 - Response Format Options `EXTRACTED`
