@@ -5,8 +5,9 @@ Agreed contract under test:
 - GET /api/v1/content/assessments/{type}, type in {diagnosis, panss, cssrs}.
 - Active session required: anonymous gets 401 (generic envelope).
 - Only RELEASED packages served: envelope["review_status"] == "released"
-  AND envelope["definition"] passes the v1 loader. Real repo files are all
-  draft (review_status "draft", key "definition_proposal") -> 404.
+  AND envelope["definition"] passes the v1 loader. diagnosis-v1 is
+  owner-released -> 200; panss/cssrs remain draft
+  (review_status "draft", key "definition_proposal") -> 404.
 - Unknown type -> 404.
 - 200 body: {"schema_version": 1, "assessment_type": <type>,
   "definition_version": str, "definition": {...}} with
@@ -56,9 +57,15 @@ def test_unknown_assessment_type_not_found():
 
 
 def test_draft_definitions_not_exposed():
+    # diagnosis-v1 owner-released -> 200; panss/cssrs still draft -> 404.
     with TestClient(app) as client:
         login(client)
-        for assessment_type in ("diagnosis", "panss", "cssrs"):
+        released = client.get("/api/v1/content/assessments/diagnosis")
+        assert released.status_code == 200
+        body = released.json()
+        assert body["assessment_type"] == "diagnosis"
+        assert body["definition_version"] == "diagnosis-v1"
+        for assessment_type in ("panss", "cssrs"):
             response = client.get(f"/api/v1/content/assessments/{assessment_type}")
             assert response.status_code == 404
 

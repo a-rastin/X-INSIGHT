@@ -12,7 +12,8 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import text
 
 from x_insight import db
-from x_insight.contracts import parse_if_match, to_utc_z
+from x_insight.assessments.diagnosis import evaluate_diagnosis
+from x_insight.contracts import content_hash, parse_if_match, to_utc_z, utc_now
 from x_insight.identity.routes import _check_csrf, _request_id, _require_session
 from x_insight.operations.audit import record_audit
 
@@ -108,6 +109,127 @@ def get_encounter(encounter_id: UUID, request: Request) -> JSONResponse:
         )
 
 
+_STAMPED_ACK_KEYS = frozenset(
+    {"actor_id", "acknowledged_at", "assessed_revision", "answers_hash"}
+)
+
+
+_STAMPED_BYPASS_KEYS = frozenset(
+    {"actor_id", "bypassed_at", "status", "assessed_revision"}
+)
+
+
+def _apply_diagnosis_ack(
+    incoming: dict[str, Any],
+    stored: dict[str, Any],
+    actor_id: str,
+    new_revision: int,
+) -> dict[str, Any]:
+    """Apply S09 slice 3-4 ack/bypass semantics to the autosave payload (PATCH only).
+
+    Bypass contract (slice 4, minimal): client requests with
+    ``{"bypass": {"confirm": True}}`` only; server stamps exactly
+    ``{actor_id, bypassed_at, status, assessed_revision}`` (no reason, no
+    hash). Any other bypass value is 422. Bypass takes precedence over
+    warning_ack: when bypass is active (freshly stamped or preserved),
+    warning_ack is cleared to None since bypassed status is distinct from
+    completion. Bypass persists across GET and across later answer edits
+    that omit the bypass key; clearing requires explicit ``bypass: None``.
+    """
+    if "diagnosis" not in incoming:
+        return incoming
+    diag = incoming["diagnosis"]
+    if not isinstance(diag, dict):
+        raise HTTPException(422, "Invalid diagnosis content.")
+    answers = diag.get("answers")
+    if not isinstance(answers, dict):
+        raise HTTPException(422, "Invalid diagnosis content.")
+    stored_diag = stored.get("diagnosis") if isinstance(stored, dict) else None
+    if "bypass" in diag:
+        incoming_bypass = diag["bypass"]
+        if incoming_bypass is None:
+            new_bypass: dict[str, Any] | None = None
+        elif (
+            isinstance(incoming_bypass, dict)
+            and set(incoming_bypass.keys()) == {"confirm"}
+            and incoming_bypass.get("confirm") is True
+        ):
+            new_bypass = {
+                "actor_id": actor_id,
+                "bypassed_at": to_utc_z(utc_now()),
+                "status": "bypassed",
+                "assessed_revision": new_revision,
+            }
+        else:
+            raise HTTPException(422, "Invalid diagnosis bypass.")
+    else:
+        stored_bypass = (
+            stored_diag.get("bypass") if isinstance(stored_diag, dict) else None
+        )
+        if (
+            isinstance(stored_bypass, dict)
+            and set(stored_bypass.keys()) == set(_STAMPED_BYPASS_KEYS)
+            and stored_bypass.get("status") == "bypassed"
+        ):
+            new_bypass = stored_bypass
+        else:
+            new_bypass = None
+    if new_bypass is not None:
+        out = dict(diag)
+        out["bypass"] = new_bypass
+        out["warning_ack"] = None
+        updated = dict(incoming)
+        updated["diagnosis"] = out
+        return updated
+    if "warning_ack" in diag and diag["warning_ack"] is not None:
+        ack = diag["warning_ack"]
+        if (
+            not isinstance(ack, dict)
+            or set(ack.keys()) != {"confirm"}
+            or ack.get("confirm") is not True
+        ):
+            raise HTTPException(422, "Invalid diagnosis acknowledgement.")
+        try:
+            result = evaluate_diagnosis(answers)
+        except ValueError as exc:
+            raise HTTPException(422, "Invalid diagnosis acknowledgement.") from exc
+        complete = result.get("status") == "complete"
+        below = result.get("threshold_met") is False
+        if not (complete and below):
+            raise HTTPException(422, "Invalid diagnosis acknowledgement.")
+        stamped = {
+            "actor_id": actor_id,
+            "acknowledged_at": to_utc_z(utc_now()),
+            "assessed_revision": new_revision,
+            "answers_hash": content_hash(answers),
+        }
+        out = dict(diag)
+        out["warning_ack"] = stamped
+        out["bypass"] = None
+        updated = dict(incoming)
+        updated["diagnosis"] = out
+        return updated
+    if (
+        isinstance(stored_diag, dict)
+        and isinstance(stored_diag.get("answers"), dict)
+        and stored_diag["answers"] == answers
+        and isinstance(stored_diag.get("warning_ack"), dict)
+        and set(stored_diag["warning_ack"].keys()) == set(_STAMPED_ACK_KEYS)
+    ):
+        out = dict(diag)
+        out["warning_ack"] = stored_diag["warning_ack"]
+        out["bypass"] = None
+        updated = dict(incoming)
+        updated["diagnosis"] = out
+        return updated
+    out = dict(diag)
+    out["warning_ack"] = None
+    out["bypass"] = None
+    updated = dict(incoming)
+    updated["diagnosis"] = out
+    return updated
+
+
 @router.patch("/encounters/{encounter_id}")
 def patch_encounter(
     encounter_id: UUID, body: DraftPatch, request: Request
@@ -148,6 +270,13 @@ def patch_encounter(
         )
         if patient is not None and patient["archived"]:
             raise HTTPException(409, "Archived patient drafts are read-only.")
+        stored_draft = row["draft_data"] if isinstance(row["draft_data"], dict) else {}
+        new_draft = _apply_diagnosis_ack(
+            dict(body.draft_data),
+            stored_draft,
+            str(actor["user_id"]),
+            int(row["revision"]) + 1,
+        )
         updated = (
             conn.execute(
                 text(
@@ -155,7 +284,7 @@ def patch_encounter(
                     " revision = revision + 1, updated_at = now() "
                     "WHERE id = :id RETURNING *"
                 ),
-                {"id": str(encounter_id), "data": json.dumps(body.draft_data)},
+                {"id": str(encounter_id), "data": json.dumps(new_draft)},
             )
             .mappings()
             .one()
