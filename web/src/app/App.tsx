@@ -389,6 +389,294 @@ function panssDirtyKey(answers: PanssAnswers, notAssessed: boolean): string {
   return JSON.stringify({ answers: ordered, notAssessed });
 }
 
+/** S11 slice 4 C-SSRS ideation helpers (mirror backend evaluate_cssrs, no I/O). */
+type CssrsLevelId = "L1" | "L2" | "L3" | "L4" | "L5";
+type CssrsPeriod = "current" | "historical";
+type CssrsLevel = { endorsed: boolean | null; period: CssrsPeriod | null };
+type CssrsLevels = Record<CssrsLevelId, CssrsLevel>;
+
+const CSSRS_IDS: CssrsLevelId[] = ["L1", "L2", "L3", "L4", "L5"];
+
+const CSSRS_PROMPTS: Record<CssrsLevelId, { construct: string; question: string }> = {
+  L1: {
+    construct: "Wish to be dead",
+    question: "Have you wished you were dead, or wished you could go to sleep and not wake up?",
+  },
+  L2: {
+    construct: "Nonspecific active thoughts",
+    question: "Have you had thoughts of killing yourself, without thinking about a method, intent, or plan?",
+  },
+  L3: {
+    construct: "Method, without intent",
+    question: "Have you thought about how you might kill yourself, without intending to act on those thoughts?",
+  },
+  L4: {
+    construct: "Some intent, no specific plan",
+    question: "Have you had suicidal thoughts and some intention of acting on them, but without a specific plan?",
+  },
+  L5: {
+    construct: "Specific plan and intent",
+    question: "Have you worked out a method or plan for killing yourself, and do you intend to carry it out?",
+  },
+};
+
+function emptyCssrs(): CssrsLevels {
+  return {
+    L1: { endorsed: null, period: null },
+    L2: { endorsed: null, period: null },
+    L3: { endorsed: null, period: null },
+    L4: { endorsed: null, period: null },
+    L5: { endorsed: null, period: null },
+  };
+}
+
+function cssrsFromStored(stored: unknown): {
+  levels: CssrsLevels;
+  notAssessed: boolean;
+  extra: Record<string, unknown>;
+} {
+  const base = emptyCssrs();
+  if (typeof stored !== "object" || stored === null) {
+    return { levels: base, notAssessed: false, extra: {} };
+  }
+  const raw = stored as Record<string, unknown>;
+  if (raw.not_assessed === true) {
+    return { levels: base, notAssessed: true, extra: {} };
+  }
+  const answersRaw =
+    typeof raw.answers === "object" && raw.answers !== null
+      ? (raw.answers as Record<string, unknown>)
+      : null;
+  if (answersRaw === null) {
+    return { levels: base, notAssessed: false, extra: {} };
+  }
+  const extra: Record<string, unknown> = {};
+  for (const key of ["intensity", "behavior", "lethality"]) {
+    if (key in answersRaw) {
+      extra[key] = answersRaw[key];
+    } else if (key in raw) {
+      extra[key] = raw[key];
+    }
+  }
+  for (const id of CSSRS_IDS) {
+    const entry = answersRaw[id];
+    if (typeof entry !== "object" || entry === null) {
+      base[id] = { endorsed: null, period: null };
+      continue;
+    }
+    const rec = entry as Record<string, unknown>;
+    const endorsed = rec.endorsed === true ? true : rec.endorsed === false ? false : null;
+    const period =
+      rec.period === "current" || rec.period === "historical" ? rec.period : null;
+    base[id] = { endorsed, period: endorsed === true ? period : null };
+  }
+  return { levels: base, notAssessed: false, extra };
+}
+
+function previewCssrs(
+  levels: CssrsLevels,
+  notAssessed: boolean,
+): {
+  status: "skipped" | "unanswered" | "partial" | "complete";
+  severity: number | null;
+  missing: CssrsLevelId[];
+  flags: { no_ideation: boolean; clinical_review: boolean; high_risk: boolean };
+} {
+  const noFlags = { no_ideation: false, clinical_review: false, high_risk: false };
+  if (notAssessed) {
+    return { status: "skipped", severity: null, missing: [...CSSRS_IDS], flags: { ...noFlags } };
+  }
+  const missing = CSSRS_IDS.filter((id) => levels[id]?.endorsed === null || levels[id]?.endorsed === undefined);
+  if (missing.length === CSSRS_IDS.length) {
+    return { status: "unanswered", severity: null, missing, flags: { ...noFlags } };
+  }
+  let severity = 0;
+  CSSRS_IDS.forEach((id, index) => {
+    if (levels[id]?.endorsed === true) {
+      severity = index + 1;
+    }
+  });
+  const clinical_review =
+    levels.L1?.endorsed === true || levels.L2?.endorsed === true || levels.L3?.endorsed === true;
+  const high_risk =
+    (levels.L4?.endorsed === true && levels.L4?.period === "current") ||
+    (levels.L5?.endorsed === true && levels.L5?.period === "current");
+  const no_ideation = CSSRS_IDS.every((id) => levels[id]?.endorsed === false);
+  const flags = { no_ideation, clinical_review, high_risk };
+  if (missing.length > 0) {
+    return { status: "partial", severity, missing, flags };
+  }
+  return { status: "complete", severity, missing, flags };
+}
+
+function serializeCssrs(
+  levels: CssrsLevels,
+  notAssessed: boolean,
+  extra?: Record<string, unknown>,
+): Record<string, unknown> | undefined {
+  if (notAssessed) {
+    return { not_assessed: true };
+  }
+  const entries: Record<string, unknown> = {};
+  CSSRS_IDS.forEach((id) => {
+    const level = levels[id];
+    if (level?.endorsed === true) {
+      // Autosave-safe: a Yes without a period is kept locally (preview +
+      // dirty tracking) but withheld from the wire until the period is set,
+      // so an intermediate select never trips the backend period rule (422).
+      if (level.period === "current" || level.period === "historical") {
+        entries[id] = { endorsed: true, period: level.period };
+      }
+    } else if (level?.endorsed === false) {
+      entries[id] = { endorsed: false };
+    }
+  });
+  const preserved = extra ?? {};
+  if (Object.keys(entries).length === 0) {
+    if (Object.keys(preserved).length === 0) {
+      return undefined;
+    }
+    return { answers: { ...preserved } };
+  }
+  return { answers: { ...preserved, ...entries } };
+}
+
+function cssrsDirtyKey(levels: CssrsLevels, notAssessed: boolean): string {
+  const ordered: Record<string, unknown> = {};
+  for (const id of CSSRS_IDS) {
+    ordered[id] = {
+      endorsed: levels[id]?.endorsed ?? null,
+      period: levels[id]?.period ?? null,
+    };
+  }
+  return JSON.stringify({ answers: ordered, notAssessed });
+}
+
+/**
+ * S11 slice 4 C-SSRS section reusing the S07 autosave path (revisionRef/timer/
+ * saveState live in DraftEditor; this section only edits levels + requests skip).
+ * Ideation L1-L5 only; intensity/behavior/lethality are never edited here and
+ * are preserved verbatim by DraftEditor on save. No composite score.
+ */
+function CssrsSection({
+  encounterId,
+  levels,
+  notAssessed,
+  readOnly,
+  onLevelChange,
+  onPeriodChange,
+  onSkip,
+}: {
+  encounterId: string;
+  levels: CssrsLevels;
+  notAssessed: boolean;
+  readOnly: boolean;
+  onLevelChange: (id: CssrsLevelId, value: boolean | null) => void;
+  onPeriodChange: (id: CssrsLevelId, value: CssrsPeriod | null) => void;
+  onSkip: () => void;
+}) {
+  const preview = previewCssrs(levels, notAssessed);
+  const dash = "—";
+  return (
+    <section data-testid="cssrs-section" aria-label="C-SSRS">
+      <h3>C-SSRS</h3>
+      <p>Paraphrase — use authorized form for exact wording.</p>
+      <p>
+        Time window: current = recent, historical = lifetime/history. Record the
+        period for each endorsed level.
+      </p>
+      {preview.status === "skipped" ? <p>Not assessed — skipped.</p> : null}
+      {preview.status === "unanswered" ? <p>Unanswered — select Yes or No for each level.</p> : null}
+      {preview.status === "partial" ? (
+        <p>
+          Partial — {preview.missing.length} missing ({preview.missing.join(", ")}).
+        </p>
+      ) : null}
+      {preview.status === "complete" ? <p>Complete.</p> : null}
+      <p>
+        Severity: <span data-testid="cssrs-severity">{preview.severity === null ? dash : String(preview.severity)}</span>
+      </p>
+      {preview.flags.clinical_review ? (
+        <p data-testid="cssrs-review-flag" role="alert" tabIndex={0}>
+          Clinical review required — documentation and review by the treating clinician.
+        </p>
+      ) : null}
+      {preview.flags.high_risk ? (
+        <p data-testid="cssrs-urgent-flag" role="alert" tabIndex={0}>
+          Urgent — recent level 4/5 requires immediate assessment under local protocol.
+        </p>
+      ) : null}
+      {preview.flags.no_ideation ? <p>No ideation endorsed — continue routine assessment.</p> : null}
+      <p>
+        If current intent/plan, attempt in progress, or inability to stay safe:
+        emergency intervention per local policy — do not wait.
+      </p>
+      {CSSRS_IDS.map((id) => (
+        <div className="x-field" key={id}>
+          <label htmlFor={`cssrs-${encounterId}-${id}`}>
+            {id} — {CSSRS_PROMPTS[id].construct}: {CSSRS_PROMPTS[id].question}
+          </label>
+          <select
+            id={`cssrs-${encounterId}-${id}`}
+            data-testid={`cssrs-item-${id}`}
+            disabled={readOnly}
+            value={
+              levels[id]?.endorsed === true ? "yes" : levels[id]?.endorsed === false ? "no" : ""
+            }
+            onChange={(event) => {
+              const raw = event.target.value;
+              if (raw === "") {
+                onLevelChange(id, null);
+                return;
+              }
+              if (raw === "yes") {
+                onLevelChange(id, true);
+                return;
+              }
+              if (raw === "no") {
+                onLevelChange(id, false);
+                return;
+              }
+            }}
+          >
+            <option value="">Select…</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+          <label htmlFor={`cssrs-period-${encounterId}-${id}`}>{id} period</label>
+          <select
+            id={`cssrs-period-${encounterId}-${id}`}
+            data-testid={`cssrs-period-${id}`}
+            disabled={readOnly || levels[id]?.endorsed !== true}
+            value={levels[id]?.endorsed === true ? (levels[id]?.period ?? "") : ""}
+            onChange={(event) => {
+              const raw = event.target.value;
+              if (raw === "current" || raw === "historical") {
+                onPeriodChange(id, raw);
+                return;
+              }
+              onPeriodChange(id, null);
+            }}
+          >
+            <option value="">Select…</option>
+            <option value="current">current</option>
+            <option value="historical">historical</option>
+          </select>
+        </div>
+      ))}
+      <button
+        type="button"
+        className="x-button"
+        data-testid="cssrs-skip"
+        disabled={readOnly}
+        onClick={onSkip}
+      >
+        Skip
+      </button>
+    </section>
+  );
+}
+
 /**
  * S10 PANSS section reusing the S07 autosave path (revisionRef/timer/saveState
  * live in DraftEditor; this section only edits items + requests skip).
@@ -1031,6 +1319,12 @@ function DraftEditor({
   const panssAnswersRef = useRef<PanssAnswers>(emptyPanssAnswers());
   const panssNotAssessedRef = useRef(false);
   const savedPanssRef = useRef(panssDirtyKey(emptyPanssAnswers(), false));
+  const [cssrsLevels, setCssrsLevels] = useState<CssrsLevels>(() => emptyCssrs());
+  const [cssrsNotAssessed, setCssrsNotAssessed] = useState(false);
+  const cssrsLevelsRef = useRef<CssrsLevels>(emptyCssrs());
+  const cssrsNotAssessedRef = useRef(false);
+  const savedCssrsRef = useRef(cssrsDirtyKey(emptyCssrs(), false));
+  const cssrsExtraRef = useRef<Record<string, unknown>>({});
 
   function isDiagDirty(): boolean {
     return JSON.stringify(diagAnswersRef.current) !== savedDiagRef.current;
@@ -1038,6 +1332,10 @@ function DraftEditor({
 
   function isPanssDirty(): boolean {
     return panssDirtyKey(panssAnswersRef.current, panssNotAssessedRef.current) !== savedPanssRef.current;
+  }
+
+  function isCssrsDirty(): boolean {
+    return cssrsDirtyKey(cssrsLevelsRef.current, cssrsNotAssessedRef.current) !== savedCssrsRef.current;
   }
 
   async function reloadPreservingEdits(): Promise<void> {
@@ -1117,6 +1415,17 @@ function DraftEditor({
         setPanssNotAssessed(initialPanss.notAssessed);
         panssNotAssessedRef.current = initialPanss.notAssessed;
         savedPanssRef.current = panssDirtyKey(initialPanss.answers, initialPanss.notAssessed);
+        const storedCssrs =
+          typeof full.draft_data?.cssrs === "object" && full.draft_data?.cssrs !== null
+            ? (full.draft_data.cssrs as unknown)
+            : null;
+        const initialCssrs = cssrsFromStored(storedCssrs);
+        setCssrsLevels(initialCssrs.levels);
+        cssrsLevelsRef.current = initialCssrs.levels;
+        setCssrsNotAssessed(initialCssrs.notAssessed);
+        cssrsNotAssessedRef.current = initialCssrs.notAssessed;
+        cssrsExtraRef.current = initialCssrs.extra;
+        savedCssrsRef.current = cssrsDirtyKey(initialCssrs.levels, initialCssrs.notAssessed);
         staleRef.current = false;
         setServerNote(null);
         setSaveState("Saved");
@@ -1143,7 +1452,7 @@ function DraftEditor({
   useEffect(() => {
     function onBeforeUnload(event: BeforeUnloadEvent): void {
       if (
-        (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty()) &&
+        (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty()) &&
         encounter !== null
       ) {
         event.preventDefault();
@@ -1156,13 +1465,13 @@ function DraftEditor({
   // Shared dirty flag so in-app navigation (open another draft) can warn.
   useEffect(() => {
     (window as unknown as { __xinsight_dirty?: boolean }).__xinsight_dirty =
-      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty()) &&
+      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty()) &&
       encounter !== null;
   });
 
   function handleClose(): void {
     if (
-      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty()) &&
+      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty()) &&
       encounter !== null
     ) {
       // Warn while local edits remain; dismiss keeps the editor + edits.
@@ -1215,14 +1524,26 @@ function DraftEditor({
       return;
     }
     setSaveState("Saving…");
-    // Snapshot PANSS at fire time so concurrent edits merge via refs.
+    // Snapshot PANSS/C-SSRS at fire time so concurrent edits merge via refs.
     const panssAnsSnapshot: PanssAnswers = { ...panssAnswersRef.current };
     const panssSkipSnapshot = panssNotAssessedRef.current;
     const panssBlock = serializePanss(panssAnsSnapshot, panssSkipSnapshot);
+    const cssrsLevelsSnapshot: CssrsLevels = {
+      L1: { ...cssrsLevelsRef.current.L1 },
+      L2: { ...cssrsLevelsRef.current.L2 },
+      L3: { ...cssrsLevelsRef.current.L3 },
+      L4: { ...cssrsLevelsRef.current.L4 },
+      L5: { ...cssrsLevelsRef.current.L5 },
+    };
+    const cssrsSkipSnapshot = cssrsNotAssessedRef.current;
+    const cssrsExtraSnapshot = { ...cssrsExtraRef.current };
+    const cssrsBlock = serializeCssrs(cssrsLevelsSnapshot, cssrsSkipSnapshot, cssrsExtraSnapshot);
     try {
       const basePayload = buildDraftPayload(value, diagValue, extra);
-      const payload =
+      const withPanss =
         panssBlock === undefined ? basePayload : { ...basePayload, panss: panssBlock };
+      const payload =
+        cssrsBlock === undefined ? withPanss : { ...withPanss, cssrs: cssrsBlock };
       const updated = await patchEncounter(
         encounter.id,
         payload,
@@ -1232,6 +1553,7 @@ function DraftEditor({
       savedNoteRef.current = value;
       savedDiagRef.current = JSON.stringify(diagValue);
       savedPanssRef.current = panssDirtyKey(panssAnsSnapshot, panssSkipSnapshot);
+      savedCssrsRef.current = cssrsDirtyKey(cssrsLevelsSnapshot, cssrsSkipSnapshot);
       setEncounter(updated);
       const storedDiag =
         typeof updated.draft_data?.diagnosis === "object" &&
@@ -1253,7 +1575,9 @@ function DraftEditor({
         noteRef.current === value &&
         JSON.stringify(diagAnswersRef.current) === JSON.stringify(diagValue) &&
         panssDirtyKey(panssAnswersRef.current, panssNotAssessedRef.current) ===
-          panssDirtyKey(panssAnsSnapshot, panssSkipSnapshot)
+          panssDirtyKey(panssAnsSnapshot, panssSkipSnapshot) &&
+        cssrsDirtyKey(cssrsLevelsRef.current, cssrsNotAssessedRef.current) ===
+          cssrsDirtyKey(cssrsLevelsSnapshot, cssrsSkipSnapshot)
       ) {
         setSaveState(`Saved (rev ${updated.revision})`);
       }
@@ -1423,6 +1747,75 @@ function DraftEditor({
     scheduleSave(noteRef.current, diagAnswersRef.current);
   }
 
+  function handleCssrsLevel(id: CssrsLevelId, value: boolean | null): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    if (!CSSRS_IDS.includes(id)) {
+      return;
+    }
+    const current = cssrsLevelsRef.current[id];
+    const next = {
+      ...cssrsLevelsRef.current,
+      [id]: value === true ? { endorsed: true, period: current.period } : { endorsed: value, period: null },
+    };
+    setCssrsLevels(next);
+    cssrsLevelsRef.current = next;
+    // Selecting any level after skip replaces the skip with answers.
+    if (cssrsNotAssessedRef.current) {
+      setCssrsNotAssessed(false);
+      cssrsNotAssessedRef.current = false;
+    }
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
+  function handleCssrsPeriod(id: CssrsLevelId, value: CssrsPeriod | null): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    if (!CSSRS_IDS.includes(id)) {
+      return;
+    }
+    if (value !== null && value !== "current" && value !== "historical") {
+      return;
+    }
+    const next = {
+      ...cssrsLevelsRef.current,
+      [id]: { ...cssrsLevelsRef.current[id], period: value },
+    };
+    setCssrsLevels(next);
+    cssrsLevelsRef.current = next;
+    if (cssrsNotAssessedRef.current) {
+      setCssrsNotAssessed(false);
+      cssrsNotAssessedRef.current = false;
+    }
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
+  function handleCssrsSkip(): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    const cleared = emptyCssrs();
+    setCssrsLevels(cleared);
+    cssrsLevelsRef.current = cleared;
+    setCssrsNotAssessed(true);
+    cssrsNotAssessedRef.current = true;
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
   async function handleDiscard(): Promise<void> {
     if (!encounter || encounter.state !== "draft" || readOnly) {
       return;
@@ -1442,6 +1835,7 @@ function DraftEditor({
       savedNoteRef.current = noteRef.current;
       savedDiagRef.current = JSON.stringify(diagAnswersRef.current);
       savedPanssRef.current = panssDirtyKey(panssAnswersRef.current, panssNotAssessedRef.current);
+      savedCssrsRef.current = cssrsDirtyKey(cssrsLevelsRef.current, cssrsNotAssessedRef.current);
       staleRef.current = false;
       setEncounter(discarded);
       setSaveState("Draft discarded.");
@@ -1523,6 +1917,15 @@ function DraftEditor({
             readOnly={readOnly}
             onItemChange={handlePanssItem}
             onSkip={handlePanssSkip}
+          />
+          <CssrsSection
+            encounterId={encounter.id}
+            levels={cssrsLevels}
+            notAssessed={cssrsNotAssessed}
+            readOnly={readOnly}
+            onLevelChange={handleCssrsLevel}
+            onPeriodChange={handleCssrsPeriod}
+            onSkip={handleCssrsSkip}
           />
           <p role="status">{saveState}</p>
           {readOnly ? <p>Read-only draft.</p> : null}

@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import text
 
 from x_insight import db
+from x_insight.assessments.cssrs import evaluate_cssrs
 from x_insight.assessments.diagnosis import evaluate_diagnosis
 from x_insight.assessments.panss import evaluate_panss
 from x_insight.contracts import content_hash, parse_if_match, to_utc_z, utc_now
@@ -264,6 +265,38 @@ def _apply_panss_validation(incoming: dict[str, Any]) -> dict[str, Any]:
     return incoming
 
 
+def _apply_cssrs_validation(incoming: dict[str, Any]) -> dict[str, Any]:
+    """Validate C-SSRS answers on autosave (S11 slice 1, ideation-only).
+
+    If draft_data contains a cssrs dict with an answers dict, validate via
+    evaluate_cssrs; ValueError maps to 422 with revision untouched.
+    Also accepts the skip shape {not_assessed: True} at cssrs level,
+    validated as {not_assessed: True} answers; stored verbatim on success.
+    Missing cssrs or non-dict cssrs is left untouched for other flows.
+    """
+    if "cssrs" not in incoming:
+        return incoming
+    cssrs = incoming["cssrs"]
+    if not isinstance(cssrs, dict):
+        return incoming
+    if "answers" in cssrs:
+        answers = cssrs["answers"]
+        if not isinstance(answers, dict):
+            raise HTTPException(422, "Invalid C-SSRS content.")
+        try:
+            evaluate_cssrs(answers)
+        except ValueError as exc:
+            raise HTTPException(422, "Invalid C-SSRS content.") from exc
+        return incoming
+    if set(cssrs.keys()) == {"not_assessed"} and cssrs.get("not_assessed") is True:
+        try:
+            evaluate_cssrs({"not_assessed": True})
+        except ValueError as exc:
+            raise HTTPException(422, "Invalid C-SSRS content.") from exc
+        return incoming
+    return incoming
+
+
 @router.patch("/encounters/{encounter_id}")
 def patch_encounter(
     encounter_id: UUID, body: DraftPatch, request: Request
@@ -305,12 +338,14 @@ def patch_encounter(
         if patient is not None and patient["archived"]:
             raise HTTPException(409, "Archived patient drafts are read-only.")
         stored_draft = row["draft_data"] if isinstance(row["draft_data"], dict) else {}
-        new_draft = _apply_panss_validation(
-            _apply_diagnosis_ack(
-                dict(body.draft_data),
-                stored_draft,
-                str(actor["user_id"]),
-                int(row["revision"]) + 1,
+        new_draft = _apply_cssrs_validation(
+            _apply_panss_validation(
+                _apply_diagnosis_ack(
+                    dict(body.draft_data),
+                    stored_draft,
+                    str(actor["user_id"]),
+                    int(row["revision"]) + 1,
+                )
             )
         )
         updated = (
