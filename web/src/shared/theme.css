@@ -1,0 +1,161 @@
+/* X-INSIGHT semantic tokens (S05 slice 3). Deliberate light/dark palettes that
+ * preserve the approved visual character: bright clinical surfaces, dark
+ * neutral text, restrained teal for actions/selection. Dark is designed, not
+ * inverted. Measured contrast (WCAG 2.1) noted per text token; text tokens
+ * hold >= 4.5:1, focus >= 3:1. Teal/white at #0A9E8F is only 3.33:1, so small
+ * button labels use the darker --action fill instead (never boldness alone).
+ */
+:root,
+:root[data-theme="light"] {
+  --canvas: #ffffff;
+  --surface-1: #f9fafb;
+  --surface-2: #f3f4f6;
+
+  --ink: #111827; /* on canvas ~16.1:1 */
+  --ink-muted: #6b7280; /* on canvas 4.83:1 */
+  --ink-subtle: #9ca3af; /* decorative/large only: 2.54:1 on canvas */
+
+  --primary: #0a9e8f; /* accents, selection, focus: 3.33:1 on white */
+  --primary-hover: #088a7d;
+  --primary-light: #e6f6f5;
+  --action: #06776b; /* small-label fills, white text 5.44:1 */
+  --action-hover: #055f56; /* white text 7.56:1 */
+  --on-action: #ffffff;
+
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+
+  --urgent: #dc2626; /* 4.83:1 */
+  --urgent-bg: #fef2f2;
+  --warning: #92400e; /* 7.09:1 (brighter #D97706 is 3.19:1) */
+  --warning-bg: #fffbeb;
+  --normal: #047857; /* 5.48:1 (brighter #059669 is 3.77:1) */
+  --normal-bg: #ecfdf5;
+  --follow-up: #7c3aed; /* 5.70:1 */
+  --follow-up-bg: #f5f3ff;
+  --info: #0369a1; /* 5.93:1 (brighter #0284C7 is 4.10:1) */
+  --info-bg: #f0f9ff;
+
+  --focus: #06776b; /* 5.44:1 on canvas */
+  --radius-md: 8px;
+  --space-2: 8px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+
+/* Dark: deep slate canvas, luminous text, lightened accents. Same roles. */
+:root[data-theme="dark"] {
+  --canvas: #0f172a;
+  --surface-1: #1e293b;
+  --surface-2: #334155;
+
+  --ink: #f9fafb; /* on canvas 17.08:1 */
+  --ink-muted: #a8b0ba; /* on canvas 8.15:1, on surface-1 6.68:1 */
+  --ink-subtle: #7d8690; /* decorative/large only */
+
+  --primary: #2dd4bf; /* accents, selection, focus */
+  --primary-hover: #5eead4;
+  --primary-light: #134e4a;
+  --action: #2dd4bf; /* small-label fills, #0F172A text 9.59:1 */
+  --action-hover: #5eead4;
+  --on-action: #0f172a;
+
+  --border: #334155;
+  --border-strong: #475569;
+
+  --urgent: #f87171; /* 6.45:1 */
+  --urgent-bg: #3f1d1d;
+  --warning: #fbbf24; /* 10.69:1 */
+  --warning-bg: #3a2a0b;
+  --normal: #34d399; /* 9.29:1 */
+  --normal-bg: #0b2e23;
+  --follow-up: #a78bfa; /* 6.56:1 */
+  --follow-up-bg: #2a2145;
+  --info: #38bdf8; /* 8.33:1 */
+  --info-bg: #0c2a3f;
+
+  --focus: #5eead4;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+.x-shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+}
+
+.x-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.x-nav a {
+  color: var(--ink);
+}
+
+.x-form {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 400px;
+}
+
+.x-field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.x-field input,
+.x-field select {
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font: inherit;
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+.x-button {
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--action);
+  color: var(--on-action);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.x-button:hover {
+  background: var(--action-hover);
+}
+
+.x-error {
+  color: var(--urgent);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

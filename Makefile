@@ -25,7 +25,7 @@ test-web:
 
 test-e2e:
 	@test -d e2e || (echo "no e2e journeys yet (first journey lands with its feature)"; exit 1)
-	npx playwright test $(TEST)
+	NODE_PATH=$(CURDIR)/web/node_modules ./web/node_modules/.bin/playwright test $(TEST)
 
 test-recovery:
 	@echo "no recovery drills yet (first backup lands with its feature)"; exit 1
