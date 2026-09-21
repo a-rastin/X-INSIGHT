@@ -120,6 +120,76 @@ export async function createPhysician(
   return (await response.json()) as PhysicianAccount;
 }
 
+export interface Patient {
+  id: string;
+  patient_id: string;
+  first_name: string;
+  last_name: string;
+  sex: string;
+  age: number;
+  clinical_status: string;
+  phone: string | null;
+  archived: boolean;
+  revision: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PatientList {
+  schema_version: 1;
+  items: Patient[];
+  next_cursor: string | null;
+}
+
+export interface PatientCreate {
+  first_name: string;
+  last_name: string;
+  sex: string;
+  age: number;
+  patient_id: string;
+  clinical_status: string;
+  phone?: string;
+}
+
+export async function listPatients(params?: {
+  q?: string;
+  clinical_status?: string;
+}): Promise<PatientList> {
+  const query = new URLSearchParams({ limit: "100" });
+  if (params?.q) {
+    query.set("q", params.q);
+  }
+  if (params?.clinical_status) {
+    query.set("clinical_status", params.clinical_status);
+  }
+  const response = await fetch(`/api/v1/patients?${query}`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error("Could not load patients.");
+  }
+  return (await response.json()) as PatientList;
+}
+
+export async function createPatient(body: PatientCreate): Promise<Patient> {
+  const csrf = csrfToken();
+  const response = await fetch("/api/v1/patients", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(csrf ? { "X-CSRF-Token": csrf } : {}),
+      "Idempotency-Key": idempotencyKey(),
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw new Error("Could not register the patient.");
+  }
+  const payload = (await response.json()) as { patient: Patient };
+  return payload.patient;
+}
+
 export async function fetchSession(): Promise<SessionUser | null> {
   const response = await fetch("/api/v1/me", { credentials: "include" });
   if (response.status === 401) {

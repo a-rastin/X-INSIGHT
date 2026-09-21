@@ -4,11 +4,14 @@ import {
   RESEARCH_NOTICE,
   changeOwnPassword,
   createPhysician,
+  createPatient,
   fetchSession,
   listPhysicians,
   login,
   logout,
+  listPatients,
   updateTheme,
+  type Patient,
   type PhysicianAccount,
   type SessionUser,
   type ThemeName,
@@ -174,8 +177,256 @@ function Dashboard({ user }: { user: SessionUser }) {
     <>
       <h1>{user.role === "admin" ? "Admin dashboard" : "Physician dashboard"}</h1>
       <p>Signed in as {user.username}.</p>
+      <PatientsSection role={user.role} />
       <PasswordForm />
     </>
+  );
+}
+
+const PATIENT_NAME_RE = /^\p{L}+$/u;
+const PATIENT_ID_RE = /^[0-9]{10}$/;
+
+function PatientsSection({ role }: { role: string }) {
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState("");
+  const [refresh, setRefresh] = useState(0);
+  const [items, setItems] = useState<Patient[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      listPatients({
+        q: q || undefined,
+        clinical_status: status || undefined,
+      })
+        .then((payload) => {
+          if (!cancelled) {
+            setItems(payload.items);
+            setError(null);
+          }
+        })
+        .catch((failure: unknown) => {
+          if (!cancelled) {
+            setError(
+              failure instanceof Error ? failure.message : "Could not load patients.",
+            );
+          }
+        });
+    }, 150);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [q, status, refresh]);
+
+  return (
+    <section aria-labelledby="patients-heading">
+      <h2 id="patients-heading">Patients</h2>
+      {role === "physician" ? (
+        <PatientForm
+          onCreated={() => {
+            setQ("");
+            setStatus("");
+            setRefresh((n) => n + 1);
+          }}
+        />
+      ) : null}
+      <div className="x-field">
+        <label htmlFor="patient-search">Search patients</label>
+        <input
+          id="patient-search"
+          name="patient-search"
+          autoComplete="off"
+          value={q}
+          onChange={(event) => setQ(event.target.value)}
+        />
+      </div>
+      <div className="x-field">
+        <label htmlFor="patient-status-filter">Filter by clinical status</label>
+        <select
+          id="patient-status-filter"
+          value={status}
+          onChange={(event) => setStatus(event.target.value)}
+        >
+          <option value="">All</option>
+          <option value="first_time">first_time</option>
+          <option value="established">established</option>
+        </select>
+      </div>
+      {error ? (
+        <p role="alert" className="x-error">
+          {error}
+        </p>
+      ) : items === null ? (
+        <p>Loading…</p>
+      ) : items.length === 0 ? (
+        <p>No patients found.</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Patient ID</th>
+              <th scope="col">First name</th>
+              <th scope="col">Last name</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item) => (
+              <tr key={item.id}>
+                <td>{item.patient_id}</td>
+                <td>{item.first_name}</td>
+                <td>{item.last_name}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  );
+}
+
+function PatientForm({ onCreated }: { onCreated: () => void }) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [sex, setSex] = useState("");
+  const [age, setAge] = useState("");
+  const [patientId, setPatientId] = useState("");
+  const [clinicalStatus, setClinicalStatus] = useState("");
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  const ageNumber = /^\d+$/.test(age) ? parseInt(age, 10) : Number.NaN;
+  const valid =
+    PATIENT_NAME_RE.test(firstName.normalize("NFC")) &&
+    PATIENT_NAME_RE.test(lastName.normalize("NFC")) &&
+    (sex === "M" || sex === "F") &&
+    Number.isInteger(ageNumber) &&
+    ageNumber >= 18 &&
+    ageNumber <= 99 &&
+    PATIENT_ID_RE.test(patientId) &&
+    (clinicalStatus === "first_time" || clinicalStatus === "established");
+
+  async function submit(event: React.FormEvent): Promise<void> {
+    event.preventDefault();
+    if (!valid || pending) {
+      return;
+    }
+    setError(null);
+    setPending(true);
+    try {
+      await createPatient({
+        first_name: firstName.normalize("NFC"),
+        last_name: lastName.normalize("NFC"),
+        sex,
+        age: ageNumber,
+        patient_id: patientId,
+        clinical_status: clinicalStatus,
+        ...(phone ? { phone } : {}),
+      });
+      setFirstName("");
+      setLastName("");
+      setSex("");
+      setAge("");
+      setPatientId("");
+      setClinicalStatus("");
+      setPhone("");
+      onCreated();
+    } catch {
+      setError("Could not register the patient.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <form className="x-form" onSubmit={submit} aria-label="Register patient">
+      <div className="x-field">
+        <label htmlFor="patient-first-name">First name</label>
+        <input
+          id="patient-first-name"
+          name="first-name"
+          autoComplete="off"
+          value={firstName}
+          onChange={(event) => setFirstName(event.target.value)}
+        />
+      </div>
+      <div className="x-field">
+        <label htmlFor="patient-last-name">Last name</label>
+        <input
+          id="patient-last-name"
+          name="last-name"
+          autoComplete="off"
+          value={lastName}
+          onChange={(event) => setLastName(event.target.value)}
+        />
+      </div>
+      <div className="x-field">
+        <label htmlFor="patient-sex">Sex</label>
+        <select
+          id="patient-sex"
+          value={sex}
+          onChange={(event) => setSex(event.target.value)}
+        >
+          <option value="">Select…</option>
+          <option value="F">F</option>
+          <option value="M">M</option>
+        </select>
+      </div>
+      <div className="x-field">
+        <label htmlFor="patient-age">Age</label>
+        <input
+          id="patient-age"
+          name="age"
+          inputMode="numeric"
+          autoComplete="off"
+          value={age}
+          onChange={(event) => setAge(event.target.value)}
+        />
+      </div>
+      <div className="x-field">
+        <label htmlFor="patient-patient-id">Patient ID</label>
+        <input
+          id="patient-patient-id"
+          name="patient-id"
+          inputMode="numeric"
+          autoComplete="off"
+          value={patientId}
+          onChange={(event) => setPatientId(event.target.value)}
+        />
+      </div>
+      <div className="x-field">
+        <label htmlFor="patient-clinical-status">Clinical status</label>
+        <select
+          id="patient-clinical-status"
+          value={clinicalStatus}
+          onChange={(event) => setClinicalStatus(event.target.value)}
+        >
+          <option value="">Select…</option>
+          <option value="first_time">first_time</option>
+          <option value="established">established</option>
+        </select>
+      </div>
+      <div className="x-field">
+        <label htmlFor="patient-phone">Phone</label>
+        <input
+          id="patient-phone"
+          name="phone"
+          autoComplete="off"
+          value={phone}
+          onChange={(event) => setPhone(event.target.value)}
+        />
+      </div>
+      {error ? (
+        <p role="alert" className="x-error">
+          {error}
+        </p>
+      ) : null}
+      <button type="submit" className="x-button" disabled={!valid || pending}>
+        {pending ? "Registering…" : "Register patient"}
+      </button>
+    </form>
   );
 }
 
