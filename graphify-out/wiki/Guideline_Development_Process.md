@@ -1,6 +1,6 @@
 # Guideline Development Process
 
-> 10 nodes
+> 10 nodes · cohesion 0.20
 
 ## Key Concepts
 

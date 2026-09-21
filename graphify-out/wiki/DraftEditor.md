@@ -1,51 +1,57 @@
-# DraftEditor
+# DraftEditor()
 
-> 25 nodes
+> God node · 50 connections · `web/src/app/App.tsx`
 
-## Key Concepts
+**Community:** [Draft Editor Handlers](Draft_Editor_Handlers.md)
 
-- **DraftEditor()** (27 connections) — `web/src/app/App.tsx`
-- **scheduleSave()** (8 connections) — `web/src/app/App.tsx`
-- **saveNow()** (7 connections) — `web/src/app/App.tsx`
-- **discardEncounter()** (5 connections) — `web/src/app/api.ts`
-- **getEncounter()** (5 connections) — `web/src/app/api.ts`
-- **handleDiagAnswers()** (5 connections) — `web/src/app/App.tsx`
-- **panssDirtyKey()** (5 connections) — `web/src/app/App.tsx`
-- **isPanssDirty()** (4 connections) — `web/src/app/App.tsx`
-- **emptyPanssAnswers()** (4 connections) — `web/src/app/App.tsx`
-- **handleClose()** (3 connections) — `web/src/app/App.tsx`
-- **handleDiscard()** (3 connections) — `web/src/app/App.tsx`
-- **handlePanssSkip()** (3 connections) — `web/src/app/App.tsx`
-- **isDiagDirty()** (3 connections) — `web/src/app/App.tsx`
-- **onBeforeUnload()** (3 connections) — `web/src/app/App.tsx`
-- **panssFromStored()** (3 connections) — `web/src/app/App.tsx`
-- **diagAnswersFromStored()** (2 connections) — `web/src/app/App.tsx`
-- **buildDraftPayload()** (2 connections) — `web/src/app/App.tsx`
-- **handleDiagBool()** (2 connections) — `web/src/app/App.tsx`
-- **handleDiagBypass()** (2 connections) — `web/src/app/App.tsx`
-- **handleDiagComplete()** (2 connections) — `web/src/app/App.tsx`
-- **handleDiagDomains()** (2 connections) — `web/src/app/App.tsx`
-- **handleDiagMonths()** (2 connections) — `web/src/app/App.tsx`
-- **handlePanssItem()** (2 connections) — `web/src/app/App.tsx`
-- **reloadPreservingEdits()** (2 connections) — `web/src/app/App.tsx`
-- **serializePanss()** (2 connections) — `web/src/app/App.tsx`
+## Connections by Relation
 
-## Relationships
+### calls
+- panssDirtyKey() `EXTRACTED`
+- cssrsDirtyKey() `EXTRACTED`
+- historyDirtyKey() `EXTRACTED`
+- effectsDirtyKey() `EXTRACTED`
+- getEncounter() `EXTRACTED`
+- patchEncounter() `EXTRACTED`
+- patchPatientPhone() `EXTRACTED`
+- discardEncounter() `EXTRACTED`
+- emptyPanssAnswers() `EXTRACTED`
+- emptyCssrs() `EXTRACTED`
+- emptyEffects() `EXTRACTED`
+- listEncounters() `EXTRACTED`
+- panssFromStored() `EXTRACTED`
+- cssrsFromStored() `EXTRACTED`
+- effectsFromStored() `EXTRACTED`
+- getHistoryContent() `EXTRACTED`
+- diagAnswersFromStored() `EXTRACTED`
+- historyFromStored() `EXTRACTED`
+- reconFromStored() `EXTRACTED`
 
-- [App.tsx](App.tsx.md) (8 shared connections)
-- [api.ts](api.ts.md) (6 shared connections)
-- [DiagnosisSection](DiagnosisSection.md) (2 shared connections)
+### contains
+- App.tsx `EXTRACTED`
+- scheduleSave() `EXTRACTED`
+- saveNow() `EXTRACTED`
+- handleClose() `EXTRACTED`
+- handleDiscard() `EXTRACTED`
+- handleDiagAnswers() `EXTRACTED`
+- isPanssDirty() `EXTRACTED`
+- isCssrsDirty() `EXTRACTED`
+- isHistoryDirty() `EXTRACTED`
+- isEffectsDirty() `EXTRACTED`
+- isDiagDirty() `EXTRACTED`
+- isReconDirty() `EXTRACTED`
+- handleDiagAck() `EXTRACTED`
+- handlePanssSkip() `EXTRACTED`
+- handleCssrsSkip() `EXTRACTED`
+- reloadPreservingEdits() `EXTRACTED`
+- handlePhoneSave() `EXTRACTED`
+- buildDraftPayload() `EXTRACTED`
+- handleDiagBool() `EXTRACTED`
+- handleDiagDomains() `EXTRACTED`
+- *…and 10 more `contains` connection(s) not listed (lowest-degree first to go)*
 
-## Source Files
-
-- `web/src/app/App.tsx`
-- `web/src/app/api.ts`
-
-## Audit Trail
-
-- EXTRACTED: 61 (98%)
-- INFERRED: 1 (2%)
-- AMBIGUOUS: 0 (0%)
+### indirect_call
+- onBeforeUnload() `INFERRED`
 
 ---
 

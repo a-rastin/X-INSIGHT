@@ -1,54 +1,33 @@
 # Appendix C.
 
-> 20 nodes
+> God node · 27 connections · `docs/medical-docs/guideline/Appendix-C.md`
 
-## Key Concepts
+**Community:** [Appendix C Evidence Grading](Appendix_C_Evidence_Grading.md)
 
-- **Appendix C.** (27 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **STATEMENT 3: Evidence-Based Treatment Planning** (3 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **STATEMENT 11: Anticholinergic Medications for Acute Dystonia** (2 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **STATEMENT 12: Treatments for Parkinsonism** (2 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **STATEMENT 13: Treatments for Akathisia** (2 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Statement 19: Assertive Community Treatment** (2 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **STATEMENT 1: Assessment of Possible Schizophrenia** (2 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **STATEMENT 2: Use of Quantitative Measures** (2 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Supporting Guideline Statements** (2 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Appendix-C.md** (1 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Assessment and Determination of Treatment Plan** (1 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Grading of the Overall Supporting Body of Research Evidence for Anticholinergic Medications for Acute Dystonia** (1 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Grading of the Overall Supporting Body of Research Evidence for Assessment of Possible Schizophrenia** (1 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Grading of the Overall Supporting Body of Research Evidence for Efficacy of Assertive Community Treatment** (1 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Grading of the Overall Supporting Body of Research Evidence for Evidence-Based Treatment Planning** (1 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Grading of the Overall Supporting Body of Research Evidence for Treatments for Akathisia** (1 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Grading of the Overall Supporting Body of Research Evidence for Treatments for Parkinsonism** (1 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Grading of the Overall Supporting Body of Research Evidence for Use of Quantitative Measures** (1 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Pharmacotherapy** (1 connections) — `docs/medical-docs/guideline/Appendix-C.md`
-- **Review of Research Evidence** (1 connections) — `docs/medical-docs/guideline/Appendix-C.md`
+## Connections by Relation
 
-## Relationships
-
-- [STATEMENT 5: Continuing Medications](STATEMENT_5-_Continuing_Medications.md) (1 shared connections)
-- [STATEMENT 6: Continuing the Same Medications](STATEMENT_6-_Continuing_the_Same_Medications.md) (1 shared connections)
-- [STATEMENT 7: Clozapine in Treatment-Resistant Schizophrenia](STATEMENT_7-_Clozapine_in_Treatment-Resistant_Schizophrenia.md) (1 shared connections)
-- [STATEMENT 8: Clozapine in Suicide Risk](STATEMENT_8-_Clozapine_in_Suicide_Risk.md) (1 shared connections)
-- [STATEMENT 9: Clozapine in Aggressive Behavior](STATEMENT_9-_Clozapine_in_Aggressive_Behavior.md) (1 shared connections)
-- [STATEMENT 10: Long-Acting Injectable Antipsychotic](STATEMENT_10-_Long-Acting_Injectable_Antipsychotic.md) (1 shared connections)
-- [STATEMENT 4: Antipsychotic Medications](STATEMENT_4-_Antipsychotic_Medications.md) (1 shared connections)
-- [STATEMENT 14: VMAT2 Medications for Tardive Dyskinesia](STATEMENT_14-_VMAT2_Medications_for_Tardive_Dyskinesia.md) (1 shared connections)
-- [STATEMENT 15: Coordinated Specialty Care Programs](STATEMENT_15-_Coordinated_Specialty_Care_Programs.md) (1 shared connections)
-- [STATEMENT 16: Cognitive-Behavioral Therapy](STATEMENT_16-_Cognitive-Behavioral_Therapy.md) (1 shared connections)
-- [STATEMENT 17: Psychoeducation](STATEMENT_17-_Psychoeducation.md) (1 shared connections)
-- [STATEMENT 18: Supported Employment Services](STATEMENT_18-_Supported_Employment_Services.md) (1 shared connections)
-
-## Source Files
-
-- `docs/medical-docs/guideline/Appendix-C.md`
-
-## Audit Trail
-
-- EXTRACTED: 36 (100%)
-- INFERRED: 0 (0%)
-- AMBIGUOUS: 0 (0%)
+### contains
+- [STATEMENT 4: Antipsychotic Medications](STATEMENT_4-_Antipsychotic_Medications.md) `EXTRACTED`
+- STATEMENT 7: Clozapine in Treatment-Resistant Schizophrenia `EXTRACTED`
+- STATEMENT 14: VMAT2 Medications for Tardive Dyskinesia `EXTRACTED`
+- STATEMENT 21: Self-Management Skills and Recovery-Focused `EXTRACTED`
+- STATEMENT 5: Continuing Medications `EXTRACTED`
+- STATEMENT 6: Continuing the Same Medications `EXTRACTED`
+- STATEMENT 3: Evidence-Based Treatment Planning `EXTRACTED`
+- STATEMENT 8: Clozapine in Suicide Risk `EXTRACTED`
+- STATEMENT 9: Clozapine in Aggressive Behavior `EXTRACTED`
+- STATEMENT 10: Long-Acting Injectable Antipsychotic `EXTRACTED`
+- STATEMENT 15: Coordinated Specialty Care Programs `EXTRACTED`
+- STATEMENT 16: Cognitive-Behavioral Therapy `EXTRACTED`
+- STATEMENT 17: Psychoeducation `EXTRACTED`
+- STATEMENT 18: Supported Employment Services `EXTRACTED`
+- STATEMENT 20: Family Interventions `EXTRACTED`
+- STATEMENT 22: Cognitive Remediation `EXTRACTED`
+- STATEMENT 23: Social Skills Training `EXTRACTED`
+- STATEMENT 24: Supportive Psychotherapy `EXTRACTED`
+- STATEMENT 2: Use of Quantitative Measures `EXTRACTED`
+- STATEMENT 11: Anticholinergic Medications for Acute Dystonia `EXTRACTED`
+- *…and 7 more `contains` connection(s) not listed (lowest-degree first to go)*
 
 ---
 

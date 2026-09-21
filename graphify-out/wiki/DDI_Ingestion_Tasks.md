@@ -1,0 +1,31 @@
+# DDI Ingestion Tasks
+
+> 7 nodes · cohesion 0.29
+
+## Key Concepts
+
+- **5. DDI ingestion, review, and checking** (7 connections) — `docs/dev/tasks.md`
+- **S15 — Parse one source through the ingestion interface** (1 connections) — `docs/dev/tasks.md`
+- **S16 — Extend the parser across real source formats** (1 connections) — `docs/dev/tasks.md`
+- **S17 — Resolve controlled medication concepts and aliases** (1 connections) — `docs/dev/tasks.md`
+- **S18 — Build, review, and publish an immutable DDI release** (1 connections) — `docs/dev/tasks.md`
+- **S19 — Implement deterministic coverage-aware DDI checking** (1 connections) — `docs/dev/tasks.md`
+- **S20 — Integrate medications and DDI into encounter history** (1 connections) — `docs/dev/tasks.md`
+
+## Relationships
+
+- [Release Verification Tasks](Release_Verification_Tasks.md) (1 shared connections)
+
+## Source Files
+
+- `docs/dev/tasks.md`
+
+## Audit Trail
+
+- EXTRACTED: 7 (100%)
+- INFERRED: 0 (0%)
+- AMBIGUOUS: 0 (0%)
+
+---
+
+*Part of the graphify knowledge wiki. See [index](index.md) to navigate.*

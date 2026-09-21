@@ -1,49 +1,36 @@
 # Node/TypeScript MCP Server Implementation Guide
 
-> 41 nodes
+> God node · 22 connections · `.agents/skills/mcp-builder/reference/node_mcp_server.md`
 
-## Key Concepts
+**Community:** [Node MCP Server Guide](Node_MCP_Server_Guide.md)
 
-- **Node/TypeScript MCP Server Implementation Guide** (21 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Quality Checklist** (8 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Advanced MCP Features** (4 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Quick Reference** (4 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Package Configuration** (3 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Tool Implementation** (3 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Transport Options** (3 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Code Best Practices** (2 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Advanced Features (where applicable)** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Async/Await Best Practices** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Building and Running** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Character Limits and Truncation** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Code Composability and Reusability** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Code Quality** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Complete Example** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Error Handling** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Implementation Quality** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Key Imports** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **MCP TypeScript SDK** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Notification Support** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Overview** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **package.json** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Pagination Implementation** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Project Configuration** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- **Project Structure** (1 connections) — `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-- *... and 16 more nodes in this community*
+## Connections by Relation
 
-## Relationships
+### contains
+- Quality Checklist `EXTRACTED`
+- Advanced MCP Features `EXTRACTED`
+- Quick Reference `EXTRACTED`
+- Package Configuration `EXTRACTED`
+- Tool Implementation `EXTRACTED`
+- node_mcp_server.md `EXTRACTED`
+- Code Best Practices `EXTRACTED`
+- Zod Schemas for Input Validation `EXTRACTED`
+- Overview `EXTRACTED`
+- Response Format Options `EXTRACTED`
+- Pagination Implementation `EXTRACTED`
+- Character Limits and Truncation `EXTRACTED`
+- Error Handling `EXTRACTED`
+- Shared Utilities `EXTRACTED`
+- Async/Await Best Practices `EXTRACTED`
+- TypeScript Best Practices `EXTRACTED`
+- MCP TypeScript SDK `EXTRACTED`
+- Complete Example `EXTRACTED`
+- Server Naming Convention `EXTRACTED`
+- Project Structure `EXTRACTED`
+- *…and 1 more `contains` connection(s) not listed (lowest-degree first to go)*
 
-- [mcp-builder/SKILL.md](mcp-builder-SKILL.md.md) (1 shared connections)
-
-## Source Files
-
-- `.agents/skills/mcp-builder/reference/node_mcp_server.md`
-
-## Audit Trail
-
-- EXTRACTED: 41 (100%)
-- INFERRED: 0 (0%)
-- AMBIGUOUS: 0 (0%)
+### references
+- MCP Server Development Guide skill `EXTRACTED`
 
 ---
 

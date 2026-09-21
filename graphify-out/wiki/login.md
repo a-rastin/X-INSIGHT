@@ -1,29 +1,36 @@
-# login
+# login()
 
-> 4 nodes
+> God node · 20 connections · `backend/src/x_insight/identity/routes.py`
 
-## Key Concepts
+**Community:** [Identity Login and Sessions](Identity_Login_and_Sessions.md)
 
-- **login()** (5 connections) — `web/src/app/api.ts`
-- **LoginForm()** (3 connections) — `web/src/app/App.tsx`
-- **jsonOrThrow()** (2 connections) — `web/src/app/api.ts`
-- **submit()** (2 connections) — `web/src/app/App.tsx`
+## Connections by Relation
 
-## Relationships
+### calls
+- [transaction()](transaction.md) `EXTRACTED`
+- record_audit() `EXTRACTED`
+- _request_id() `EXTRACTED`
+- error_body() `EXTRACTED`
+- ensure_admin_seeded() `EXTRACTED`
+- normalize_username() `EXTRACTED`
+- verify_password() `EXTRACTED`
+- get_user_by_username() `EXTRACTED`
+- create_session() `EXTRACTED`
+- throttled() `EXTRACTED`
+- record_failure() `EXTRACTED`
+- _client_key() `EXTRACTED`
+- _generic_login_denied() `EXTRACTED`
+- clear() `EXTRACTED`
+- _secure_cookie() `EXTRACTED`
 
-- [api.ts](api.ts.md) (2 shared connections)
-- [App.tsx](App.tsx.md) (2 shared connections)
+### contains
+- routes.py `EXTRACTED`
 
-## Source Files
-
-- `web/src/app/App.tsx`
-- `web/src/app/api.ts`
-
-## Audit Trail
-
-- EXTRACTED: 8 (100%)
-- INFERRED: 0 (0%)
-- AMBIGUOUS: 0 (0%)
+### references
+- Request `EXTRACTED`
+- JSONResponse `EXTRACTED`
+- post `EXTRACTED`
+- LoginRequest `EXTRACTED`
 
 ---
 

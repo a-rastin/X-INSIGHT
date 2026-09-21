@@ -1,1658 +1,1718 @@
 {
   ".agents/skills/mcp-builder/scripts/connections.py": {
     "mtime": 1789718324.8239608,
-    "seen": 1789982028.2475371,
+    "seen": 1790031938.3472652,
     "ast_hash": "577a5757c0f687ad4a84eb48eac9d514",
-    "semantic_hash": ""
+    "semantic_hash": "577a5757c0f687ad4a84eb48eac9d514"
   },
   ".agents/skills/mcp-builder/scripts/evaluation.py": {
     "mtime": 1789718324.127967,
-    "seen": 1789982028.2475398,
+    "seen": 1790031938.3472683,
     "ast_hash": "78d39ae57d97d49295872ef1a04cfd20",
-    "semantic_hash": ""
+    "semantic_hash": "78d39ae57d97d49295872ef1a04cfd20"
   },
   "BNs/test_schema.py": {
     "mtime": 1789871366.8319273,
-    "seen": 1789982028.2475407,
+    "seen": 1790031938.3472695,
     "ast_hash": "89b2d21b0897f525bd0780e8cfd0a79c",
-    "semantic_hash": ""
+    "semantic_hash": "89b2d21b0897f525bd0780e8cfd0a79c"
   },
   "backend/migrations/env.py": {
     "mtime": 1789973937.873632,
-    "seen": 1789982028.2475412,
+    "seen": 1790031938.347271,
     "ast_hash": "2825b090b91dc3c209bb7e34d271f823",
-    "semantic_hash": ""
+    "semantic_hash": "2825b090b91dc3c209bb7e34d271f823"
   },
   "backend/migrations/versions/0001_init.py": {
     "mtime": 1789973931.081692,
-    "seen": 1789982028.247542,
+    "seen": 1790031938.347272,
     "ast_hash": "734ef7b2c913f1a69376ce7a8e250306",
-    "semantic_hash": ""
+    "semantic_hash": "734ef7b2c913f1a69376ce7a8e250306"
   },
   "backend/migrations/versions/0002_identity.py": {
     "mtime": 1789975157.4582462,
-    "seen": 1789982028.2475426,
+    "seen": 1790031938.3472729,
     "ast_hash": "239ba8c0afa9b6fc0f1d64a9b23f60b0",
-    "semantic_hash": ""
+    "semantic_hash": "239ba8c0afa9b6fc0f1d64a9b23f60b0"
   },
   "backend/migrations/versions/0003_physicians.py": {
     "mtime": 1789976531.3340547,
-    "seen": 1789982028.2475433,
+    "seen": 1790031938.3472738,
     "ast_hash": "b379bac4b56f5face8b2c8169210dd71",
-    "semantic_hash": ""
+    "semantic_hash": "b379bac4b56f5face8b2c8169210dd71"
   },
   "backend/pyproject.toml": {
     "mtime": 1789974137.7516923,
-    "seen": 1789982028.24755,
+    "seen": 1790031938.3472767,
     "ast_hash": "405f112181ae76b4cac2576c94a8c786",
-    "semantic_hash": ""
+    "semantic_hash": "405f112181ae76b4cac2576c94a8c786"
   },
   "backend/src/x_insight/__init__.py": {
     "mtime": 1789974134.8597202,
-    "seen": 1789982028.2475514,
+    "seen": 1790031938.3472779,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
-    "semantic_hash": ""
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "backend/src/x_insight/app.py": {
-    "mtime": 1789986820.9396915,
-    "seen": 1789987232.3042066,
-    "ast_hash": "8a68c87d1f298c2b81262d53004856df",
-    "semantic_hash": ""
+    "mtime": 1790031832.8813922,
+    "seen": 1790031938.3472788,
+    "ast_hash": "0dc10f156f53e28bd88cfa0766fc3cc1",
+    "semantic_hash": "0dc10f156f53e28bd88cfa0766fc3cc1"
   },
   "backend/src/x_insight/contracts.py": {
     "mtime": 1789974116.9678934,
-    "seen": 1789982028.2475529,
+    "seen": 1790031938.3472905,
     "ast_hash": "4b351b12ebaaf0d467adc46aae759a5d",
-    "semantic_hash": ""
+    "semantic_hash": "4b351b12ebaaf0d467adc46aae759a5d"
   },
   "backend/src/x_insight/db.py": {
-    "mtime": 1789984238.8105264,
-    "seen": 1789985805.630107,
-    "ast_hash": "05aadd76445d191feb32118d2bde8c62",
-    "semantic_hash": ""
+    "mtime": 1790031829.0814247,
+    "seen": 1790031938.3472915,
+    "ast_hash": "5cc60e1db26bf725de6f02bdc1fdf9c5",
+    "semantic_hash": "5cc60e1db26bf725de6f02bdc1fdf9c5"
   },
   "backend/src/x_insight/identity/__init__.py": {
     "mtime": 1789975128.9705043,
-    "seen": 1789982028.2475538,
+    "seen": 1790031938.3472924,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
-    "semantic_hash": ""
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "backend/src/x_insight/identity/accounts.py": {
     "mtime": 1789976652.7889893,
-    "seen": 1789982028.2475543,
+    "seen": 1790031938.3472931,
     "ast_hash": "4eb09dd2f04c2d4ac5a03e8a395ae4ac",
-    "semantic_hash": ""
+    "semantic_hash": "4eb09dd2f04c2d4ac5a03e8a395ae4ac"
   },
   "backend/src/x_insight/identity/clock.py": {
     "mtime": 1789975135.9984407,
-    "seen": 1789982028.2475548,
+    "seen": 1790031938.3472939,
     "ast_hash": "6de32510567d5029dfe0cf03ee0d5c46",
-    "semantic_hash": ""
+    "semantic_hash": "6de32510567d5029dfe0cf03ee0d5c46"
   },
   "backend/src/x_insight/identity/hashing.py": {
     "mtime": 1789975133.0024679,
-    "seen": 1789982028.247555,
+    "seen": 1790031938.347295,
     "ast_hash": "fd67abe7ba21ff7862e7046017bcf3ac",
-    "semantic_hash": ""
+    "semantic_hash": "fd67abe7ba21ff7862e7046017bcf3ac"
   },
   "backend/src/x_insight/identity/routes.py": {
     "mtime": 1789976252.8644817,
-    "seen": 1789982028.2475555,
+    "seen": 1790031938.3472958,
     "ast_hash": "ef9cccb4f882201ebc70a4560d8c1f3e",
-    "semantic_hash": ""
+    "semantic_hash": "ef9cccb4f882201ebc70a4560d8c1f3e"
   },
   "backend/src/x_insight/identity/store.py": {
     "mtime": 1789975392.6001217,
-    "seen": 1789982028.2475562,
+    "seen": 1790031938.3472965,
     "ast_hash": "0580a67c54ce141afbe3bf3e42bed855",
-    "semantic_hash": ""
+    "semantic_hash": "0580a67c54ce141afbe3bf3e42bed855"
   },
   "backend/src/x_insight/identity/throttle.py": {
     "mtime": 1789975366.2323596,
-    "seen": 1789982028.2475564,
+    "seen": 1790031938.3472972,
     "ast_hash": "061d1f114701106845182ae6a6616f85",
-    "semantic_hash": ""
+    "semantic_hash": "061d1f114701106845182ae6a6616f85"
   },
   "backend/src/x_insight/operations/__init__.py": {
     "mtime": 1789973924.333752,
-    "seen": 1789982028.247557,
+    "seen": 1790031938.3472984,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
-    "semantic_hash": ""
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "backend/src/x_insight/operations/audit.py": {
     "mtime": 1789976531.3340547,
-    "seen": 1789982028.2475572,
+    "seen": 1790031938.3472993,
     "ast_hash": "d2ab9252c5aef1b9ffc95f115c447692",
-    "semantic_hash": ""
+    "semantic_hash": "d2ab9252c5aef1b9ffc95f115c447692"
   },
   "backend/tests/conftest.py": {
     "mtime": 1789974116.9838932,
-    "seen": 1789982028.2475576,
+    "seen": 1790031938.347304,
     "ast_hash": "bacb034869e6676db4d752fd4d5b0179",
-    "semantic_hash": ""
+    "semantic_hash": "bacb034869e6676db4d752fd4d5b0179"
   },
   "backend/tests/http/test_contracts.py": {
     "mtime": 1789974054.348503,
-    "seen": 1789982028.247558,
+    "seen": 1790031938.347306,
     "ast_hash": "9b2f842b9ac6718855e7e5e3c01f05bc",
-    "semantic_hash": ""
+    "semantic_hash": "9b2f842b9ac6718855e7e5e3c01f05bc"
   },
   "backend/tests/http/test_health.py": {
     "mtime": 1789971335.3849604,
-    "seen": 1789982028.2475586,
+    "seen": 1790031938.34731,
     "ast_hash": "81f614e793bdab420d23d0cd7bb77f94",
-    "semantic_hash": ""
+    "semantic_hash": "81f614e793bdab420d23d0cd7bb77f94"
   },
   "backend/tests/http/test_identity.py": {
     "mtime": 1789975387.4601681,
-    "seen": 1789982028.2475588,
+    "seen": 1790031938.3473117,
     "ast_hash": "8a200b43a7876d0efb638fb47650b79e",
-    "semantic_hash": ""
+    "semantic_hash": "8a200b43a7876d0efb638fb47650b79e"
   },
   "backend/tests/http/test_physicians.py": {
     "mtime": 1789976624.009242,
-    "seen": 1789982028.2475593,
+    "seen": 1790031938.3473144,
     "ast_hash": "15cef72ce48904cc6329309889793ba9",
-    "semantic_hash": ""
+    "semantic_hash": "15cef72ce48904cc6329309889793ba9"
   },
   "e2e/accessibility.spec.ts": {
     "mtime": 1789981259.9525995,
-    "seen": 1789982028.24756,
+    "seen": 1790031938.347324,
     "ast_hash": "1fab1083a25b52a7a0c5e44b6ab4d057",
-    "semantic_hash": ""
+    "semantic_hash": "1fab1083a25b52a7a0c5e44b6ab4d057"
   },
   "e2e/identity.spec.ts": {
     "mtime": 1789980758.8209715,
-    "seen": 1789982028.2475603,
+    "seen": 1790031938.3473303,
     "ast_hash": "5a482bc6970e41058d1a1d55e7154028",
-    "semantic_hash": ""
+    "semantic_hash": "5a482bc6970e41058d1a1d55e7154028"
   },
   "e2e/themes.spec.ts": {
     "mtime": 1789980944.975352,
-    "seen": 1789982028.2475607,
+    "seen": 1790031938.347333,
     "ast_hash": "daa3bcb05c85d1fae96e60bd0fbacec3",
-    "semantic_hash": ""
+    "semantic_hash": "daa3bcb05c85d1fae96e60bd0fbacec3"
   },
   "playwright.config.ts": {
-    "mtime": 1789977850.7823868,
-    "seen": 1789982028.2475612,
-    "ast_hash": "26ca3755797a8de39d03e2f7cabb7def",
-    "semantic_hash": ""
+    "mtime": 1790029395.8183277,
+    "seen": 1790031938.3473334,
+    "ast_hash": "e74419126487fe4d3da90b4a0901078d",
+    "semantic_hash": "e74419126487fe4d3da90b4a0901078d"
   },
   "web/package.json": {
     "mtime": 1789977845.1104372,
-    "seen": 1789982028.2475615,
+    "seen": 1790031938.347335,
     "ast_hash": "9dabc179c0c4baf748fbd412b794e259",
-    "semantic_hash": ""
+    "semantic_hash": "9dabc179c0c4baf748fbd412b794e259"
   },
   "web/src/app/App.tsx": {
-    "mtime": 1789994770.8539975,
-    "seen": 1790022771.1135635,
-    "ast_hash": "65dd2612d58cb26aa0236cdb67d228a1",
-    "semantic_hash": ""
+    "mtime": 1790031988.612063,
+    "seen": 1790032055.635604,
+    "ast_hash": "87504f55c570c041458c4ac6e1e6a414",
+    "semantic_hash": "87504f55c570c041458c4ac6e1e6a414"
   },
   "web/src/app/api.ts": {
-    "mtime": 1789985246.8418052,
-    "seen": 1789985805.6301215,
-    "ast_hash": "0dcda1b5ebadbdaa258f253d9c775c1b",
-    "semantic_hash": ""
+    "mtime": 1790031965.812258,
+    "seen": 1790032055.6356046,
+    "ast_hash": "d9bdf54043a2fd7c6c4a3a99684f9d8e",
+    "semantic_hash": "d9bdf54043a2fd7c6c4a3a99684f9d8e"
   },
   "web/src/main.tsx": {
     "mtime": 1789972626.6053095,
-    "seen": 1789982028.2475626,
+    "seen": 1790031938.3473382,
     "ast_hash": "69beacad1e5ad61d0e657ea5eaf7df8c",
-    "semantic_hash": ""
+    "semantic_hash": "69beacad1e5ad61d0e657ea5eaf7df8c"
   },
   "web/tsconfig.json": {
     "mtime": 1789972626.6053095,
-    "seen": 1789982028.2475634,
+    "seen": 1790031938.3473392,
     "ast_hash": "52d9a07c4411df3be626e827a5df3ae8",
-    "semantic_hash": ""
+    "semantic_hash": "52d9a07c4411df3be626e827a5df3ae8"
   },
   "web/vite.config.ts": {
     "mtime": 1789972626.6053095,
-    "seen": 1789982028.2475638,
+    "seen": 1790031938.3473403,
     "ast_hash": "a70be7ad6ae960a9e8f56aa1070cd4fd",
-    "semantic_hash": ""
+    "semantic_hash": "a70be7ad6ae960a9e8f56aa1070cd4fd"
   },
   ".agents/agents/dev-backend.md": {
     "mtime": 1789985269.2176104,
-    "seen": 1789985805.6301236,
+    "seen": 1790031938.347342,
     "ast_hash": "97b9970f252c2fde27999a578b3c2742",
-    "semantic_hash": ""
+    "semantic_hash": "97b9970f252c2fde27999a578b3c2742"
   },
   ".agents/agents/dev-frontend.md": {
     "mtime": 1789985292.7294054,
-    "seen": 1789985805.6301239,
+    "seen": 1790031938.3473427,
     "ast_hash": "266afbaeb54884066198eeaed60b2098",
-    "semantic_hash": ""
+    "semantic_hash": "266afbaeb54884066198eeaed60b2098"
   },
   ".agents/agents/dev-manager.md": {
     "mtime": 1789951298.9982672,
-    "seen": 1789982028.247565,
+    "seen": 1790031938.347344,
     "ast_hash": "c46ca7a435c1c6060e032daf10557ac5",
-    "semantic_hash": ""
+    "semantic_hash": "c46ca7a435c1c6060e032daf10557ac5"
   },
   ".agents/agents/dev-test.md": {
     "mtime": 1789951861.417249,
-    "seen": 1789982028.2475655,
+    "seen": 1790031938.3473446,
     "ast_hash": "c35f6c8c793de5ac843a55933c60f9bc",
-    "semantic_hash": ""
-  },
-  ".agents/agents/document.md": {
-    "mtime": 1789951165.7074478,
-    "seen": 1789982028.247566,
-    "ast_hash": "72f6935a94447a1d58c99a614ad73060",
-    "semantic_hash": ""
+    "semantic_hash": "c35f6c8c793de5ac843a55933c60f9bc"
   },
   ".agents/agents/review.md": {
     "mtime": 1789951097.7560494,
-    "seen": 1789982028.2475662,
+    "seen": 1790031938.3473454,
     "ast_hash": "0a3e31a4030f624a380b7f870d327ab8",
-    "semantic_hash": ""
+    "semantic_hash": "0a3e31a4030f624a380b7f870d327ab8"
   },
   ".agents/skills/agent-browser/SKILL.md": {
     "mtime": 1789859534.7418795,
-    "seen": 1789982028.247567,
+    "seen": 1790031938.3473465,
     "ast_hash": "0c317a50fe5cbe0fc38641af8dd0dc9d",
-    "semantic_hash": ""
+    "semantic_hash": "0c317a50fe5cbe0fc38641af8dd0dc9d"
   },
   ".agents/skills/architecture/SKILL.md": {
     "mtime": 1789859806.0594578,
-    "seen": 1789982028.2475705,
+    "seen": 1790031938.3473475,
     "ast_hash": "eee47ae875f830a5f0262557c1813453",
-    "semantic_hash": ""
+    "semantic_hash": "eee47ae875f830a5f0262557c1813453"
   },
   ".agents/skills/code-review/SKILL.md": {
     "mtime": 1789860756.686854,
-    "seen": 1789982028.247571,
+    "seen": 1790031938.3473485,
     "ast_hash": "64491fd7984d388f777c64cedc04a4ba",
-    "semantic_hash": ""
+    "semantic_hash": "64491fd7984d388f777c64cedc04a4ba"
   },
   ".agents/skills/code-review/agents/openai.yaml": {
     "mtime": 1789854972.754647,
-    "seen": 1789982028.2475715,
+    "seen": 1790031938.3473496,
     "ast_hash": "03f5dbc061e12e9c5ff87ef23da89052",
-    "semantic_hash": ""
+    "semantic_hash": "03f5dbc061e12e9c5ff87ef23da89052"
   },
   ".agents/skills/codebase-design/DEEPENING.md": {
     "mtime": 1789855762.0395908,
-    "seen": 1789982028.2475717,
+    "seen": 1790031938.347351,
     "ast_hash": "78a4d4cc82339ba265d484baa6e7fe70",
-    "semantic_hash": ""
+    "semantic_hash": "78a4d4cc82339ba265d484baa6e7fe70"
   },
   ".agents/skills/codebase-design/DESIGN-IT-TWICE.md": {
     "mtime": 1789855563.2093678,
-    "seen": 1789982028.2475722,
+    "seen": 1790031938.347352,
     "ast_hash": "70e4bc696ac17bd51434bf4b7fe2d354",
-    "semantic_hash": ""
+    "semantic_hash": "70e4bc696ac17bd51434bf4b7fe2d354"
   },
   ".agents/skills/codebase-design/SKILL.md": {
     "mtime": 1789855070.2817748,
-    "seen": 1789982028.2475727,
+    "seen": 1790031938.3473527,
     "ast_hash": "461214cf32baff950e427f5160ee8294",
-    "semantic_hash": ""
+    "semantic_hash": "461214cf32baff950e427f5160ee8294"
   },
   ".agents/skills/codebase-design/agents/openai.yaml": {
     "mtime": 1789855836.3829265,
-    "seen": 1789982028.247573,
+    "seen": 1790031938.347354,
     "ast_hash": "85d25f1439eb3d51bb6641e3ed54c012",
-    "semantic_hash": ""
+    "semantic_hash": "85d25f1439eb3d51bb6641e3ed54c012"
   },
   ".agents/skills/commit/SKILL.md": {
     "mtime": 1789943930.824457,
-    "seen": 1789982028.2475736,
+    "seen": 1790031938.347355,
     "ast_hash": "521207abc46a142ff61f017edd8ebc01",
-    "semantic_hash": ""
+    "semantic_hash": "521207abc46a142ff61f017edd8ebc01"
   },
   ".agents/skills/commit/agents/openai.yaml": {
     "mtime": 1789943989.6479511,
-    "seen": 1789982028.247574,
+    "seen": 1790031938.3473556,
     "ast_hash": "5aa5e8b9c54292d4b48cb04d9a145574",
-    "semantic_hash": ""
+    "semantic_hash": "5aa5e8b9c54292d4b48cb04d9a145574"
   },
   ".agents/skills/dev-testing/SKILL.md": {
     "mtime": 1789951778.513989,
-    "seen": 1789982028.2475743,
+    "seen": 1790031938.3473566,
     "ast_hash": "fa912ab256f9fee3058424441d4c2a27",
-    "semantic_hash": ""
+    "semantic_hash": "fa912ab256f9fee3058424441d4c2a27"
   },
   ".agents/skills/dev-testing/agents/openai.yaml": {
     "mtime": 1789951829.129537,
-    "seen": 1789982028.247575,
+    "seen": 1790031938.3473575,
     "ast_hash": "509cab769d572b8c9f4f626815c3487c",
-    "semantic_hash": ""
+    "semantic_hash": "509cab769d572b8c9f4f626815c3487c"
   },
   ".agents/skills/document-code/SKILL.md": {
     "mtime": 1789944628.5904193,
-    "seen": 1789982028.2475753,
+    "seen": 1790031938.3473582,
     "ast_hash": "1ad567cd793f8ce3cac8abed48661e63",
-    "semantic_hash": ""
+    "semantic_hash": "1ad567cd793f8ce3cac8abed48661e63"
   },
   ".agents/skills/document-code/agents/openai.yaml": {
     "mtime": 1789944700.0937977,
-    "seen": 1789982028.2475758,
+    "seen": 1790031938.347359,
     "ast_hash": "9de925e897e9678e339d2df427396c8e",
-    "semantic_hash": ""
+    "semantic_hash": "9de925e897e9678e339d2df427396c8e"
   },
   ".agents/skills/documentation/SKILL.md": {
     "mtime": 1789858762.9407578,
-    "seen": 1789982028.2475762,
+    "seen": 1790031938.3473597,
     "ast_hash": "73dfff9d7362456cd1c6e5fee6a98d03",
-    "semantic_hash": ""
+    "semantic_hash": "73dfff9d7362456cd1c6e5fee6a98d03"
   },
   ".agents/skills/frontend-design/LICENSE.txt": {
     "mtime": 1789718330.9199066,
-    "seen": 1789982028.2475765,
+    "seen": 1790031938.3473608,
     "ast_hash": "2ee41112a44fe7014dce33e26468ba93",
-    "semantic_hash": ""
+    "semantic_hash": "2ee41112a44fe7014dce33e26468ba93"
   },
   ".agents/skills/frontend-design/SKILL.md": {
     "mtime": 1789718330.199913,
-    "seen": 1789982028.2475772,
+    "seen": 1790031938.3473616,
     "ast_hash": "7d6df6b2e98e38f8b86046325dc6afd0",
-    "semantic_hash": ""
+    "semantic_hash": "7d6df6b2e98e38f8b86046325dc6afd0"
   },
   ".agents/skills/graphify/SKILL.md": {
     "mtime": 1789981693.8287942,
-    "seen": 1789982028.2475774,
+    "seen": 1790031938.3473625,
     "ast_hash": "7951f29baa5e88d6429032a34339d1e0",
-    "semantic_hash": ""
+    "semantic_hash": "7951f29baa5e88d6429032a34339d1e0"
   },
   ".agents/skills/graphify/references/add-watch.md": {
     "mtime": 1789945167.1937313,
-    "seen": 1789982028.247578,
+    "seen": 1790031938.3473632,
     "ast_hash": "d59d027fe449f06aa03905a01184e779",
-    "semantic_hash": ""
+    "semantic_hash": "d59d027fe449f06aa03905a01184e779"
   },
   ".agents/skills/graphify/references/exports.md": {
     "mtime": 1789945167.1937313,
-    "seen": 1789982028.2475784,
+    "seen": 1790031938.3473642,
     "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
-    "semantic_hash": ""
+    "semantic_hash": "9da2a2152e60a22f07f05fed5158f287"
   },
   ".agents/skills/graphify/references/extraction-spec.md": {
     "mtime": 1789945167.1937313,
-    "seen": 1789982028.2475786,
+    "seen": 1790031938.347365,
     "ast_hash": "42fef56a01698118f7fd722acdadea34",
-    "semantic_hash": ""
+    "semantic_hash": "42fef56a01698118f7fd722acdadea34"
   },
   ".agents/skills/graphify/references/github-and-merge.md": {
     "mtime": 1789945167.1937313,
-    "seen": 1789982028.247579,
+    "seen": 1790031938.3473656,
     "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
-    "semantic_hash": ""
+    "semantic_hash": "cde13df085e4c492aeb7ba298a996d0d"
   },
   ".agents/skills/graphify/references/hooks.md": {
     "mtime": 1789945167.1937313,
-    "seen": 1789982028.2475796,
+    "seen": 1790031938.3473666,
     "ast_hash": "3f545db6ce646650bb9de588f5512a27",
-    "semantic_hash": ""
+    "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
   },
   ".agents/skills/graphify/references/query.md": {
     "mtime": 1789945167.1937313,
-    "seen": 1789982028.24758,
+    "seen": 1790031938.3473675,
     "ast_hash": "3c46f8ad006874260614ed8657d02307",
-    "semantic_hash": ""
+    "semantic_hash": "3c46f8ad006874260614ed8657d02307"
   },
   ".agents/skills/graphify/references/transcribe.md": {
     "mtime": 1789945167.1937313,
-    "seen": 1789982028.2475808,
+    "seen": 1790031938.3473682,
     "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
-    "semantic_hash": ""
+    "semantic_hash": "67b6a5fa6c0974e18f60db9f8932fbd8"
   },
   ".agents/skills/graphify/references/update.md": {
     "mtime": 1789945167.1937313,
-    "seen": 1789982028.2475812,
+    "seen": 1790031938.3473692,
     "ast_hash": "9378bd03d56baaf78bd738ab3848f142",
-    "semantic_hash": ""
+    "semantic_hash": "9378bd03d56baaf78bd738ab3848f142"
   },
   ".agents/skills/knowledge-base/SKILL.md": {
     "mtime": 1789877710.7712445,
-    "seen": 1789982028.2475815,
+    "seen": 1790031938.34737,
     "ast_hash": "24cb0f10eb1fcfbf615fde947b74a1fd",
-    "semantic_hash": ""
+    "semantic_hash": "24cb0f10eb1fcfbf615fde947b74a1fd"
   },
   ".agents/skills/mcp-builder/LICENSE.txt": {
     "mtime": 1789718329.2719214,
-    "seen": 1789982028.2475817,
+    "seen": 1790031938.347371,
     "ast_hash": "0ee6429f4c66920b6744d818225fb58f",
-    "semantic_hash": ""
+    "semantic_hash": "0ee6429f4c66920b6744d818225fb58f"
   },
   ".agents/skills/mcp-builder/SKILL.md": {
     "mtime": 1789718328.515928,
-    "seen": 1789982028.2475822,
+    "seen": 1790031938.3473718,
     "ast_hash": "595dcfd738e6aabe7fbbc35929baa7a6",
-    "semantic_hash": ""
+    "semantic_hash": "595dcfd738e6aabe7fbbc35929baa7a6"
   },
   ".agents/skills/mcp-builder/reference/evaluation.md": {
     "mtime": 1789718327.7519348,
-    "seen": 1789982028.2475827,
+    "seen": 1790031938.3473728,
     "ast_hash": "4aa903da7d9c289eb167dce2747140f2",
-    "semantic_hash": ""
+    "semantic_hash": "4aa903da7d9c289eb167dce2747140f2"
   },
   ".agents/skills/mcp-builder/reference/mcp_best_practices.md": {
     "mtime": 1789718327.0319412,
-    "seen": 1789982028.2475832,
+    "seen": 1790031938.3473735,
     "ast_hash": "e7cd50e7527877687efebcd3877e3e9a",
-    "semantic_hash": ""
+    "semantic_hash": "e7cd50e7527877687efebcd3877e3e9a"
   },
   ".agents/skills/mcp-builder/reference/node_mcp_server.md": {
     "mtime": 1789718326.2719479,
-    "seen": 1789982028.2475836,
+    "seen": 1790031938.3473747,
     "ast_hash": "214713cb0cfdf6ea4aa8eda85e2c6959",
-    "semantic_hash": ""
+    "semantic_hash": "214713cb0cfdf6ea4aa8eda85e2c6959"
   },
   ".agents/skills/mcp-builder/reference/python_mcp_server.md": {
     "mtime": 1789718325.5399544,
-    "seen": 1789982028.2475843,
+    "seen": 1790031938.3473759,
     "ast_hash": "af767546b4697efbb7348f5c06a6b071",
-    "semantic_hash": ""
+    "semantic_hash": "af767546b4697efbb7348f5c06a6b071"
   },
   ".agents/skills/mcp-builder/scripts/requirements.txt": {
     "mtime": 1789718322.7039795,
-    "seen": 1789982028.2475848,
+    "seen": 1790031938.3473768,
     "ast_hash": "3ec2de45c75cadfbf997821049c09fbd",
-    "semantic_hash": ""
+    "semantic_hash": "3ec2de45c75cadfbf997821049c09fbd"
   },
   ".agents/skills/ponytail/SKILL.md": {
     "mtime": 1789718272.2284276,
-    "seen": 1789982028.2475853,
+    "seen": 1790031938.3473778,
     "ast_hash": "421e40917db6cc732864011799da3235",
-    "semantic_hash": ""
+    "semantic_hash": "421e40917db6cc732864011799da3235"
   },
   ".agents/skills/system-design/SKILL.md": {
     "mtime": 1789719116.0411053,
-    "seen": 1789982028.2475855,
+    "seen": 1790031938.3473785,
     "ast_hash": "e558cbbca7ad8e8c4efcc36c45f43e78",
-    "semantic_hash": ""
+    "semantic_hash": "e558cbbca7ad8e8c4efcc36c45f43e78"
   },
   ".agents/skills/tdd/SKILL.md": {
     "mtime": 1789890663.0194447,
-    "seen": 1789982028.247586,
+    "seen": 1790031938.3473794,
     "ast_hash": "7e3012485426d104724c19567444a093",
-    "semantic_hash": ""
+    "semantic_hash": "7e3012485426d104724c19567444a093"
   },
   ".agents/skills/tdd/agents/openai.yaml": {
     "mtime": 1789882576.707913,
-    "seen": 1789982028.2475865,
+    "seen": 1790031938.3473802,
     "ast_hash": "85ec923abb8591cc3ea3bba5819636f6",
-    "semantic_hash": ""
+    "semantic_hash": "85ec923abb8591cc3ea3bba5819636f6"
   },
   ".agents/skills/tdd/mocking.md": {
     "mtime": 1789882495.2366352,
-    "seen": 1789982028.247587,
+    "seen": 1790031938.3473809,
     "ast_hash": "324ff875029a145bff0067b1df5cd618",
-    "semantic_hash": ""
+    "semantic_hash": "324ff875029a145bff0067b1df5cd618"
   },
   ".agents/skills/tdd/tests.md": {
     "mtime": 1789882524.944372,
-    "seen": 1789982028.2475877,
+    "seen": 1790031938.347382,
     "ast_hash": "162d81700e819f69161bad0779c6b182",
-    "semantic_hash": ""
+    "semantic_hash": "162d81700e819f69161bad0779c6b182"
   },
   ".github/workflows/ci.yml": {
     "mtime": 1789972864.987166,
-    "seen": 1789982028.2475882,
+    "seen": 1790031938.3473828,
     "ast_hash": "fc621c330aa6adb6e9ca31981bd73e7f",
-    "semantic_hash": ""
+    "semantic_hash": "fc621c330aa6adb6e9ca31981bd73e7f"
   },
   "AGENTS.md": {
     "mtime": 1789981950.7105374,
-    "seen": 1789982028.2475886,
+    "seen": 1790031938.3473835,
     "ast_hash": "ca07c937e4da97dbc52fe51cf0252be2",
-    "semantic_hash": ""
+    "semantic_hash": "ca07c937e4da97dbc52fe51cf0252be2"
   },
   "compose.yaml": {
     "mtime": 1789972864.983166,
-    "seen": 1789982028.2475889,
+    "seen": 1790031938.3473847,
     "ast_hash": "e5faafc6ece85a29aac6d12c8c02f6c1",
-    "semantic_hash": ""
+    "semantic_hash": "e5faafc6ece85a29aac6d12c8c02f6c1"
   },
   "docs/dev/plan.md": {
     "mtime": 1789970148.899191,
-    "seen": 1789982028.2475893,
+    "seen": 1790031938.3473856,
     "ast_hash": "4640c8e15049089467e5161c3f4f4b1b",
-    "semantic_hash": ""
+    "semantic_hash": "4640c8e15049089467e5161c3f4f4b1b"
   },
   "docs/dev/progress-tracker.md": {
-    "mtime": 1789994890.5609856,
-    "seen": 1790022771.1135902,
-    "ast_hash": "1859df61c3614ef3b3b100121d33e016",
-    "semantic_hash": ""
+    "mtime": 1790029882.7542174,
+    "seen": 1790031938.3473864,
+    "ast_hash": "b1dc309fee952af013c0b97748bd52e4",
+    "semantic_hash": "b1dc309fee952af013c0b97748bd52e4"
   },
   "docs/dev/system-design/DDI-Module.md": {
     "mtime": 1789870692.093964,
-    "seen": 1789982028.247591,
+    "seen": 1790031938.347387,
     "ast_hash": "73228c230ad6557b7bcfc33a711a6abe",
-    "semantic_hash": ""
+    "semantic_hash": "73228c230ad6557b7bcfc33a711a6abe"
   },
   "docs/dev/system-design/MCP-design.md": {
     "mtime": 1789890401.4298222,
-    "seen": 1789982028.2475915,
+    "seen": 1790031938.3473883,
     "ast_hash": "1ff6489ddad939c6fbfce7a96f3f90ce",
-    "semantic_hash": ""
+    "semantic_hash": "1ff6489ddad939c6fbfce7a96f3f90ce"
   },
   "docs/dev/system-design/system-architecture.md": {
     "mtime": 1789890175.0238848,
-    "seen": 1789982028.2475917,
+    "seen": 1790031938.3473892,
     "ast_hash": "6609c296b0139c87d2ebc1581da0835c",
-    "semantic_hash": ""
+    "semantic_hash": "6609c296b0139c87d2ebc1581da0835c"
   },
   "docs/dev/system-design/system-design.md": {
     "mtime": 1789890401.4298222,
-    "seen": 1789982028.2475922,
+    "seen": 1790031938.34739,
     "ast_hash": "0179d05e2031c5fa9a54c43fb6cada8e",
-    "semantic_hash": ""
+    "semantic_hash": "0179d05e2031c5fa9a54c43fb6cada8e"
   },
   "docs/dev/tasks.md": {
     "mtime": 1789970307.9618406,
-    "seen": 1789982028.2475927,
+    "seen": 1790031938.3473907,
     "ast_hash": "ef7ddbe9ee54617ec8a977a4a1f33dcc",
-    "semantic_hash": ""
+    "semantic_hash": "ef7ddbe9ee54617ec8a977a4a1f33dcc"
   },
   "docs/dev/ui-context.md": {
     "mtime": 1789942856.245665,
-    "seen": 1789982028.2475932,
+    "seen": 1790031938.3473918,
     "ast_hash": "4cd3a49040c8e7c2f1ffc97a6f62e4bb",
-    "semantic_hash": ""
+    "semantic_hash": "4cd3a49040c8e7c2f1ffc97a6f62e4bb"
   },
   "docs/dev/user-requirements.md": {
     "mtime": 1789889606.433106,
-    "seen": 1789982028.2475934,
+    "seen": 1790031938.3473926,
     "ast_hash": "324ec55647e317ea1280c34089d9c608",
-    "semantic_hash": ""
+    "semantic_hash": "324ec55647e317ea1280c34089d9c608"
   },
   "docs/medical-docs/CSSRS.md": {
     "mtime": 1789869394.0775888,
-    "seen": 1789982028.2475939,
+    "seen": 1790031938.3473933,
     "ast_hash": "0ad65a7a3c8b9d70f4fd7d78ba9a433a",
-    "semantic_hash": ""
+    "semantic_hash": "0ad65a7a3c8b9d70f4fd7d78ba9a433a"
   },
   "docs/medical-docs/DDI-text/Analgesics and NSAIDs/Acetaminophen.txt": {
     "mtime": 1789946908.001488,
-    "seen": 1789982028.2475946,
+    "seen": 1790031938.347394,
     "ast_hash": "6ee664b05171e63af5dccc7ea8e90f12",
-    "semantic_hash": ""
+    "semantic_hash": "6ee664b05171e63af5dccc7ea8e90f12"
   },
   "docs/medical-docs/DDI-text/Analgesics and NSAIDs/Celecoxib.txt": {
     "mtime": 1789946907.2894943,
-    "seen": 1789982028.247595,
+    "seen": 1790031938.3473947,
     "ast_hash": "2fa666e7698c2273fc804efc7fff86d8",
-    "semantic_hash": ""
+    "semantic_hash": "2fa666e7698c2273fc804efc7fff86d8"
   },
   "docs/medical-docs/DDI-text/Analgesics and NSAIDs/Diclofenac.txt": {
     "mtime": 1789946906.4975014,
-    "seen": 1789982028.2475953,
+    "seen": 1790031938.3473957,
     "ast_hash": "58db1fc71277ce86113854c7363e8dee",
-    "semantic_hash": ""
+    "semantic_hash": "58db1fc71277ce86113854c7363e8dee"
   },
   "docs/medical-docs/DDI-text/Analgesics and NSAIDs/Ibuprofen.txt": {
     "mtime": 1789946905.7215083,
-    "seen": 1789982028.2475958,
+    "seen": 1790031938.3473966,
     "ast_hash": "2bf1e0e188d25bc3886f7c0005a209b7",
-    "semantic_hash": ""
+    "semantic_hash": "2bf1e0e188d25bc3886f7c0005a209b7"
   },
   "docs/medical-docs/DDI-text/Analgesics and NSAIDs/Meloxicam.txt": {
     "mtime": 1789946904.9455154,
-    "seen": 1789982028.2475965,
+    "seen": 1790031938.3473976,
     "ast_hash": "248f6a4f58a42a16cab2d571daa40b25",
-    "semantic_hash": ""
+    "semantic_hash": "248f6a4f58a42a16cab2d571daa40b25"
   },
   "docs/medical-docs/DDI-text/Analgesics and NSAIDs/Naproxen.txt": {
     "mtime": 1789946904.1815221,
-    "seen": 1789982028.2475967,
+    "seen": 1790031938.3473983,
     "ast_hash": "735ffc144ea4aa089269b9fbae483dfe",
-    "semantic_hash": ""
+    "semantic_hash": "735ffc144ea4aa089269b9fbae483dfe"
   },
   "docs/medical-docs/DDI-text/Analgesics and NSAIDs/Oxycodone.txt": {
     "mtime": 1789946903.4455287,
-    "seen": 1789982028.247597,
+    "seen": 1790031938.3473995,
     "ast_hash": "758d6961d21b79f6a401080bd2906528",
-    "semantic_hash": ""
+    "semantic_hash": "758d6961d21b79f6a401080bd2906528"
   },
   "docs/medical-docs/DDI-text/Analgesics and NSAIDs/Tramadol.txt": {
     "mtime": 1789946902.3935382,
-    "seen": 1789982028.2475975,
+    "seen": 1790031938.3474002,
     "ast_hash": "fda4f32ad98d7623f46bf02c19c764be",
-    "semantic_hash": ""
+    "semantic_hash": "fda4f32ad98d7623f46bf02c19c764be"
   },
   "docs/medical-docs/DDI-text/Antibiotics/Amoxicillin.txt": {
     "mtime": 1789946911.7534542,
-    "seen": 1789982028.2475982,
+    "seen": 1790031938.347401,
     "ast_hash": "654710831f439b7c0b2ea1e1dc06bc58",
-    "semantic_hash": ""
+    "semantic_hash": "654710831f439b7c0b2ea1e1dc06bc58"
   },
   "docs/medical-docs/DDI-text/Antibiotics/Azithromycin.txt": {
     "mtime": 1789946911.009461,
-    "seen": 1789982028.2475984,
+    "seen": 1790031938.3474016,
     "ast_hash": "3940727a5d8622d41beccea900d9914e",
-    "semantic_hash": ""
+    "semantic_hash": "3940727a5d8622d41beccea900d9914e"
   },
   "docs/medical-docs/DDI-text/Antibiotics/Cephalexin.txt": {
     "mtime": 1789946910.2774675,
-    "seen": 1789982028.247599,
+    "seen": 1790031938.3474028,
     "ast_hash": "842b863b1c61e09d2e3130caeb9d33d9",
-    "semantic_hash": ""
+    "semantic_hash": "842b863b1c61e09d2e3130caeb9d33d9"
   },
   "docs/medical-docs/DDI-text/Antibiotics/Ciprofloxacin.txt": {
     "mtime": 1789946909.5614738,
-    "seen": 1789982028.2475991,
+    "seen": 1790031938.3474035,
     "ast_hash": "af8af7ed95f70da9e031839f84027c88",
-    "semantic_hash": ""
+    "semantic_hash": "af8af7ed95f70da9e031839f84027c88"
   },
   "docs/medical-docs/DDI-text/Antibiotics/Doxycycline.txt": {
     "mtime": 1789946908.7254813,
-    "seen": 1789982028.2475996,
+    "seen": 1790031938.3474042,
     "ast_hash": "278280f537b830812bcd216e7933aaf3",
-    "semantic_hash": ""
+    "semantic_hash": "278280f537b830812bcd216e7933aaf3"
   },
   "docs/medical-docs/DDI-text/Anticholinergics & Parkinsonism Agents/Amantadine.txt": {
     "mtime": 1789946916.8294086,
-    "seen": 1789982028.2475998,
+    "seen": 1790031938.347405,
     "ast_hash": "fc78138b7566b53230cd8295e5d9727a",
-    "semantic_hash": ""
+    "semantic_hash": "fc78138b7566b53230cd8295e5d9727a"
   },
   "docs/medical-docs/DDI-text/Anticholinergics & Parkinsonism Agents/Atropine.txt": {
     "mtime": 1789946915.6334193,
-    "seen": 1789982028.2476003,
+    "seen": 1790031938.3474061,
     "ast_hash": "a6930fb8fca34e880e0b07aa284b4fe7",
-    "semantic_hash": ""
+    "semantic_hash": "a6930fb8fca34e880e0b07aa284b4fe7"
   },
   "docs/medical-docs/DDI-text/Anticholinergics & Parkinsonism Agents/Benztropine.txt": {
     "mtime": 1789946914.9174259,
-    "seen": 1789982028.2476006,
+    "seen": 1790031938.3474069,
     "ast_hash": "e2681bc86b95ef65ea6f8475b6a62692",
-    "semantic_hash": ""
+    "semantic_hash": "e2681bc86b95ef65ea6f8475b6a62692"
   },
   "docs/medical-docs/DDI-text/Anticholinergics & Parkinsonism Agents/Bromocriptine.txt": {
     "mtime": 1789946913.985434,
-    "seen": 1789982028.2476013,
+    "seen": 1790031938.3474078,
     "ast_hash": "9873f76f91a42eab4f142bf7caf02a7f",
-    "semantic_hash": ""
+    "semantic_hash": "9873f76f91a42eab4f142bf7caf02a7f"
   },
   "docs/medical-docs/DDI-text/Anticholinergics & Parkinsonism Agents/Glycopyrrolate.txt": {
     "mtime": 1789946913.2374408,
-    "seen": 1789982028.2476015,
+    "seen": 1790031938.3474085,
     "ast_hash": "885dd9f35beebc28a08f5b58dd3ac1fe",
-    "semantic_hash": ""
+    "semantic_hash": "885dd9f35beebc28a08f5b58dd3ac1fe"
   },
   "docs/medical-docs/DDI-text/Anticholinergics & Parkinsonism Agents/Trihexyphenidyl.txt": {
     "mtime": 1789946912.4574478,
-    "seen": 1789982028.247602,
+    "seen": 1790031938.3474097,
     "ast_hash": "dece94cc1feca255bda08781b81d3ac7",
-    "semantic_hash": ""
+    "semantic_hash": "dece94cc1feca255bda08781b81d3ac7"
   },
   "docs/medical-docs/DDI-text/Antidepressants/Amitriptyline.txt": {
     "mtime": 1789946926.593321,
-    "seen": 1789982028.2476025,
+    "seen": 1790031938.3474104,
     "ast_hash": "c45bc72a6252e29fe01d02441e7c50ab",
-    "semantic_hash": ""
+    "semantic_hash": "c45bc72a6252e29fe01d02441e7c50ab"
   },
   "docs/medical-docs/DDI-text/Antidepressants/Bupropion.txt": {
     "mtime": 1789946925.7733283,
-    "seen": 1789982028.2476027,
+    "seen": 1790031938.3474112,
     "ast_hash": "59e8fbd1152045fe11657026a4d0f9b8",
-    "semantic_hash": ""
+    "semantic_hash": "59e8fbd1152045fe11657026a4d0f9b8"
   },
   "docs/medical-docs/DDI-text/Antidepressants/Citalopram.txt": {
     "mtime": 1789946925.0413349,
-    "seen": 1789982028.2476032,
+    "seen": 1790031938.3474119,
     "ast_hash": "0bbb55a2a52518623fa49e67702f4f3a",
-    "semantic_hash": ""
+    "semantic_hash": "0bbb55a2a52518623fa49e67702f4f3a"
   },
   "docs/medical-docs/DDI-text/Antidepressants/Clomipramine.txt": {
     "mtime": 1789946924.2573419,
-    "seen": 1789982028.2476034,
+    "seen": 1790031938.3474128,
     "ast_hash": "c744a9735fa8762eb7a013c805f4fdf3",
-    "semantic_hash": ""
+    "semantic_hash": "c744a9735fa8762eb7a013c805f4fdf3"
   },
   "docs/medical-docs/DDI-text/Antidepressants/Duloxetine.txt": {
     "mtime": 1789946923.3133504,
-    "seen": 1789982028.2476041,
+    "seen": 1790031938.3474135,
     "ast_hash": "72bb3d2048129be26caaf409fa74c2a9",
-    "semantic_hash": ""
+    "semantic_hash": "72bb3d2048129be26caaf409fa74c2a9"
   },
   "docs/medical-docs/DDI-text/Antidepressants/Escitalopram.txt": {
     "mtime": 1789946922.5213575,
-    "seen": 1789982028.2476048,
+    "seen": 1790031938.3474145,
     "ast_hash": "455884d4ec5fc54a94f806bdb6ee9780",
-    "semantic_hash": ""
+    "semantic_hash": "455884d4ec5fc54a94f806bdb6ee9780"
   },
   "docs/medical-docs/DDI-text/Antidepressants/Fluoxetine.txt": {
     "mtime": 1789946921.7733643,
-    "seen": 1789982028.2476053,
+    "seen": 1790031938.3474154,
     "ast_hash": "147d6c4db58a887ae3505a3c43bd390f",
-    "semantic_hash": ""
+    "semantic_hash": "147d6c4db58a887ae3505a3c43bd390f"
   },
   "docs/medical-docs/DDI-text/Antidepressants/Mirtazapine.txt": {
     "mtime": 1789946920.809373,
-    "seen": 1789982028.2476058,
+    "seen": 1790031938.3474164,
     "ast_hash": "58962d6affa2544cd8048967ab57a43e",
-    "semantic_hash": ""
+    "semantic_hash": "58962d6affa2544cd8048967ab57a43e"
   },
   "docs/medical-docs/DDI-text/Antidepressants/Nortriptyline.txt": {
     "mtime": 1789946920.0293798,
-    "seen": 1789982028.2476063,
+    "seen": 1790031938.347417,
     "ast_hash": "0412badf2967ad003c6d8f06cdbb50a3",
-    "semantic_hash": ""
+    "semantic_hash": "0412badf2967ad003c6d8f06cdbb50a3"
   },
   "docs/medical-docs/DDI-text/Antidepressants/Paroxetine.txt": {
     "mtime": 1789946919.2693868,
-    "seen": 1789982028.2476065,
+    "seen": 1790031938.347418,
     "ast_hash": "4565acf65fae4952eeb5a547ad364b26",
-    "semantic_hash": ""
+    "semantic_hash": "4565acf65fae4952eeb5a547ad364b26"
   },
   "docs/medical-docs/DDI-text/Antidepressants/Sertraline.txt": {
     "mtime": 1789946918.5253935,
-    "seen": 1789982028.2476068,
+    "seen": 1790031938.3474188,
     "ast_hash": "9edf0e76699e560142bbf110393f5923",
-    "semantic_hash": ""
+    "semantic_hash": "9edf0e76699e560142bbf110393f5923"
   },
   "docs/medical-docs/DDI-text/Antidepressants/Venlafaxine.txt": {
     "mtime": 1789946917.7694001,
-    "seen": 1789982028.2476072,
+    "seen": 1790031938.3474197,
     "ast_hash": "8fe8383838c7a0004a3c08e7368a3dd0",
-    "semantic_hash": ""
+    "semantic_hash": "8fe8383838c7a0004a3c08e7368a3dd0"
   },
   "docs/medical-docs/DDI-text/Antidiabetic Agents/Empagliflozin.txt": {
     "mtime": 1789946933.4452596,
-    "seen": 1789982028.2476077,
+    "seen": 1790031938.3474207,
     "ast_hash": "2465452c9ae46b9894ce627682dff304",
-    "semantic_hash": ""
+    "semantic_hash": "2465452c9ae46b9894ce627682dff304"
   },
   "docs/medical-docs/DDI-text/Antidiabetic Agents/Glimepiride.txt": {
     "mtime": 1789946932.7492657,
-    "seen": 1789982028.2476084,
+    "seen": 1790031938.3474216,
     "ast_hash": "00923229bb12efb0cba5cf7f5606eac2",
-    "semantic_hash": ""
+    "semantic_hash": "00923229bb12efb0cba5cf7f5606eac2"
   },
   "docs/medical-docs/DDI-text/Antidiabetic Agents/Glipizide.txt": {
     "mtime": 1789946932.0252721,
-    "seen": 1789982028.247609,
+    "seen": 1790031938.3474228,
     "ast_hash": "6a508ee5e3527858ae6cfb85f52009fc",
-    "semantic_hash": ""
+    "semantic_hash": "6a508ee5e3527858ae6cfb85f52009fc"
   },
   "docs/medical-docs/DDI-text/Antidiabetic Agents/Insulin.txt": {
     "mtime": 1789946931.2892787,
-    "seen": 1789982028.2476091,
+    "seen": 1790031938.3474238,
     "ast_hash": "c52a49b537474e5c5802e08d5bcdccd7",
-    "semantic_hash": ""
+    "semantic_hash": "c52a49b537474e5c5802e08d5bcdccd7"
   },
   "docs/medical-docs/DDI-text/Antidiabetic Agents/Liraglutide.txt": {
     "mtime": 1789946930.4612863,
-    "seen": 1789982028.2476096,
+    "seen": 1790031938.3474247,
     "ast_hash": "a0d1a0ae35a93ab439d99a24a04c85d2",
-    "semantic_hash": ""
+    "semantic_hash": "a0d1a0ae35a93ab439d99a24a04c85d2"
   },
   "docs/medical-docs/DDI-text/Antidiabetic Agents/Metformin.txt": {
     "mtime": 1789946929.725293,
-    "seen": 1789982028.24761,
+    "seen": 1790031938.3474257,
     "ast_hash": "c73dbab2478e7b1e7e8cc34891dcd7f2",
-    "semantic_hash": ""
+    "semantic_hash": "c73dbab2478e7b1e7e8cc34891dcd7f2"
   },
   "docs/medical-docs/DDI-text/Antidiabetic Agents/Pioglitazone.txt": {
     "mtime": 1789946928.9692996,
-    "seen": 1789982028.2476106,
+    "seen": 1790031938.3474267,
     "ast_hash": "5bca3c28de1428695855e9eed8dbaf83",
-    "semantic_hash": ""
+    "semantic_hash": "5bca3c28de1428695855e9eed8dbaf83"
   },
   "docs/medical-docs/DDI-text/Antidiabetic Agents/Semaglutide.txt": {
     "mtime": 1789946928.1013074,
-    "seen": 1789982028.2476108,
+    "seen": 1790031938.3474274,
     "ast_hash": "c99ceb527f6580cde7edb8b3efa364e2",
-    "semantic_hash": ""
+    "semantic_hash": "c99ceb527f6580cde7edb8b3efa364e2"
   },
   "docs/medical-docs/DDI-text/Antidiabetic Agents/Sitagliptin.txt": {
     "mtime": 1789946927.3333144,
-    "seen": 1789982028.2476113,
+    "seen": 1790031938.347428,
     "ast_hash": "3fa17e436049b6f49fbe5d82283b40fe",
-    "semantic_hash": ""
+    "semantic_hash": "3fa17e436049b6f49fbe5d82283b40fe"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Aripiprazole.txt": {
     "mtime": 1789946951.0531015,
-    "seen": 1789982028.247612,
+    "seen": 1790031938.347429,
     "ast_hash": "ac89da740965627bb698bb226a10472e",
-    "semantic_hash": ""
+    "semantic_hash": "ac89da740965627bb698bb226a10472e"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Asenapine.txt": {
     "mtime": 1789946950.333108,
-    "seen": 1789982028.2476122,
+    "seen": 1790031938.3474302,
     "ast_hash": "0c0e60514a5c5be78f41de093331dfd3",
-    "semantic_hash": ""
+    "semantic_hash": "0c0e60514a5c5be78f41de093331dfd3"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Brexpiprazole.txt": {
     "mtime": 1789946949.5811148,
-    "seen": 1789982028.247613,
+    "seen": 1790031938.3474312,
     "ast_hash": "9301b7324ffcd71829305ab987b8a5a2",
-    "semantic_hash": ""
+    "semantic_hash": "9301b7324ffcd71829305ab987b8a5a2"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Cariprazine.txt": {
     "mtime": 1789946948.7731218,
-    "seen": 1789982028.2476134,
+    "seen": 1790031938.347432,
     "ast_hash": "4d73d73fe2c0370771fcd4cff8c5f70c",
-    "semantic_hash": ""
+    "semantic_hash": "4d73d73fe2c0370771fcd4cff8c5f70c"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Chlorpromazine.txt": {
     "mtime": 1789946948.0611284,
-    "seen": 1789982028.2476137,
+    "seen": 1790031938.3474329,
     "ast_hash": "1fed58054a561ba7779c93635af6a6bc",
-    "semantic_hash": ""
+    "semantic_hash": "1fed58054a561ba7779c93635af6a6bc"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Clozapine.txt": {
     "mtime": 1789946947.3491347,
-    "seen": 1789982028.2476141,
+    "seen": 1790031938.347434,
     "ast_hash": "0c40506f6cf01f02bc3fabbc38d21f06",
-    "semantic_hash": ""
+    "semantic_hash": "0c40506f6cf01f02bc3fabbc38d21f06"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Fluphenazine.txt": {
     "mtime": 1789946946.629141,
-    "seen": 1789982028.2476144,
+    "seen": 1790031938.3474348,
     "ast_hash": "5ce100253d1fe4987927f18283e1f78b",
-    "semantic_hash": ""
+    "semantic_hash": "5ce100253d1fe4987927f18283e1f78b"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Haloperidol.txt": {
     "mtime": 1789946945.7731488,
-    "seen": 1789982028.2476149,
+    "seen": 1790031938.3474357,
     "ast_hash": "f3ea51c561f45900eebd6d8310ea59f4",
-    "semantic_hash": ""
+    "semantic_hash": "f3ea51c561f45900eebd6d8310ea59f4"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Iloperidone.txt": {
     "mtime": 1789946944.969156,
-    "seen": 1789982028.2476156,
+    "seen": 1790031938.347437,
     "ast_hash": "e34f14cc2c00fc4eb3980bc5e0c407c1",
-    "semantic_hash": ""
+    "semantic_hash": "e34f14cc2c00fc4eb3980bc5e0c407c1"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Loxapine.txt": {
     "mtime": 1789946944.2611623,
-    "seen": 1789982028.2476158,
+    "seen": 1790031938.3474379,
     "ast_hash": "528e72d2f2cf14e39901aec677683af1",
-    "semantic_hash": ""
+    "semantic_hash": "528e72d2f2cf14e39901aec677683af1"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Lurasidone.txt": {
     "mtime": 1789946943.4491696,
-    "seen": 1789982028.2476163,
+    "seen": 1790031938.3474386,
     "ast_hash": "7469420c4ad5705451ca8adf576089b6",
-    "semantic_hash": ""
+    "semantic_hash": "7469420c4ad5705451ca8adf576089b6"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Molindone.txt": {
     "mtime": 1789946942.6851766,
-    "seen": 1789982028.2476168,
+    "seen": 1790031938.3474395,
     "ast_hash": "97425cc972e46c72159ee1214c43f8a4",
-    "semantic_hash": ""
+    "semantic_hash": "97425cc972e46c72159ee1214c43f8a4"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Olanzapine.txt": {
     "mtime": 1789946941.965183,
-    "seen": 1789982028.247617,
+    "seen": 1790031938.3474407,
     "ast_hash": "50d8e825e86177044b3f188b6e15b32b",
-    "semantic_hash": ""
+    "semantic_hash": "50d8e825e86177044b3f188b6e15b32b"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Paliperidone.txt": {
     "mtime": 1789946941.2571893,
-    "seen": 1789982028.2476175,
+    "seen": 1790031938.3474417,
     "ast_hash": "a97a7b16de9b7badeebed21873d06772",
-    "semantic_hash": ""
+    "semantic_hash": "a97a7b16de9b7badeebed21873d06772"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Perphenazine.txt": {
     "mtime": 1789946940.5451958,
-    "seen": 1789982028.247618,
+    "seen": 1790031938.3474426,
     "ast_hash": "6e93c2008b8bf867633f82f120f7b167",
-    "semantic_hash": ""
+    "semantic_hash": "6e93c2008b8bf867633f82f120f7b167"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Pimozide.txt": {
     "mtime": 1789946939.609204,
-    "seen": 1789982028.2476182,
+    "seen": 1790031938.3474438,
     "ast_hash": "7d48e5f431b196f160202918f3e61858",
-    "semantic_hash": ""
+    "semantic_hash": "7d48e5f431b196f160202918f3e61858"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Quetiapine.txt": {
     "mtime": 1789946938.845211,
-    "seen": 1789982028.247619,
+    "seen": 1790031938.3474448,
     "ast_hash": "18dcd2370b20f2550cc2c81ae1d4955b",
-    "semantic_hash": ""
+    "semantic_hash": "18dcd2370b20f2550cc2c81ae1d4955b"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Risperidone.txt": {
     "mtime": 1789946938.1092176,
-    "seen": 1789982028.2476192,
+    "seen": 1790031938.3474455,
     "ast_hash": "af8de4cd6c7cae03beb966a66021f879",
-    "semantic_hash": ""
+    "semantic_hash": "af8de4cd6c7cae03beb966a66021f879"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Thioridazine.txt": {
     "mtime": 1789946937.393224,
-    "seen": 1789982028.2476196,
+    "seen": 1790031938.3474462,
     "ast_hash": "3b5baa9c87f5e23c2e4dda70b4bb7f89",
-    "semantic_hash": ""
+    "semantic_hash": "3b5baa9c87f5e23c2e4dda70b4bb7f89"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Thiothixene.txt": {
     "mtime": 1789946936.6732304,
-    "seen": 1789982028.2476199,
+    "seen": 1790031938.3474474,
     "ast_hash": "0a6a7a744cb3ed83e7bbcfc63d55e1b2",
-    "semantic_hash": ""
+    "semantic_hash": "0a6a7a744cb3ed83e7bbcfc63d55e1b2"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Trifluoperazine.txt": {
     "mtime": 1789946935.7612386,
-    "seen": 1789982028.2476206,
+    "seen": 1790031938.3474483,
     "ast_hash": "4aee8a634be63545d8dec8a954b2d9d9",
-    "semantic_hash": ""
+    "semantic_hash": "4aee8a634be63545d8dec8a954b2d9d9"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Valproic acid.txt": {
     "mtime": 1789946935.0452452,
-    "seen": 1789982028.2476208,
+    "seen": 1790031938.3474493,
     "ast_hash": "f6b99607157fecb7c8670fce87ef0d2a",
-    "semantic_hash": ""
+    "semantic_hash": "f6b99607157fecb7c8670fce87ef0d2a"
   },
   "docs/medical-docs/DDI-text/Antipsychotics/Ziprasidone.txt": {
     "mtime": 1789946934.3132517,
-    "seen": 1789982028.2476213,
+    "seen": 1790031938.3474503,
     "ast_hash": "9b13906be4386ed8b26804cfe94bea09",
-    "semantic_hash": ""
+    "semantic_hash": "9b13906be4386ed8b26804cfe94bea09"
   },
   "docs/medical-docs/DDI-text/Anxiolytics, Sedatives, and Hypnotics/Alprazolam.txt": {
     "mtime": 1789946958.0930383,
-    "seen": 1789982028.2476218,
+    "seen": 1790031938.3474514,
     "ast_hash": "fc2989b5e05480c2f45b736ebe8c7776",
-    "semantic_hash": ""
+    "semantic_hash": "fc2989b5e05480c2f45b736ebe8c7776"
   },
   "docs/medical-docs/DDI-text/Anxiolytics, Sedatives, and Hypnotics/Buspirone.txt": {
     "mtime": 1789946957.3130453,
-    "seen": 1789982028.2476223,
+    "seen": 1790031938.3474522,
     "ast_hash": "8a15eba17ffe87fb5c6989c47e130a75",
-    "semantic_hash": ""
+    "semantic_hash": "8a15eba17ffe87fb5c6989c47e130a75"
   },
   "docs/medical-docs/DDI-text/Anxiolytics, Sedatives, and Hypnotics/Clonazepam.txt": {
     "mtime": 1789946956.5050526,
-    "seen": 1789982028.2476227,
+    "seen": 1790031938.3474529,
     "ast_hash": "e51b84044f9a79f243ffa31a849e65ba",
-    "semantic_hash": ""
+    "semantic_hash": "e51b84044f9a79f243ffa31a849e65ba"
   },
   "docs/medical-docs/DDI-text/Anxiolytics, Sedatives, and Hypnotics/Diazepam.txt": {
     "mtime": 1789946955.67306,
-    "seen": 1789982028.2476232,
+    "seen": 1790031938.347454,
     "ast_hash": "034aeb2eead0c197aecbbe6d602e54a5",
-    "semantic_hash": ""
+    "semantic_hash": "034aeb2eead0c197aecbbe6d602e54a5"
   },
   "docs/medical-docs/DDI-text/Anxiolytics, Sedatives, and Hypnotics/Lorazepam.txt": {
     "mtime": 1789946954.773068,
-    "seen": 1789982028.2476237,
+    "seen": 1790031938.347455,
     "ast_hash": "62c7688a2c9bf4d671a47e804d153861",
-    "semantic_hash": ""
+    "semantic_hash": "62c7688a2c9bf4d671a47e804d153861"
   },
   "docs/medical-docs/DDI-text/Anxiolytics, Sedatives, and Hypnotics/Melatonin.txt": {
     "mtime": 1789946954.0250747,
-    "seen": 1789982028.247624,
+    "seen": 1790031938.3474557,
     "ast_hash": "37ab22481cb20d4c91640f367cf75426",
-    "semantic_hash": ""
+    "semantic_hash": "37ab22481cb20d4c91640f367cf75426"
   },
   "docs/medical-docs/DDI-text/Anxiolytics, Sedatives, and Hypnotics/Temazepam.txt": {
     "mtime": 1789946953.2930813,
-    "seen": 1789982028.2476244,
+    "seen": 1790031938.3474567,
     "ast_hash": "16e45ef6d503683156b72c682a0ffa80",
-    "semantic_hash": ""
+    "semantic_hash": "16e45ef6d503683156b72c682a0ffa80"
   },
   "docs/medical-docs/DDI-text/Anxiolytics, Sedatives, and Hypnotics/Trazodone.txt": {
     "mtime": 1789946952.557088,
-    "seen": 1789982028.2476246,
+    "seen": 1790031938.3474576,
     "ast_hash": "80f44a3f4b681137468c68f054854c24",
-    "semantic_hash": ""
+    "semantic_hash": "80f44a3f4b681137468c68f054854c24"
   },
   "docs/medical-docs/DDI-text/Anxiolytics, Sedatives, and Hypnotics/Zolpidem.txt": {
     "mtime": 1789946951.7770948,
-    "seen": 1789982028.247625,
+    "seen": 1790031938.3474586,
     "ast_hash": "3b145c7099988cb1426ab34742199159",
-    "semantic_hash": ""
+    "semantic_hash": "3b145c7099988cb1426ab34742199159"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Amlodipine.txt": {
     "mtime": 1789946968.8569417,
-    "seen": 1789982028.2476256,
+    "seen": 1790031938.3474593,
     "ast_hash": "a58f0430ab1366a46396c24e5952c45f",
-    "semantic_hash": ""
+    "semantic_hash": "a58f0430ab1366a46396c24e5952c45f"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Aspirin.txt": {
     "mtime": 1789946968.0169492,
-    "seen": 1789982028.2476258,
+    "seen": 1790031938.3474603,
     "ast_hash": "023fd3a8564a27ba45b0e5f4748f8d65",
-    "semantic_hash": ""
+    "semantic_hash": "023fd3a8564a27ba45b0e5f4748f8d65"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Atenolol.txt": {
     "mtime": 1789946967.264956,
-    "seen": 1789982028.2476263,
+    "seen": 1790031938.3474612,
     "ast_hash": "16fc38a2c450ba0afdf0d9d672943ac3",
-    "semantic_hash": ""
+    "semantic_hash": "16fc38a2c450ba0afdf0d9d672943ac3"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Carvedilol.txt": {
     "mtime": 1789946966.5209627,
-    "seen": 1789982028.2476268,
+    "seen": 1790031938.3474622,
     "ast_hash": "1de64beee567eba4bca08b9174fca9e9",
-    "semantic_hash": ""
+    "semantic_hash": "1de64beee567eba4bca08b9174fca9e9"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Clonidine.txt": {
     "mtime": 1789946965.7649693,
-    "seen": 1789982028.2476292,
+    "seen": 1790031938.347463,
     "ast_hash": "af689f11c9a0091925e2e82822d9912c",
-    "semantic_hash": ""
+    "semantic_hash": "af689f11c9a0091925e2e82822d9912c"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Enalapril.txt": {
     "mtime": 1789946964.9569767,
-    "seen": 1789982028.2476296,
+    "seen": 1790031938.3474636,
     "ast_hash": "b95fe045b2720ce761eb3a0150fdb523",
-    "semantic_hash": ""
+    "semantic_hash": "b95fe045b2720ce761eb3a0150fdb523"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Furosemide.txt": {
     "mtime": 1789946964.2249832,
-    "seen": 1789982028.24763,
+    "seen": 1790031938.3474648,
     "ast_hash": "00a47196cd61010206299792ae2bf910",
-    "semantic_hash": ""
+    "semantic_hash": "00a47196cd61010206299792ae2bf910"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Hydrochlorothiazide.txt": {
     "mtime": 1789946963.4409902,
-    "seen": 1789982028.2476304,
+    "seen": 1790031938.3474658,
     "ast_hash": "990ce7c5916773add630a322e7a1e716",
-    "semantic_hash": ""
+    "semantic_hash": "990ce7c5916773add630a322e7a1e716"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Lisinopril.txt": {
     "mtime": 1789946962.7049968,
-    "seen": 1789982028.2476306,
+    "seen": 1790031938.3474665,
     "ast_hash": "c96ba048cea6a277e9d5c3aebe20d9c2",
-    "semantic_hash": ""
+    "semantic_hash": "c96ba048cea6a277e9d5c3aebe20d9c2"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Losartan.txt": {
     "mtime": 1789946961.9370039,
-    "seen": 1789982028.247631,
+    "seen": 1790031938.3474672,
     "ast_hash": "28e167a1ba0c9d23055f9160b18701f1",
-    "semantic_hash": ""
+    "semantic_hash": "28e167a1ba0c9d23055f9160b18701f1"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Metoprolol.txt": {
     "mtime": 1789946961.1930106,
-    "seen": 1789982028.2476313,
+    "seen": 1790031938.3474684,
     "ast_hash": "617372a631e7232989191ab575877687",
-    "semantic_hash": ""
+    "semantic_hash": "617372a631e7232989191ab575877687"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Propranolol.txt": {
     "mtime": 1789946960.3970177,
-    "seen": 1789982028.2476318,
+    "seen": 1790031938.3474693,
     "ast_hash": "def1db440fcfd8e9ae8d05d8cb3b18b8",
-    "semantic_hash": ""
+    "semantic_hash": "def1db440fcfd8e9ae8d05d8cb3b18b8"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Terazosin.txt": {
     "mtime": 1789946959.6450243,
-    "seen": 1789982028.2476323,
+    "seen": 1790031938.3474703,
     "ast_hash": "0bf142fec0d275a40da1e13c83cd5f1a",
-    "semantic_hash": ""
+    "semantic_hash": "0bf142fec0d275a40da1e13c83cd5f1a"
   },
   "docs/medical-docs/DDI-text/Cardiovascular and Antihypertensive Agents/Valsartan.txt": {
     "mtime": 1789946958.8890312,
-    "seen": 1789982028.2476327,
+    "seen": 1790031938.347471,
     "ast_hash": "a354298f3058ab4814510677c4d4c82b",
-    "semantic_hash": ""
+    "semantic_hash": "a354298f3058ab4814510677c4d4c82b"
   },
   "docs/medical-docs/DDI-text/Endocrine, Vitamins, and Supplements/Fludrocortisone.txt": {
     "mtime": 1789946970.3209286,
-    "seen": 1789982028.2476332,
+    "seen": 1790031938.347472,
     "ast_hash": "3ebee8aa6923f703a4f0be1f7cb6ba26",
-    "semantic_hash": ""
+    "semantic_hash": "3ebee8aa6923f703a4f0be1f7cb6ba26"
   },
   "docs/medical-docs/DDI-text/Endocrine, Vitamins, and Supplements/Levothyroxine.txt": {
     "mtime": 1789946969.5809352,
-    "seen": 1789982028.2476335,
+    "seen": 1790031938.3474731,
     "ast_hash": "d219598fd4a6095f4fc60606aaf0dc60",
-    "semantic_hash": ""
+    "semantic_hash": "d219598fd4a6095f4fc60606aaf0dc60"
   },
   "docs/medical-docs/DDI-text/Gastrointestinal Medications/Bisacodyl.txt": {
     "mtime": 1789946981.1688313,
-    "seen": 1789982028.247634,
+    "seen": 1790031938.3474739,
     "ast_hash": "2e2835ea50354619ff03ff731803f258",
-    "semantic_hash": ""
+    "semantic_hash": "2e2835ea50354619ff03ff731803f258"
   },
   "docs/medical-docs/DDI-text/Gastrointestinal Medications/Docusate.txt": {
     "mtime": 1789946980.312839,
-    "seen": 1789982028.2476342,
+    "seen": 1790031938.3474746,
     "ast_hash": "b64eb944e4ae25efbc1439a21d87f9ad",
-    "semantic_hash": ""
+    "semantic_hash": "b64eb944e4ae25efbc1439a21d87f9ad"
   },
   "docs/medical-docs/DDI-text/Gastrointestinal Medications/Esomeprazole.txt": {
     "mtime": 1789947273.6942112,
-    "seen": 1789982028.2476346,
+    "seen": 1790031938.3474755,
     "ast_hash": "ddaa2d863a04ef2785e92f0b5b49851b",
-    "semantic_hash": ""
+    "semantic_hash": "ddaa2d863a04ef2785e92f0b5b49851b"
   },
   "docs/medical-docs/DDI-text/Gastrointestinal Medications/Famotidine.txt": {
     "mtime": 1789947267.3782675,
-    "seen": 1789982028.2476351,
+    "seen": 1790031938.3474765,
     "ast_hash": "970e27b92654c3dba61e177d760ffff3",
-    "semantic_hash": ""
+    "semantic_hash": "970e27b92654c3dba61e177d760ffff3"
   },
   "docs/medical-docs/DDI-text/Gastrointestinal Medications/Lactulose.txt": {
     "mtime": 1789946977.7048624,
-    "seen": 1789982028.2476354,
+    "seen": 1790031938.3474772,
     "ast_hash": "32c360b960c8429fb2a5ad3045b269e8",
-    "semantic_hash": ""
+    "semantic_hash": "32c360b960c8429fb2a5ad3045b269e8"
   },
   "docs/medical-docs/DDI-text/Gastrointestinal Medications/Lansoprazole.txt": {
     "mtime": 1789947269.6502473,
-    "seen": 1789982028.2476356,
+    "seen": 1790031938.347478,
     "ast_hash": "97517cac42e3d4e002c026cb25e51d56",
-    "semantic_hash": ""
+    "semantic_hash": "97517cac42e3d4e002c026cb25e51d56"
   },
   "docs/medical-docs/DDI-text/Gastrointestinal Medications/Loperamide.txt": {
     "mtime": 1789947267.574266,
-    "seen": 1789982028.2476363,
+    "seen": 1790031938.347479,
     "ast_hash": "61d58acc49ba5b13b8c49a47e320befb",
-    "semantic_hash": ""
+    "semantic_hash": "61d58acc49ba5b13b8c49a47e320befb"
   },
   "docs/medical-docs/DDI-text/Gastrointestinal Medications/Omeprazole.txt": {
     "mtime": 1789947267.0782704,
-    "seen": 1789982028.2476368,
+    "seen": 1790031938.3474798,
     "ast_hash": "a6d180ae081e15fa1894ef6ad7ce2cf8",
-    "semantic_hash": ""
+    "semantic_hash": "a6d180ae081e15fa1894ef6ad7ce2cf8"
   },
   "docs/medical-docs/DDI-text/Gastrointestinal Medications/Ondansetron.txt": {
     "mtime": 1789947272.922218,
-    "seen": 1789982028.2476373,
+    "seen": 1790031938.3474805,
     "ast_hash": "9c7ff4ed49f7dc83b8fdd16b9cea64a3",
-    "semantic_hash": ""
+    "semantic_hash": "9c7ff4ed49f7dc83b8fdd16b9cea64a3"
   },
   "docs/medical-docs/DDI-text/Gastrointestinal Medications/Pantoprazole.txt": {
     "mtime": 1789947267.9942622,
-    "seen": 1789982028.2476377,
+    "seen": 1790031938.3474815,
     "ast_hash": "05e44ebed7b0f840f7c8959069d2f714",
-    "semantic_hash": ""
+    "semantic_hash": "05e44ebed7b0f840f7c8959069d2f714"
   },
   "docs/medical-docs/DDI-text/Gastrointestinal Medications/Psyllium.txt": {
     "mtime": 1789946972.164912,
-    "seen": 1789982028.247638,
+    "seen": 1790031938.3474824,
     "ast_hash": "06175ace9a0cb4baf2c640748c1ca42d",
-    "semantic_hash": ""
+    "semantic_hash": "06175ace9a0cb4baf2c640748c1ca42d"
   },
   "docs/medical-docs/DDI-text/Gastrointestinal Medications/Simethicone.txt": {
     "mtime": 1789947269.9422448,
-    "seen": 1789982028.2476385,
+    "seen": 1790031938.3474834,
     "ast_hash": "b08c5424aa6a7d4dbac20844163d01b5",
-    "semantic_hash": ""
+    "semantic_hash": "b08c5424aa6a7d4dbac20844163d01b5"
   },
   "docs/medical-docs/DDI-text/Lipid-Lowering Agents/Atorvastatin.txt": {
     "mtime": 1789946985.0367966,
-    "seen": 1789982028.247639,
+    "seen": 1790031938.347484,
     "ast_hash": "e942949f42c0a3f1ae3bcdd9974fd158",
-    "semantic_hash": ""
+    "semantic_hash": "e942949f42c0a3f1ae3bcdd9974fd158"
   },
   "docs/medical-docs/DDI-text/Lipid-Lowering Agents/Lovastatin.txt": {
     "mtime": 1789946984.2968032,
-    "seen": 1789982028.2476397,
+    "seen": 1790031938.3474848,
     "ast_hash": "f72f8710dbc49549b1611be794b0492e",
-    "semantic_hash": ""
+    "semantic_hash": "f72f8710dbc49549b1611be794b0492e"
   },
   "docs/medical-docs/DDI-text/Lipid-Lowering Agents/Pravastatin.txt": {
     "mtime": 1789946983.3888113,
-    "seen": 1789982028.2476401,
+    "seen": 1790031938.347486,
     "ast_hash": "58714587d95da623d37625a2408ee97c",
-    "semantic_hash": ""
+    "semantic_hash": "58714587d95da623d37625a2408ee97c"
   },
   "docs/medical-docs/DDI-text/Lipid-Lowering Agents/Rosuvastatin.txt": {
     "mtime": 1789946982.644818,
-    "seen": 1789982028.2476404,
+    "seen": 1790031938.3474872,
     "ast_hash": "ba7d5b6edb096b75b4f0a71226e22993",
-    "semantic_hash": ""
+    "semantic_hash": "ba7d5b6edb096b75b4f0a71226e22993"
   },
   "docs/medical-docs/DDI-text/Lipid-Lowering Agents/Simvastatin.txt": {
     "mtime": 1789946981.9368243,
-    "seen": 1789982028.2476408,
+    "seen": 1790031938.3474882,
     "ast_hash": "c2fa3da5b26bb21b76eed3307fa44bae",
-    "semantic_hash": ""
+    "semantic_hash": "c2fa3da5b26bb21b76eed3307fa44bae"
   },
   "docs/medical-docs/DDI-text/Miscellaneous/Allopurinol.txt": {
     "mtime": 1789946991.2127411,
-    "seen": 1789982028.2476413,
+    "seen": 1790031938.3474894,
     "ast_hash": "07535c579c6c156f92e352c118000e8d",
-    "semantic_hash": ""
+    "semantic_hash": "07535c579c6c156f92e352c118000e8d"
   },
   "docs/medical-docs/DDI-text/Miscellaneous/Amphetamine-Dextroamphetamine.txt": {
     "mtime": 1789946990.5007474,
-    "seen": 1789982028.2476418,
+    "seen": 1790031938.34749,
     "ast_hash": "4b62afabbfb8762077ca7e9e060df17b",
-    "semantic_hash": ""
+    "semantic_hash": "4b62afabbfb8762077ca7e9e060df17b"
   },
   "docs/medical-docs/DDI-text/Miscellaneous/Dantrolene.txt": {
     "mtime": 1789946989.772754,
-    "seen": 1789982028.247642,
+    "seen": 1790031938.347491,
     "ast_hash": "384791e762c997f2109c06124fc3ab38",
-    "semantic_hash": ""
+    "semantic_hash": "384791e762c997f2109c06124fc3ab38"
   },
   "docs/medical-docs/DDI-text/Miscellaneous/Lisdexamfetamine.txt": {
     "mtime": 1789946989.0407605,
-    "seen": 1789982028.247643,
+    "seen": 1790031938.347492,
     "ast_hash": "4934320b5828427cd07c5c4c93d14c32",
-    "semantic_hash": ""
+    "semantic_hash": "4934320b5828427cd07c5c4c93d14c32"
   },
   "docs/medical-docs/DDI-text/Miscellaneous/Methylphenidate.txt": {
     "mtime": 1789946988.1167688,
-    "seen": 1789982028.2476432,
+    "seen": 1790031938.3474932,
     "ast_hash": "0f5707c34dab1f566c17b69dec2dedcf",
-    "semantic_hash": ""
+    "semantic_hash": "0f5707c34dab1f566c17b69dec2dedcf"
   },
   "docs/medical-docs/DDI-text/Miscellaneous/Oxybutynin.txt": {
     "mtime": 1789946987.3807755,
-    "seen": 1789982028.2476437,
+    "seen": 1790031938.347494,
     "ast_hash": "635d017eb75debf1db5372bc5abeb802",
-    "semantic_hash": ""
+    "semantic_hash": "635d017eb75debf1db5372bc5abeb802"
   },
   "docs/medical-docs/DDI-text/Miscellaneous/Tamsulosin.txt": {
     "mtime": 1789946986.4687836,
-    "seen": 1789982028.2476442,
+    "seen": 1790031938.3474946,
     "ast_hash": "3eb1a318ba00bf867d3249504209c4f5",
-    "semantic_hash": ""
+    "semantic_hash": "3eb1a318ba00bf867d3249504209c4f5"
   },
   "docs/medical-docs/DDI-text/Mood Stabilizers and Anticonvulsants/Carbamazepine.txt": {
     "mtime": 1789946996.7206917,
-    "seen": 1789982028.2476447,
+    "seen": 1790031938.3474958,
     "ast_hash": "442aebddaecad15aa0df00e0b99a3d25",
-    "semantic_hash": ""
+    "semantic_hash": "442aebddaecad15aa0df00e0b99a3d25"
   },
   "docs/medical-docs/DDI-text/Mood Stabilizers and Anticonvulsants/Gabapentin.txt": {
     "mtime": 1789946995.7887,
-    "seen": 1789982028.247645,
+    "seen": 1790031938.3474965,
     "ast_hash": "ed7bb76a7cecb7fcd42db0ee6631dedc",
-    "semantic_hash": ""
+    "semantic_hash": "ed7bb76a7cecb7fcd42db0ee6631dedc"
   },
   "docs/medical-docs/DDI-text/Mood Stabilizers and Anticonvulsants/Lamotrigine.txt": {
     "mtime": 1789946994.8807082,
-    "seen": 1789982028.2476454,
+    "seen": 1790031938.3474975,
     "ast_hash": "f874e3db336a5abfb7f76ad9bc9be1e0",
-    "semantic_hash": ""
+    "semantic_hash": "f874e3db336a5abfb7f76ad9bc9be1e0"
   },
   "docs/medical-docs/DDI-text/Mood Stabilizers and Anticonvulsants/Lithium.txt": {
     "mtime": 1789946994.1687145,
-    "seen": 1789982028.2476456,
+    "seen": 1790031938.3474982,
     "ast_hash": "99f184e2baa33e10e2267553a0b27c0d",
-    "semantic_hash": ""
+    "semantic_hash": "99f184e2baa33e10e2267553a0b27c0d"
   },
   "docs/medical-docs/DDI-text/Mood Stabilizers and Anticonvulsants/Oxcarbazepine.txt": {
     "mtime": 1789946993.436721,
-    "seen": 1789982028.247646,
+    "seen": 1790031938.347499,
     "ast_hash": "c86958ebb12951592f837dd558e73b07",
-    "semantic_hash": ""
+    "semantic_hash": "c86958ebb12951592f837dd558e73b07"
   },
   "docs/medical-docs/DDI-text/Mood Stabilizers and Anticonvulsants/Pregabalin.txt": {
     "mtime": 1789946992.7207277,
-    "seen": 1789982028.2476466,
+    "seen": 1790031938.3475,
     "ast_hash": "cd2d9231ea4f1bb68511ed37a59fedc0",
-    "semantic_hash": ""
+    "semantic_hash": "cd2d9231ea4f1bb68511ed37a59fedc0"
   },
   "docs/medical-docs/DDI-text/Mood Stabilizers and Anticonvulsants/Topiramate.txt": {
     "mtime": 1789946991.9887342,
-    "seen": 1789982028.247647,
+    "seen": 1790031938.3475008,
     "ast_hash": "deed9e84f7d82e0619140f19cf905278",
-    "semantic_hash": ""
+    "semantic_hash": "deed9e84f7d82e0619140f19cf905278"
   },
   "docs/medical-docs/DDI-text/Respiratory and Allergy Medications/Albuterol.txt": {
     "mtime": 1789947003.172634,
-    "seen": 1789982028.2476473,
+    "seen": 1790031938.3475018,
     "ast_hash": "b0873e7327de412a80b3d7c3c11cf96c",
-    "semantic_hash": ""
+    "semantic_hash": "b0873e7327de412a80b3d7c3c11cf96c"
   },
   "docs/medical-docs/DDI-text/Respiratory and Allergy Medications/Cetirizine.txt": {
     "mtime": 1789947002.264642,
-    "seen": 1789982028.2476478,
+    "seen": 1790031938.3475027,
     "ast_hash": "ae3953b56afe437dada6d16f0b87b856",
-    "semantic_hash": ""
+    "semantic_hash": "ae3953b56afe437dada6d16f0b87b856"
   },
   "docs/medical-docs/DDI-text/Respiratory and Allergy Medications/Diphenhydramine.txt": {
     "mtime": 1789947001.5726483,
-    "seen": 1789982028.2476482,
+    "seen": 1790031938.3475037,
     "ast_hash": "c42032453b51f8daf0cd501f8025f67d",
-    "semantic_hash": ""
+    "semantic_hash": "c42032453b51f8daf0cd501f8025f67d"
   },
   "docs/medical-docs/DDI-text/Respiratory and Allergy Medications/Fluticasone.txt": {
     "mtime": 1789947000.5206578,
-    "seen": 1789982028.2476485,
+    "seen": 1790031938.3475046,
     "ast_hash": "29508d8f05dbe79a8262e1892ac36eef",
-    "semantic_hash": ""
+    "semantic_hash": "29508d8f05dbe79a8262e1892ac36eef"
   },
   "docs/medical-docs/DDI-text/Respiratory and Allergy Medications/Hydroxyzine.txt": {
     "mtime": 1789946999.028671,
-    "seen": 1789982028.247649,
+    "seen": 1790031938.3475053,
     "ast_hash": "51f2406d2bf529b6d5717522f61d056b",
-    "semantic_hash": ""
+    "semantic_hash": "51f2406d2bf529b6d5717522f61d056b"
   },
   "docs/medical-docs/DDI-text/Respiratory and Allergy Medications/Loratadine.txt": {
     "mtime": 1789946998.3126774,
-    "seen": 1789982028.2476492,
+    "seen": 1790031938.3475065,
     "ast_hash": "82a7fcefaf8bdf25bc8667ee61f5714a",
-    "semantic_hash": ""
+    "semantic_hash": "82a7fcefaf8bdf25bc8667ee61f5714a"
   },
   "docs/medical-docs/DDI-text/Respiratory and Allergy Medications/Montelukast.txt": {
     "mtime": 1789946997.4486852,
-    "seen": 1789982028.24765,
+    "seen": 1790031938.3475072,
     "ast_hash": "92ade97177624309443b6d8205b3e2d8",
-    "semantic_hash": ""
+    "semantic_hash": "92ade97177624309443b6d8205b3e2d8"
   },
   "docs/medical-docs/DDI-text/Substance Use and Smoking Cessation/Buprenorphine.txt": {
     "mtime": 1789947004.72062,
-    "seen": 1789982028.2476501,
+    "seen": 1790031938.3475082,
     "ast_hash": "df981c921229611eaa8ae0a92b94a8c2",
-    "semantic_hash": ""
+    "semantic_hash": "df981c921229611eaa8ae0a92b94a8c2"
   },
   "docs/medical-docs/DDI-text/Substance Use and Smoking Cessation/Varenicline.txt": {
     "mtime": 1789947003.8646276,
-    "seen": 1789982028.2476506,
+    "seen": 1790031938.347509,
     "ast_hash": "6b058596d232e027d43cd95262b85753",
-    "semantic_hash": ""
+    "semantic_hash": "6b058596d232e027d43cd95262b85753"
   },
   "docs/medical-docs/PANSS.md": {
     "mtime": 1789869458.1490147,
-    "seen": 1789982028.247651,
+    "seen": 1790031938.34751,
     "ast_hash": "2c6af531b17fdd5e05bc162c9ce527a2",
-    "semantic_hash": ""
+    "semantic_hash": "2c6af531b17fdd5e05bc162c9ce527a2"
   },
   "docs/medical-docs/acute-dystonia-criteria.md": {
     "mtime": 1789882827.5816092,
-    "seen": 1789982028.2476513,
+    "seen": 1790031938.347511,
     "ast_hash": "b5a106e2d37455bd2700286553026c42",
-    "semantic_hash": ""
+    "semantic_hash": "b5a106e2d37455bd2700286553026c42"
   },
   "docs/medical-docs/akathisia-criteria.md": {
     "mtime": 1789874772.17302,
-    "seen": 1789982028.2476518,
+    "seen": 1790031938.347512,
     "ast_hash": "3b811a628b12421f8dd53c8001ef31cf",
-    "semantic_hash": ""
+    "semantic_hash": "3b811a628b12421f8dd53c8001ef31cf"
   },
   "docs/medical-docs/guideline/Appendix-C.md": {
     "mtime": 1789721583.9355078,
-    "seen": 1789982028.2476523,
+    "seen": 1790031938.3475134,
     "ast_hash": "e08a0abae436697b9b3c3ba3c2ccb9a9",
-    "semantic_hash": ""
+    "semantic_hash": "e08a0abae436697b9b3c3ba3c2ccb9a9"
   },
   "docs/medical-docs/guideline/Appendix-D.md": {
     "mtime": 1789721584.6435015,
-    "seen": 1789982028.2476528,
+    "seen": 1790031938.3475142,
     "ast_hash": "63f5b1364035d795ed67e7441fc5155d",
-    "semantic_hash": ""
+    "semantic_hash": "63f5b1364035d795ed67e7441fc5155d"
   },
   "docs/medical-docs/guideline/Glossary-of-Terms.md": {
     "mtime": 1789873520.072025,
-    "seen": 1789982028.247653,
+    "seen": 1790031938.3475153,
     "ast_hash": "50d619d7cf9ba94d25272add252e2da8",
-    "semantic_hash": ""
+    "semantic_hash": "50d619d7cf9ba94d25272add252e2da8"
   },
   "docs/medical-docs/guideline/Guideline-Development-Process.md": {
     "mtime": 1789721586.1274884,
-    "seen": 1789982028.2476537,
+    "seen": 1790031938.347516,
     "ast_hash": "1093f3c2851c1fab9d59a3fa2f0b3f81",
-    "semantic_hash": ""
+    "semantic_hash": "1093f3c2851c1fab9d59a3fa2f0b3f81"
   },
   "docs/medical-docs/guideline/STATEMENT-01.md": {
     "mtime": 1789721586.867482,
-    "seen": 1789982028.2476542,
+    "seen": 1790031938.347517,
     "ast_hash": "b4bcd073cf6bb88a4db94149abe709ef",
-    "semantic_hash": ""
+    "semantic_hash": "b4bcd073cf6bb88a4db94149abe709ef"
   },
   "docs/medical-docs/guideline/STATEMENT-02.md": {
     "mtime": 1789721587.755474,
-    "seen": 1789982028.2476544,
+    "seen": 1790031938.347518,
     "ast_hash": "c6a4bb27702e3340f7351b9af2ad2c03",
-    "semantic_hash": ""
+    "semantic_hash": "c6a4bb27702e3340f7351b9af2ad2c03"
   },
   "docs/medical-docs/guideline/STATEMENT-03.md": {
     "mtime": 1789721588.791465,
-    "seen": 1789982028.247655,
+    "seen": 1790031938.347519,
     "ast_hash": "4e9283e0ea1be20979af83ec1fd8c067",
-    "semantic_hash": ""
+    "semantic_hash": "4e9283e0ea1be20979af83ec1fd8c067"
   },
   "docs/medical-docs/guideline/STATEMENT-04.md": {
     "mtime": 1789721589.7994561,
-    "seen": 1789982028.2476552,
+    "seen": 1790031938.34752,
     "ast_hash": "fae33df0f90c2c308f27875d49e1cec8",
-    "semantic_hash": ""
+    "semantic_hash": "fae33df0f90c2c308f27875d49e1cec8"
   },
   "docs/medical-docs/guideline/STATEMENT-05.md": {
     "mtime": 1789721590.5074499,
-    "seen": 1789982028.2476556,
+    "seen": 1790031938.347521,
     "ast_hash": "dfcf4107d4435c51e2f8c870828e5ee6",
-    "semantic_hash": ""
+    "semantic_hash": "dfcf4107d4435c51e2f8c870828e5ee6"
   },
   "docs/medical-docs/guideline/STATEMENT-06.md": {
     "mtime": 1789721591.2274435,
-    "seen": 1789982028.247656,
+    "seen": 1790031938.347522,
     "ast_hash": "0f796020347ce9fe0b324a38999940d1",
-    "semantic_hash": ""
+    "semantic_hash": "0f796020347ce9fe0b324a38999940d1"
   },
   "docs/medical-docs/guideline/STATEMENT-07.md": {
     "mtime": 1789721591.959437,
-    "seen": 1789982028.2476563,
+    "seen": 1790031938.3475227,
     "ast_hash": "65a7fd630105a6db839e2146293d6eda",
-    "semantic_hash": ""
+    "semantic_hash": "65a7fd630105a6db839e2146293d6eda"
   },
   "docs/medical-docs/guideline/STATEMENT-08.md": {
     "mtime": 1789721592.7194302,
-    "seen": 1789982028.247657,
+    "seen": 1790031938.347524,
     "ast_hash": "e08486c270c1372f921677292165982c",
-    "semantic_hash": ""
+    "semantic_hash": "e08486c270c1372f921677292165982c"
   },
   "docs/medical-docs/guideline/STATEMENT-09.md": {
     "mtime": 1789721593.427424,
-    "seen": 1789982028.2476573,
+    "seen": 1790031938.347525,
     "ast_hash": "e467b1f220fde3a8815550105ec25c29",
-    "semantic_hash": ""
+    "semantic_hash": "e467b1f220fde3a8815550105ec25c29"
   },
   "docs/medical-docs/guideline/STATEMENT-10.md": {
     "mtime": 1789721594.1354177,
-    "seen": 1789982028.2476578,
+    "seen": 1790031938.3475258,
     "ast_hash": "204d01f7228694562ca0fe591b97361e",
-    "semantic_hash": ""
+    "semantic_hash": "204d01f7228694562ca0fe591b97361e"
   },
   "docs/medical-docs/guideline/STATEMENT-11.md": {
     "mtime": 1789721594.8674114,
-    "seen": 1789982028.247658,
+    "seen": 1790031938.3475266,
     "ast_hash": "c4398356b13cf6cd56c9d43056a79302",
-    "semantic_hash": ""
+    "semantic_hash": "c4398356b13cf6cd56c9d43056a79302"
   },
   "docs/medical-docs/guideline/STATEMENT-12.md": {
     "mtime": 1789721595.6674042,
-    "seen": 1789982028.2476585,
+    "seen": 1790031938.3475275,
     "ast_hash": "582dcab5521ba09214883f950fb2b31a",
-    "semantic_hash": ""
+    "semantic_hash": "582dcab5521ba09214883f950fb2b31a"
   },
   "docs/medical-docs/guideline/STATEMENT-13.md": {
     "mtime": 1789721596.4233975,
-    "seen": 1789982028.247659,
+    "seen": 1790031938.3475285,
     "ast_hash": "80de941547f4018a06dc9c73e5950b17",
-    "semantic_hash": ""
+    "semantic_hash": "80de941547f4018a06dc9c73e5950b17"
   },
   "docs/medical-docs/guideline/STATEMENT-14.md": {
     "mtime": 1789721597.1033916,
-    "seen": 1789982028.2476592,
+    "seen": 1790031938.3475294,
     "ast_hash": "d2a906a575c43f07bb3ea2fa64e56b65",
-    "semantic_hash": ""
+    "semantic_hash": "d2a906a575c43f07bb3ea2fa64e56b65"
   },
   "docs/medical-docs/guideline/acronyms_abbreviations.md": {
     "mtime": 1789721598.0193834,
-    "seen": 1789982028.2476597,
+    "seen": 1790031938.3475306,
     "ast_hash": "00a569a0b4a8baa457153af8b7a8709c",
-    "semantic_hash": ""
+    "semantic_hash": "00a569a0b4a8baa457153af8b7a8709c"
   },
   "docs/medical-docs/guideline/guideline-statement-summary.md": {
     "mtime": 1789721598.8953757,
-    "seen": 1789982028.24766,
+    "seen": 1790031938.3475313,
     "ast_hash": "69fa8379c8d23ed219f1e4069cc6ead6",
-    "semantic_hash": ""
+    "semantic_hash": "69fa8379c8d23ed219f1e4069cc6ead6"
   },
   "docs/medical-docs/parkinsonism-criteria.md": {
     "mtime": 1789875090.2823904,
-    "seen": 1789982028.2476606,
+    "seen": 1790031938.3475323,
     "ast_hash": "95e5811283ef5c74e4d7d11944a7e088",
-    "semantic_hash": ""
+    "semantic_hash": "95e5811283ef5c74e4d7d11944a7e088"
   },
   "docs/medical-docs/schizophrenia-criteria.md": {
     "mtime": 1789868677.619973,
-    "seen": 1789982028.247661,
+    "seen": 1790031938.3475332,
     "ast_hash": "a62baeb438d759df2a2f6e64474bcb9f",
-    "semantic_hash": ""
+    "semantic_hash": "a62baeb438d759df2a2f6e64474bcb9f"
   },
   "docs/medical-docs/tardive-dyskinesia-criteria.md": {
     "mtime": 1789874902.2679605,
-    "seen": 1789982028.2476614,
+    "seen": 1790031938.3475344,
     "ast_hash": "756a9d6a5c3a9ac9a0e9e5b15e2195ef",
-    "semantic_hash": ""
+    "semantic_hash": "756a9d6a5c3a9ac9a0e9e5b15e2195ef"
   },
   "web/index.html": {
     "mtime": 1789972626.6053095,
-    "seen": 1789982028.2476618,
+    "seen": 1790031938.3475351,
     "ast_hash": "4f4002fbb6723534c24f010ee740869d",
-    "semantic_hash": ""
+    "semantic_hash": "4f4002fbb6723534c24f010ee740869d"
   },
   "backend/migrations/versions/0004_patients.py": {
     "mtime": 1789982463.2300694,
-    "seen": 1789983754.8666303,
+    "seen": 1790031938.3472745,
     "ast_hash": "14dce2d2d8740f78d7d811ea899bb7ac",
-    "semantic_hash": ""
+    "semantic_hash": "14dce2d2d8740f78d7d811ea899bb7ac"
   },
   "backend/src/x_insight/cases/__init__.py": {
     "mtime": 1789982395.2746603,
-    "seen": 1789983754.8666341,
+    "seen": 1790031938.3472857,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
-    "semantic_hash": ""
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "backend/src/x_insight/cases/patients.py": {
-    "mtime": 1789982964.9056897,
-    "seen": 1789983754.8666348,
-    "ast_hash": "7f7373c884cc646f119e063f4dbb0747",
-    "semantic_hash": ""
+    "mtime": 1790028992.0178328,
+    "seen": 1790031938.3472896,
+    "ast_hash": "dcc9e93aeeb7a23bb91c702a7d731a7b",
+    "semantic_hash": "dcc9e93aeeb7a23bb91c702a7d731a7b"
   },
   "backend/tests/http/test_patients.py": {
-    "mtime": 1789982978.693569,
-    "seen": 1789983754.8666437,
-    "ast_hash": "f00b14b89885d4d677086464067028c5",
-    "semantic_hash": ""
+    "mtime": 1790031943.7644465,
+    "seen": 1790032055.6355863,
+    "ast_hash": "7496f87b1b6c9834f5fb52e0c391da14",
+    "semantic_hash": "7496f87b1b6c9834f5fb52e0c391da14"
   },
   "e2e/registration.spec.ts": {
     "mtime": 1789983052.2129254,
-    "seen": 1789983754.8666458,
+    "seen": 1790031938.3473318,
     "ast_hash": "8f17e8c2f06a5c7c7693cbc742d49c0c",
-    "semantic_hash": ""
+    "semantic_hash": "8f17e8c2f06a5c7c7693cbc742d49c0c"
   },
   "backend/migrations/versions/0005_drafts.py": {
     "mtime": 1789984231.006593,
-    "seen": 1789985805.6301007,
+    "seen": 1790031938.3472757,
     "ast_hash": "e67cd404bb5210d801ab76d7555ae4c0",
-    "semantic_hash": ""
+    "semantic_hash": "e67cd404bb5210d801ab76d7555ae4c0"
   },
   "backend/src/x_insight/cases/encounters.py": {
-    "mtime": 1789994431.7208126,
-    "seen": 1790022771.1135414,
-    "ast_hash": "e698035bd165eb3f07c1062585afd6d2",
-    "semantic_hash": ""
+    "mtime": 1790028992.0178328,
+    "seen": 1790031938.3472867,
+    "ast_hash": "dc52bc2b5936c20bb7ab469bc3c1236f",
+    "semantic_hash": "dc52bc2b5936c20bb7ab469bc3c1236f"
   },
   "backend/tests/http/test_drafts.py": {
-    "mtime": 1789985418.6683073,
-    "seen": 1789985805.6301131,
-    "ast_hash": "1de2545e4c687e1553ce26d5e982ad6c",
-    "semantic_hash": ""
+    "mtime": 1790031943.7644465,
+    "seen": 1790032055.6355817,
+    "ast_hash": "c71c0b44173cdda222e81dc1db4c9ea6",
+    "semantic_hash": "c71c0b44173cdda222e81dc1db4c9ea6"
   },
   "e2e/autosave.spec.ts": {
     "mtime": 1789984356.3215208,
-    "seen": 1789985805.6301165,
+    "seen": 1790031938.3473248,
     "ast_hash": "736aad061c0d9f720cdfba96d5d3a088",
-    "semantic_hash": ""
+    "semantic_hash": "736aad061c0d9f720cdfba96d5d3a088"
   },
   "e2e/discard.spec.ts": {
     "mtime": 1789985102.9950578,
-    "seen": 1789985805.630117,
+    "seen": 1790031938.3473277,
     "ast_hash": "6870e9c9434d4a930c81f4abba5949c3",
-    "semantic_hash": ""
+    "semantic_hash": "6870e9c9434d4a930c81f4abba5949c3"
   },
   "e2e/draft-safety.spec.ts": {
     "mtime": 1789984827.6974504,
-    "seen": 1789985805.6301174,
+    "seen": 1790031938.3473284,
     "ast_hash": "98b8fd8fae367e00a22d9603cacac5a7",
-    "semantic_hash": ""
+    "semantic_hash": "98b8fd8fae367e00a22d9603cacac5a7"
   },
   "backend/src/x_insight/assessments/__init__.py": {
     "mtime": 1789986510.2665644,
-    "seen": 1789987232.3042076,
+    "seen": 1790031938.34728,
     "ast_hash": "37bbe00b2a224704b2d46638bbe770d3",
-    "semantic_hash": ""
+    "semantic_hash": "37bbe00b2a224704b2d46638bbe770d3"
   },
   "backend/src/x_insight/assessments/content.py": {
     "mtime": 1789986833.3155785,
-    "seen": 1789987232.3042083,
+    "seen": 1790031938.3472812,
     "ast_hash": "94a8f99c94af44eef78051ed297c3d28",
-    "semantic_hash": ""
+    "semantic_hash": "94a8f99c94af44eef78051ed297c3d28"
   },
   "backend/tests/assessments/test_definitions.py": {
     "mtime": 1789986873.3712132,
-    "seen": 1789987232.3042166,
+    "seen": 1790031938.3473015,
     "ast_hash": "99aa4891fc391eb8397c458f7a453126",
-    "semantic_hash": ""
+    "semantic_hash": "99aa4891fc391eb8397c458f7a453126"
   },
   "backend/tests/http/test_content.py": {
-    "mtime": 1789994437.420762,
-    "seen": 1790022771.1135511,
-    "ast_hash": "9fc8da26770d8d7d9815b95f9b4fd819",
-    "semantic_hash": ""
+    "mtime": 1790024221.9282985,
+    "seen": 1790031938.347305,
+    "ast_hash": "ec5cb88083360ce0d8aabc70a59a26cc",
+    "semantic_hash": "ec5cb88083360ce0d8aabc70a59a26cc"
   },
   "content/assessments/cssrs.json": {
-    "mtime": 1789986665.9691155,
-    "seen": 1789987232.3042212,
-    "ast_hash": "25a9b7b479a8a2f6e9fdb02bc1e90c63",
-    "semantic_hash": ""
+    "mtime": 1790024214.1763654,
+    "seen": 1790031938.3473153,
+    "ast_hash": "a950b3f3c32e308309ddeeb4ee04c9d7",
+    "semantic_hash": "a950b3f3c32e308309ddeeb4ee04c9d7"
   },
   "content/assessments/diagnosis.json": {
     "mtime": 1789988566.8281639,
-    "seen": 1789993805.7796245,
+    "seen": 1790031938.3473163,
     "ast_hash": "e6df0473e8c6f51bb261f08a82d59abb",
-    "semantic_hash": ""
+    "semantic_hash": "e6df0473e8c6f51bb261f08a82d59abb"
   },
   "content/assessments/panss.json": {
     "mtime": 1789994435.6367779,
-    "seen": 1790022771.1135576,
+    "seen": 1790031938.3473172,
     "ast_hash": "3954bb41b1b9f5564299b324abc3a932",
-    "semantic_hash": ""
+    "semantic_hash": "3954bb41b1b9f5564299b324abc3a932"
   },
   "backend/src/x_insight/assessments/diagnosis.py": {
     "mtime": 1789993250.1192765,
-    "seen": 1789993805.7796044,
+    "seen": 1790031938.3472831,
     "ast_hash": "e4e04dde77656da6eeaa3e2e680aede5",
-    "semantic_hash": ""
+    "semantic_hash": "e4e04dde77656da6eeaa3e2e680aede5"
   },
   "backend/tests/assessments/test_diagnosis.py": {
     "mtime": 1789988732.7587225,
-    "seen": 1789993805.7796168,
+    "seen": 1790031938.3473024,
     "ast_hash": "4e9057b4a320d54e1b2484f2c8ea906d",
-    "semantic_hash": ""
+    "semantic_hash": "4e9057b4a320d54e1b2484f2c8ea906d"
   },
   "backend/tests/http/test_diagnosis.py": {
-    "mtime": 1789993250.1192765,
-    "seen": 1789993805.77962,
-    "ast_hash": "a2561c1d0e4825da0f131be7df2a2b5c",
-    "semantic_hash": ""
+    "mtime": 1790031943.7644465,
+    "seen": 1790032055.6355813,
+    "ast_hash": "a9c79daa626fee8a7153a1961cc3fb8e",
+    "semantic_hash": "a9c79daa626fee8a7153a1961cc3fb8e"
   },
   "e2e/diagnosis.spec.ts": {
     "mtime": 1789993118.6444497,
-    "seen": 1789993805.779627,
+    "seen": 1790031938.3473268,
     "ast_hash": "1573038a43b7ddbdb7b78d49a2dcc6c9",
-    "semantic_hash": ""
+    "semantic_hash": "1573038a43b7ddbdb7b78d49a2dcc6c9"
   },
   "backend/src/x_insight/assessments/panss.py": {
     "mtime": 1789994282.2501326,
-    "seen": 1790022771.1135397,
+    "seen": 1790031938.3472848,
     "ast_hash": "aca389fc7ce3780c28a0ebc1d4070677",
-    "semantic_hash": ""
+    "semantic_hash": "aca389fc7ce3780c28a0ebc1d4070677"
   },
   "backend/tests/assessments/test_panss.py": {
     "mtime": 1789994362.1094272,
-    "seen": 1790022771.1135497,
+    "seen": 1790031938.3473032,
     "ast_hash": "f6a306e4c106dbaac691050a01494f39",
-    "semantic_hash": ""
+    "semantic_hash": "f6a306e4c106dbaac691050a01494f39"
   },
   "backend/tests/http/test_panss.py": {
-    "mtime": 1789994370.5853524,
-    "seen": 1790022771.1135545,
-    "ast_hash": "c6f97d7f37305124bc8877de52b3b479",
-    "semantic_hash": ""
+    "mtime": 1790031943.7644465,
+    "seen": 1790032055.6355855,
+    "ast_hash": "4af9145b7b672834c3a83b1e2049f701",
+    "semantic_hash": "4af9145b7b672834c3a83b1e2049f701"
   },
   "e2e/panss.spec.ts": {
     "mtime": 1789994523.692055,
-    "seen": 1790022771.113561,
+    "seen": 1790031938.347331,
     "ast_hash": "ee60e19f62e734f68480f73cdaf8a765",
-    "semantic_hash": ""
+    "semantic_hash": "ee60e19f62e734f68480f73cdaf8a765"
+  },
+  "backend/src/x_insight/assessments/cssrs.py": {
+    "mtime": 1790024199.2044947,
+    "seen": 1790031938.3472824,
+    "ast_hash": "60310135e29fe5d70724c47066732a16",
+    "semantic_hash": "60310135e29fe5d70724c47066732a16"
+  },
+  "backend/tests/assessments/test_cssrs.py": {
+    "mtime": 1790024157.6888533,
+    "seen": 1790031938.3473,
+    "ast_hash": "536ce7c8629893c7d7e83174a2694819",
+    "semantic_hash": "536ce7c8629893c7d7e83174a2694819"
+  },
+  "backend/tests/http/test_cssrs.py": {
+    "mtime": 1790031943.7644465,
+    "seen": 1790032055.6355803,
+    "ast_hash": "a4fdcc02fb0920de8f0e17c78b3d9f58",
+    "semantic_hash": "a4fdcc02fb0920de8f0e17c78b3d9f58"
+  },
+  "e2e/cssrs.spec.ts": {
+    "mtime": 1790024338.4792893,
+    "seen": 1790031938.347326,
+    "ast_hash": "626de1c33fa5ffbbb7b0481a0c1c0fcc",
+    "semantic_hash": "626de1c33fa5ffbbb7b0481a0c1c0fcc"
+  },
+  "backend/src/x_insight/cases/history.py": {
+    "mtime": 1790028992.0178328,
+    "seen": 1790031938.347288,
+    "ast_hash": "e12053a85e9203bb467198ca53fc4882",
+    "semantic_hash": "e12053a85e9203bb467198ca53fc4882"
+  },
+  "backend/src/x_insight/cases/history_content.py": {
+    "mtime": 1790028978.801951,
+    "seen": 1790031938.3472888,
+    "ast_hash": "52074fb111eb82171a4f658043cfd181",
+    "semantic_hash": "52074fb111eb82171a4f658043cfd181"
+  },
+  "backend/tests/http/test_history.py": {
+    "mtime": 1790031943.7644465,
+    "seen": 1790032055.6355834,
+    "ast_hash": "3eeef1d700cf2bd674ae98f8b8eb2fad",
+    "semantic_hash": "3eeef1d700cf2bd674ae98f8b8eb2fad"
+  },
+  "content/history/history-effects-v0.1-draft.json": {
+    "mtime": 1790027283.3458164,
+    "seen": 1790031938.347318,
+    "ast_hash": "9dded852a3c792990ae1d158b7c75298",
+    "semantic_hash": "9dded852a3c792990ae1d158b7c75298"
+  },
+  "e2e/history.spec.ts": {
+    "mtime": 1790028766.4118562,
+    "seen": 1790031938.3473294,
+    "ast_hash": "a1e83d3e3c8e28fed1d1261deea5d306",
+    "semantic_hash": "a1e83d3e3c8e28fed1d1261deea5d306"
+  },
+  "tests/fixtures/content/history/history.json": {
+    "mtime": 1790027795.5807474,
+    "seen": 1790031938.3473344,
+    "ast_hash": "22e821af342c4f11cb3c01be27872bab",
+    "semantic_hash": "22e821af342c4f11cb3c01be27872bab"
+  },
+  ".agents/agents/commit.md": {
+    "mtime": 1790029074.9050908,
+    "seen": 1790031938.347341,
+    "ast_hash": "02c75d14b983ea5dd0c77bcef828ed73",
+    "semantic_hash": "02c75d14b983ea5dd0c77bcef828ed73"
   }
 }
