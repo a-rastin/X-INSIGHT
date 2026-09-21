@@ -10,7 +10,7 @@ dev:
 	cd backend && PYTHONPATH=src uv run uvicorn x_insight.app:app --port 8000 & cd web && npm run dev & wait
 
 migrate:
-	@echo "no migrations defined yet (first migration lands with its feature)"
+	cd backend && uv run alembic upgrade head
 
 check:
 	cd backend && uv run ruff check src tests && uv run ruff format --check src tests && uv run mypy src
