@@ -16,7 +16,15 @@ export default defineConfig({
       command:
         "uv run alembic upgrade head && PYTHONPATH=src uv run uvicorn x_insight.app:app --port 8000",
       cwd: "backend",
-      env: { DATABASE_URL: TEST_DATABASE_URL },
+      // S12 e2e-only: the default content dir holds only the awaiting_review
+      // history draft (never released), so history/effects PATCH would 422 and
+      // GET /content/history 404s. Point the e2e backend at the synthetic
+      // released fixture; production default is unchanged (never ships
+      // synthetic as released). Relative to cwd=backend.
+      env: {
+        DATABASE_URL: TEST_DATABASE_URL,
+        X_INSIGHT_HISTORY_CONTENT_DIR: "../tests/fixtures/content/history",
+      },
       port: 8000,
       reuseExistingServer: true,
       timeout: 120_000,

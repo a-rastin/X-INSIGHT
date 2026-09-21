@@ -17,6 +17,13 @@ EFFECT_IDS = {
     "acute_dystonia",
 }
 
+# FR-14 excludes medication regimen detail (dose/unit/route/frequency/
+# active/stopped) from history and medication payloads. These fields must
+# never be stored; they fail validation instead. No new tables.
+MEDICATION_REGIMEN_EXCLUDED_FIELDS = frozenset(
+    {"dose", "unit", "route", "frequency", "active", "stopped"}
+)
+
 
 def _content_dir() -> Path:
     configured = os.environ.get("X_INSIGHT_HISTORY_CONTENT_DIR")
@@ -47,6 +54,36 @@ def _load_released_definition() -> dict[str, Any]:
     ):
         raise ValueError("invalid released history definition")
     return definition
+
+
+def validate_medications(medications: Any) -> Any:
+    """Reject FR-14-excluded regimen fields anywhere in a medication list.
+
+    Valid drug-only entries pass through verbatim; any entry carrying a
+    regimen field (or a non-object entry/list shape) raises ValueError so
+    the PATCH flow returns 422 with revision and draft_data untouched.
+    """
+    if not isinstance(medications, list):
+        raise ValueError("medications must be a list")
+    for entry in medications:
+        if not isinstance(entry, dict):
+            raise ValueError("invalid medication entry")
+        if MEDICATION_REGIMEN_EXCLUDED_FIELDS & set(entry):
+            raise ValueError("excluded medication regimen field")
+    return medications
+
+
+def validate_history_reconciliation(reconciliation: Any) -> Any:
+    """Shape guard for follow-up reconciliation state (S12 minimal).
+
+    Only the blatantly invalid shape is rejected here: a bare non-object
+    marker. Valid pending/confirmed enum values and copy semantics belong
+    to S14; dict shapes pass through verbatim for the existing draft_data
+    path with its revision bump.
+    """
+    if not isinstance(reconciliation, dict):
+        raise ValueError("history reconciliation must be an object")
+    return reconciliation
 
 
 def validate_and_stamp_history(

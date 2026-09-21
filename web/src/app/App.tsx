@@ -8,14 +8,17 @@ import {
   discardEncounter,
   fetchSession,
   getEncounter,
+  getHistoryContent,
   listEncounters,
   listPhysicians,
   login,
   logout,
   listPatients,
   patchEncounter,
+  patchPatientPhone,
   updateTheme,
   type Encounter,
+  type HistoryContent,
   type Patient,
   type PhysicianAccount,
   type SessionUser,
@@ -550,6 +553,368 @@ function cssrsDirtyKey(levels: CssrsLevels, notAssessed: boolean): string {
     };
   }
   return JSON.stringify({ answers: ordered, notAssessed });
+}
+
+/**
+ * S12 structured history + adverse effects (FR-14/FR-20–21), reusing the S07
+ * autosave path (revisionRef/timer/saveState live in DraftEditor; these
+ * sections only edit values). Generic over the released definition: field ids
+ * and severity enums come from GET /content/history, never hardcoded clinical
+ * content. Absent-only effects round-trip without unreleased severity ids.
+ * No BARS/SAS/AIMS full questionnaires (FR-21: supporting sources only).
+ */
+const EFFECT_IDS = [
+  "tardive_dyskinesia",
+  "akathisia",
+  "parkinsonism",
+  "acute_dystonia",
+] as const;
+
+type EffectId = (typeof EFFECT_IDS)[number];
+
+const EFFECT_LABELS: Record<EffectId, string> = {
+  tardive_dyskinesia: "Tardive dyskinesia",
+  akathisia: "Akathisia",
+  parkinsonism: "Parkinsonism",
+  acute_dystonia: "Acute dystonia",
+};
+
+type EffectStatus = "present" | "absent" | "not_assessed";
+type EffectEntry = { status: EffectStatus | null; severity: string | null };
+type EffectsState = Record<EffectId, EffectEntry>;
+
+type HistoryStatus = "known" | "unknown" | "not_assessed";
+type HistoryEntry = { status: HistoryStatus; value: boolean | null };
+type HistoryState = Record<string, HistoryEntry>;
+
+function emptyEffects(): EffectsState {
+  return {
+    tardive_dyskinesia: { status: null, severity: null },
+    akathisia: { status: null, severity: null },
+    parkinsonism: { status: null, severity: null },
+    acute_dystonia: { status: null, severity: null },
+  };
+}
+
+function effectsFromStored(stored: unknown): EffectsState {
+  const base = emptyEffects();
+  if (typeof stored !== "object" || stored === null) {
+    return base;
+  }
+  const raw = stored as Record<string, unknown>;
+  const values =
+    typeof raw.values === "object" && raw.values !== null
+      ? (raw.values as Record<string, unknown>)
+      : null;
+  if (values === null) {
+    return base;
+  }
+  for (const id of EFFECT_IDS) {
+    const entry = values[id];
+    if (typeof entry !== "object" || entry === null) {
+      continue;
+    }
+    const rec = entry as Record<string, unknown>;
+    if (rec.status === "present" || rec.status === "absent" || rec.status === "not_assessed") {
+      base[id] = {
+        status: rec.status,
+        severity: typeof rec.severity === "string" ? rec.severity : null,
+      };
+    }
+  }
+  return base;
+}
+
+function serializeEffects(
+  state: EffectsState,
+  version: string | null,
+): Record<string, unknown> | undefined {
+  if (version === null) {
+    return undefined;
+  }
+  for (const id of EFFECT_IDS) {
+    const entry = state[id];
+    if (entry?.status === null || entry?.status === undefined) {
+      return undefined;
+    }
+    // Autosave-safe: present without a severity is kept locally but withheld
+    // from the wire until a reviewed severity is chosen (never 422s a draft).
+    if (entry.status === "present" && (entry.severity === null || entry.severity === "")) {
+      return undefined;
+    }
+  }
+  const values: Record<string, unknown> = {};
+  for (const id of EFFECT_IDS) {
+    const entry = state[id];
+    values[id] = {
+      status: entry.status,
+      severity: entry.status === "present" ? entry.severity : null,
+    };
+  }
+  return { definition_version: version, values };
+}
+
+function effectsDirtyKey(state: EffectsState): string {
+  const ordered: Record<string, unknown> = {};
+  for (const id of EFFECT_IDS) {
+    ordered[id] = {
+      status: state[id]?.status ?? null,
+      severity: state[id]?.severity ?? null,
+    };
+  }
+  return JSON.stringify(ordered);
+}
+
+function historyFromStored(stored: unknown): HistoryState {
+  const out: HistoryState = {};
+  if (typeof stored !== "object" || stored === null) {
+    return out;
+  }
+  const raw = stored as Record<string, unknown>;
+  const values =
+    typeof raw.values === "object" && raw.values !== null
+      ? (raw.values as Record<string, unknown>)
+      : null;
+  if (values === null) {
+    return out;
+  }
+  for (const [id, entry] of Object.entries(values)) {
+    if (typeof entry !== "object" || entry === null) {
+      continue;
+    }
+    const rec = entry as Record<string, unknown>;
+    if (rec.status === "known" && typeof rec.value === "boolean") {
+      out[id] = { status: "known", value: rec.value };
+    } else if (
+      (rec.status === "unknown" || rec.status === "not_assessed") &&
+      rec.value === null
+    ) {
+      out[id] = { status: rec.status, value: null };
+    }
+  }
+  return out;
+}
+
+function serializeHistory(
+  state: HistoryState,
+  version: string | null,
+): Record<string, unknown> | undefined {
+  if (version === null) {
+    return undefined;
+  }
+  const values: Record<string, unknown> = {};
+  for (const [id, entry] of Object.entries(state)) {
+    values[id] = { status: entry.status, value: entry.value };
+  }
+  if (Object.keys(values).length === 0) {
+    return undefined;
+  }
+  return { definition_version: version, values };
+}
+
+function historyDirtyKey(state: HistoryState): string {
+  const ordered: Record<string, unknown> = {};
+  for (const id of Object.keys(state).sort()) {
+    ordered[id] = state[id];
+  }
+  return JSON.stringify(ordered);
+}
+
+function reconFromStored(stored: unknown): Record<string, unknown> | null {
+  if (typeof stored === "object" && stored !== null && !Array.isArray(stored)) {
+    return stored as Record<string, unknown>;
+  }
+  return null;
+}
+
+/**
+ * S12 history section: analysis-visible structured history, rendered
+ * distinctly from page notes (notes are never relabeled as history). Generic
+ * over the released definition; when no definition is released the section
+ * stays visible with an honest unavailable state and sends no history block.
+ * Reconciliation is explicit object state, never auto-confirmed (S14 owns
+ * copy semantics).
+ */
+function HistorySection({
+  encounterId,
+  definition,
+  definitionLoaded,
+  values,
+  reconciliation,
+  readOnly,
+  onFieldChange,
+  onReconChange,
+}: {
+  encounterId: string;
+  definition: HistoryContent | null;
+  definitionLoaded: boolean;
+  values: HistoryState;
+  reconciliation: Record<string, unknown> | null;
+  readOnly: boolean;
+  onFieldChange: (id: string, raw: string) => void;
+  onReconChange: (raw: string) => void;
+}) {
+  function selectValue(id: string): string {
+    const entry = values[id];
+    if (!entry) {
+      return "";
+    }
+    if (entry.status === "known") {
+      return entry.value === true ? "known_true" : "known_false";
+    }
+    return entry.status;
+  }
+  const reconStatus =
+    typeof reconciliation?.status === "string" ? String(reconciliation.status) : "";
+  const reconSelect =
+    reconStatus === "pending" || reconStatus === "confirmed" ? reconStatus : "";
+  return (
+    <section data-testid="history-section" aria-label="History">
+      <h3>History</h3>
+      <p>
+        Structured history used for analysis. Draft notes are separate and
+        never used for analysis.
+      </p>
+      {!definitionLoaded ? <p>Loading history content…</p> : null}
+      {definitionLoaded && definition === null ? (
+        <p>Structured history content is pending review — unavailable.</p>
+      ) : null}
+      {definition !== null
+        ? definition.fields.map((field) => (
+            <div className="x-field" key={field.id}>
+              <label htmlFor={`history-${encounterId}-${field.id}`}>
+                {field.id} (analysis-visible)
+              </label>
+              <select
+                id={`history-${encounterId}-${field.id}`}
+                data-testid={`history-item-${field.id}`}
+                disabled={readOnly}
+                value={selectValue(field.id)}
+                onChange={(event) => onFieldChange(field.id, event.target.value)}
+              >
+                <option value="">Select…</option>
+                <option value="known_true">Known — yes</option>
+                <option value="known_false">Known — no</option>
+                <option value="unknown">Unknown</option>
+                <option value="not_assessed">Not assessed</option>
+              </select>
+            </div>
+          ))
+        : null}
+      <div className="x-field">
+        <label htmlFor={`recon-${encounterId}`}>History reconciliation</label>
+        <select
+          id={`recon-${encounterId}`}
+          data-testid="history-reconciliation-status"
+          disabled={readOnly}
+          value={reconSelect}
+          onChange={(event) => onReconChange(event.target.value)}
+        >
+          <option value="">Select…</option>
+          <option value="pending">pending</option>
+          <option value="confirmed">confirmed</option>
+        </select>
+        {reconciliation !== null ? (
+          <p>Current: {JSON.stringify(reconciliation)}</p>
+        ) : (
+          <p>No reconciliation recorded.</p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/**
+ * S12 adverse-effects section: the four FR-21 effects, each with a status
+ * select and a severity select. Severity is enabled only when present and is
+ * explicitly cleared client-side on status change (absent/not_assessed always
+ * send severity null).
+ */
+function EffectsSection({
+  encounterId,
+  definition,
+  definitionLoaded,
+  values,
+  readOnly,
+  onStatusChange,
+  onSeverityChange,
+}: {
+  encounterId: string;
+  definition: HistoryContent | null;
+  definitionLoaded: boolean;
+  values: EffectsState;
+  readOnly: boolean;
+  onStatusChange: (id: EffectId, value: EffectStatus | null) => void;
+  onSeverityChange: (id: EffectId, value: string | null) => void;
+}) {
+  function severitiesFor(id: EffectId): string[] {
+    const found = definition?.effects.find((effect) => effect.id === id);
+    return found?.severity_values ?? [];
+  }
+  return (
+    <section data-testid="effects-section" aria-label="Adverse effects">
+      <h3>Adverse effects</h3>
+      <p>
+        Severity is required only when present. Supporting sources only —
+        full BARS, SAS, or AIMS questionnaires are not required.
+      </p>
+      {!definitionLoaded ? <p>Loading effect content…</p> : null}
+      {definitionLoaded && definition === null ? (
+        <p>Severity definitions are pending review — severities unavailable.</p>
+      ) : null}
+      {EFFECT_IDS.map((id) => {
+        const entry = values[id] ?? { status: null, severity: null };
+        const severities = severitiesFor(id);
+        const present = entry.status === "present";
+        return (
+          <div className="x-field" key={id}>
+            <label htmlFor={`effects-status-${encounterId}-${id}`}>
+              {EFFECT_LABELS[id]} status
+            </label>
+            <select
+              id={`effects-status-${encounterId}-${id}`}
+              data-testid={`effects-status-${id}`}
+              disabled={readOnly}
+              value={entry.status ?? ""}
+              onChange={(event) => {
+                const raw = event.target.value;
+                if (raw === "present" || raw === "absent" || raw === "not_assessed") {
+                  onStatusChange(id, raw);
+                  return;
+                }
+                onStatusChange(id, null);
+              }}
+            >
+              <option value="">Select…</option>
+              <option value="present">present</option>
+              <option value="absent">absent</option>
+              <option value="not_assessed">not_assessed</option>
+            </select>
+            <label htmlFor={`effects-severity-${encounterId}-${id}`}>
+              {EFFECT_LABELS[id]} severity
+            </label>
+            <select
+              id={`effects-severity-${encounterId}-${id}`}
+              data-testid={`effects-severity-${id}`}
+              disabled={readOnly || !present || severities.length === 0}
+              value={present ? (entry.severity ?? "") : ""}
+              onChange={(event) => {
+                const raw = event.target.value;
+                onSeverityChange(id, raw === "" ? null : raw);
+              }}
+            >
+              <option value="">Select…</option>
+              {severities.map((severity) => (
+                <option key={severity} value={severity}>
+                  {severity}
+                </option>
+              ))}
+            </select>
+          </div>
+        );
+      })}
+    </section>
+  );
 }
 
 /**
@@ -1275,6 +1640,7 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
         <DraftEditor
           patient={openPatient}
           userId={userId}
+          role={role}
           onClose={closeDraft}
         />
       ) : null}
@@ -1291,10 +1657,12 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
 function DraftEditor({
   patient,
   userId,
+  role,
   onClose,
 }: {
   patient: Patient;
   userId: string;
+  role: string;
   onClose: () => void;
 }) {
   const [encounter, setEncounter] = useState<Encounter | null>(null);
@@ -1325,6 +1693,21 @@ function DraftEditor({
   const cssrsNotAssessedRef = useRef(false);
   const savedCssrsRef = useRef(cssrsDirtyKey(emptyCssrs(), false));
   const cssrsExtraRef = useRef<Record<string, unknown>>({});
+  const [historyDef, setHistoryDef] = useState<HistoryContent | null>(null);
+  const [historyDefLoaded, setHistoryDefLoaded] = useState(false);
+  const historyDefRef = useRef<HistoryContent | null>(null);
+  const [historyValues, setHistoryValues] = useState<HistoryState>({});
+  const historyRef = useRef<HistoryState>({});
+  const savedHistoryRef = useRef(historyDirtyKey({}));
+  const [effects, setEffects] = useState<EffectsState>(() => emptyEffects());
+  const effectsRef = useRef<EffectsState>(emptyEffects());
+  const savedEffectsRef = useRef(effectsDirtyKey(emptyEffects()));
+  const [recon, setRecon] = useState<Record<string, unknown> | null>(null);
+  const reconRef = useRef<Record<string, unknown> | null>(null);
+  const savedReconRef = useRef(JSON.stringify(null));
+  const [phone, setPhone] = useState("");
+  const [phoneState, setPhoneState] = useState("");
+  const phoneRevisionRef = useRef(0);
 
   function isDiagDirty(): boolean {
     return JSON.stringify(diagAnswersRef.current) !== savedDiagRef.current;
@@ -1336,6 +1719,18 @@ function DraftEditor({
 
   function isCssrsDirty(): boolean {
     return cssrsDirtyKey(cssrsLevelsRef.current, cssrsNotAssessedRef.current) !== savedCssrsRef.current;
+  }
+
+  function isHistoryDirty(): boolean {
+    return historyDirtyKey(historyRef.current) !== savedHistoryRef.current;
+  }
+
+  function isEffectsDirty(): boolean {
+    return effectsDirtyKey(effectsRef.current) !== savedEffectsRef.current;
+  }
+
+  function isReconDirty(): boolean {
+    return JSON.stringify(reconRef.current) !== savedReconRef.current;
   }
 
   async function reloadPreservingEdits(): Promise<void> {
@@ -1426,6 +1821,29 @@ function DraftEditor({
         cssrsNotAssessedRef.current = initialCssrs.notAssessed;
         cssrsExtraRef.current = initialCssrs.extra;
         savedCssrsRef.current = cssrsDirtyKey(initialCssrs.levels, initialCssrs.notAssessed);
+        const storedHistory =
+          typeof full.draft_data?.history === "object" && full.draft_data?.history !== null
+            ? (full.draft_data.history as unknown)
+            : null;
+        const initialHistory = historyFromStored(storedHistory);
+        setHistoryValues(initialHistory);
+        historyRef.current = initialHistory;
+        savedHistoryRef.current = historyDirtyKey(initialHistory);
+        const storedEffects =
+          typeof full.draft_data?.effects === "object" && full.draft_data?.effects !== null
+            ? (full.draft_data.effects as unknown)
+            : null;
+        const initialEffects = effectsFromStored(storedEffects);
+        setEffects(initialEffects);
+        effectsRef.current = initialEffects;
+        savedEffectsRef.current = effectsDirtyKey(initialEffects);
+        const initialRecon = reconFromStored(full.draft_data?.history_reconciliation);
+        setRecon(initialRecon);
+        reconRef.current = initialRecon;
+        savedReconRef.current = JSON.stringify(initialRecon);
+        setPhone(patient.phone ?? "");
+        phoneRevisionRef.current = patient.revision;
+        setPhoneState("");
         staleRef.current = false;
         setServerNote(null);
         setSaveState("Saved");
@@ -1448,11 +1866,59 @@ function DraftEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patient.id]);
 
+  // S12 released history/effects definition, generic over its content.
+  // 404 (draft unreleased) leaves definition null: sections stay visible
+  // with an honest unavailable state and send no history/effects block.
+  useEffect(() => {
+    let cancelled = false;
+    // Sole owner of definition state: reset on patient change, then fetch.
+    // (Encounter-load success must not reset this; the definition fetch
+    // resolves first and a late reset would clobber it.)
+    setHistoryDef(null);
+    historyDefRef.current = null;
+    setHistoryDefLoaded(false);
+    getHistoryContent()
+      .then((content) => {
+        if (cancelled) {
+          return;
+        }
+        setHistoryDef(content);
+        historyDefRef.current = content;
+        setHistoryDefLoaded(true);
+      })
+      .catch(() => {
+        if (cancelled) {
+          return;
+        }
+        setHistoryDef(null);
+        historyDefRef.current = null;
+        setHistoryDefLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [patient.id]);
+
+  // If the definition arrives after local history/effects edits, flush them
+  // through the shared S07 path once a version is known.
+  useEffect(() => {
+    if (historyDef === null || encounter?.state !== "draft") {
+      return;
+    }
+    if (encounter.author_id !== null && encounter.author_id !== userId) {
+      return;
+    }
+    if (isHistoryDirty() || isEffectsDirty()) {
+      scheduleSave(noteRef.current, diagAnswersRef.current);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyDef]);
+
   // Page-transition flush: attempt a final save when leaving.
   useEffect(() => {
     function onBeforeUnload(event: BeforeUnloadEvent): void {
       if (
-        (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty()) &&
+        (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty()) &&
         encounter !== null
       ) {
         event.preventDefault();
@@ -1465,13 +1931,13 @@ function DraftEditor({
   // Shared dirty flag so in-app navigation (open another draft) can warn.
   useEffect(() => {
     (window as unknown as { __xinsight_dirty?: boolean }).__xinsight_dirty =
-      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty()) &&
+      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty()) &&
       encounter !== null;
   });
 
   function handleClose(): void {
     if (
-      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty()) &&
+      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty()) &&
       encounter !== null
     ) {
       // Warn while local edits remain; dismiss keeps the editor + edits.
@@ -1538,12 +2004,27 @@ function DraftEditor({
     const cssrsSkipSnapshot = cssrsNotAssessedRef.current;
     const cssrsExtraSnapshot = { ...cssrsExtraRef.current };
     const cssrsBlock = serializeCssrs(cssrsLevelsSnapshot, cssrsSkipSnapshot, cssrsExtraSnapshot);
+    // Snapshot S12 history/effects/reconciliation at fire time the same way.
+    const effectsSnapshot: EffectsState = Object.fromEntries(
+      EFFECT_IDS.map((id) => [id, { ...(effectsRef.current[id] ?? { status: null, severity: null }) }]),
+    ) as EffectsState;
+    const historySnapshot: HistoryState = { ...historyRef.current };
+    const reconSnapshot = reconRef.current === null ? null : { ...reconRef.current };
+    const historyVersionSnapshot = historyDefRef.current?.definition_version ?? null;
+    const effectsBlock = serializeEffects(effectsSnapshot, historyVersionSnapshot);
+    const historyBlock = serializeHistory(historySnapshot, historyVersionSnapshot);
     try {
       const basePayload = buildDraftPayload(value, diagValue, extra);
       const withPanss =
         panssBlock === undefined ? basePayload : { ...basePayload, panss: panssBlock };
-      const payload =
+      const withCssrs =
         cssrsBlock === undefined ? withPanss : { ...withPanss, cssrs: cssrsBlock };
+      const withEffects =
+        effectsBlock === undefined ? withCssrs : { ...withCssrs, effects: effectsBlock };
+      const withHistory =
+        historyBlock === undefined ? withEffects : { ...withEffects, history: historyBlock };
+      const payload =
+        reconSnapshot === null ? withHistory : { ...withHistory, history_reconciliation: reconSnapshot };
       const updated = await patchEncounter(
         encounter.id,
         payload,
@@ -1554,6 +2035,15 @@ function DraftEditor({
       savedDiagRef.current = JSON.stringify(diagValue);
       savedPanssRef.current = panssDirtyKey(panssAnsSnapshot, panssSkipSnapshot);
       savedCssrsRef.current = cssrsDirtyKey(cssrsLevelsSnapshot, cssrsSkipSnapshot);
+      // Withheld blocks (no released version, or incomplete) stay dirty so a
+      // later save still flushes them; only acknowledged writes clear.
+      if (effectsBlock !== undefined) {
+        savedEffectsRef.current = effectsDirtyKey(effectsSnapshot);
+      }
+      if (historyBlock !== undefined) {
+        savedHistoryRef.current = historyDirtyKey(historySnapshot);
+      }
+      savedReconRef.current = JSON.stringify(reconSnapshot);
       setEncounter(updated);
       const storedDiag =
         typeof updated.draft_data?.diagnosis === "object" &&
@@ -1577,7 +2067,10 @@ function DraftEditor({
         panssDirtyKey(panssAnswersRef.current, panssNotAssessedRef.current) ===
           panssDirtyKey(panssAnsSnapshot, panssSkipSnapshot) &&
         cssrsDirtyKey(cssrsLevelsRef.current, cssrsNotAssessedRef.current) ===
-          cssrsDirtyKey(cssrsLevelsSnapshot, cssrsSkipSnapshot)
+          cssrsDirtyKey(cssrsLevelsSnapshot, cssrsSkipSnapshot) &&
+        effectsDirtyKey(effectsRef.current) === effectsDirtyKey(effectsSnapshot) &&
+        historyDirtyKey(historyRef.current) === historyDirtyKey(historySnapshot) &&
+        JSON.stringify(reconRef.current) === JSON.stringify(reconSnapshot)
       ) {
         setSaveState(`Saved (rev ${updated.revision})`);
       }
@@ -1816,6 +2309,113 @@ function DraftEditor({
     scheduleSave(noteRef.current, diagAnswersRef.current);
   }
 
+  function handleEffectStatus(id: EffectId, status: EffectStatus | null): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    if (!EFFECT_IDS.includes(id)) {
+      return;
+    }
+    const current = effectsRef.current[id] ?? { status: null, severity: null };
+    // Status change explicitly clears obsolete severity client-side: only a
+    // present status may carry a severity; absent/not_assessed send null.
+    const next = {
+      ...effectsRef.current,
+      [id]: status === "present"
+        ? { status, severity: current.severity }
+        : { status, severity: null },
+    };
+    setEffects(next);
+    effectsRef.current = next;
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
+  function handleEffectSeverity(id: EffectId, severity: string | null): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    if (!EFFECT_IDS.includes(id)) {
+      return;
+    }
+    const current = effectsRef.current[id];
+    if (!current || current.status !== "present") {
+      return;
+    }
+    const next = { ...effectsRef.current, [id]: { status: current.status, severity } };
+    setEffects(next);
+    effectsRef.current = next;
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
+  function handleHistoryField(id: string, raw: string): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    const next = { ...historyRef.current };
+    if (raw === "") {
+      delete next[id];
+    } else if (raw === "known_true") {
+      next[id] = { status: "known", value: true };
+    } else if (raw === "known_false") {
+      next[id] = { status: "known", value: false };
+    } else if (raw === "unknown" || raw === "not_assessed") {
+      next[id] = { status: raw, value: null };
+    } else {
+      return;
+    }
+    setHistoryValues(next);
+    historyRef.current = next;
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
+  function handleReconStatus(raw: string): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    // Explicit object state only; never auto-confirmed (S14 owns semantics).
+    const next = raw === "pending" || raw === "confirmed" ? { status: raw } : null;
+    setRecon(next);
+    reconRef.current = next;
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
+  async function handlePhoneSave(): Promise<void> {
+    if (role !== "physician") {
+      return;
+    }
+    setPhoneState("Saving…");
+    try {
+      // Optional plain text; empty clears to null. No country validation.
+      const updated = await patchPatientPhone(
+        patient.id,
+        phone === "" ? null : phone,
+        phoneRevisionRef.current,
+      );
+      phoneRevisionRef.current = updated.revision;
+      setPhone(updated.phone ?? "");
+      setPhoneState(`Saved (rev ${updated.revision})`);
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      setPhoneState(status === 412 ? "Stale revision" : "Save failed");
+    }
+  }
+
   async function handleDiscard(): Promise<void> {
     if (!encounter || encounter.state !== "draft" || readOnly) {
       return;
@@ -1836,6 +2436,9 @@ function DraftEditor({
       savedDiagRef.current = JSON.stringify(diagAnswersRef.current);
       savedPanssRef.current = panssDirtyKey(panssAnswersRef.current, panssNotAssessedRef.current);
       savedCssrsRef.current = cssrsDirtyKey(cssrsLevelsRef.current, cssrsNotAssessedRef.current);
+      savedHistoryRef.current = historyDirtyKey(historyRef.current);
+      savedEffectsRef.current = effectsDirtyKey(effectsRef.current);
+      savedReconRef.current = JSON.stringify(reconRef.current);
       staleRef.current = false;
       setEncounter(discarded);
       setSaveState("Draft discarded.");
@@ -1927,6 +2530,50 @@ function DraftEditor({
             onPeriodChange={handleCssrsPeriod}
             onSkip={handleCssrsSkip}
           />
+          <HistorySection
+            encounterId={encounter.id}
+            definition={historyDef}
+            definitionLoaded={historyDefLoaded}
+            values={historyValues}
+            reconciliation={recon}
+            readOnly={readOnly}
+            onFieldChange={handleHistoryField}
+            onReconChange={handleReconStatus}
+          />
+          <EffectsSection
+            encounterId={encounter.id}
+            definition={historyDef}
+            definitionLoaded={historyDefLoaded}
+            values={effects}
+            readOnly={readOnly}
+            onStatusChange={handleEffectStatus}
+            onSeverityChange={handleEffectSeverity}
+          />
+          <div className="x-field">
+            <label htmlFor={`draft-phone-${encounter.id}`}>Phone (optional)</label>
+            <input
+              id={`draft-phone-${encounter.id}`}
+              data-testid="patient-phone-input"
+              autoComplete="off"
+              value={phone}
+              disabled={role !== "physician"}
+              onChange={(event) => setPhone(event.target.value)}
+            />
+            <button
+              type="button"
+              className="x-button"
+              data-testid="patient-phone-save"
+              disabled={role !== "physician"}
+              onClick={() => void handlePhoneSave()}
+            >
+              Save phone
+            </button>
+            {phoneState ? (
+              <p role="status" data-testid="patient-phone-status">
+                {phoneState}
+              </p>
+            ) : null}
+          </div>
           <p role="status">{saveState}</p>
           {readOnly ? <p>Read-only draft.</p> : null}
           {!readOnly ? (

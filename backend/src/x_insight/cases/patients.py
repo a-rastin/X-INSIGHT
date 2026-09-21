@@ -14,7 +14,12 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 from x_insight import db
-from x_insight.contracts import canonical_json, parse_idempotency_key, to_utc_z
+from x_insight.contracts import (
+    canonical_json,
+    parse_idempotency_key,
+    parse_if_match,
+    to_utc_z,
+)
 from x_insight.identity.hashing import hash_password, verify_password
 from x_insight.identity.routes import _check_csrf, _request_id, _require_session
 from x_insight.operations.audit import record_audit
@@ -48,6 +53,18 @@ class PatientCreate(BaseModel):
         if _PATIENT_ID_RE.fullmatch(v) is None:
             raise ValueError("Must be exactly 10 ASCII digits.")
         return v
+
+
+class PatientPhonePatch(BaseModel):
+    """S12 slice 2: physician-only optional phone text update.
+
+    Phone is plain optional text with no country/format validation
+    (plan 2.2). Stored verbatim; explicit null clears. Names, ID, sex,
+    age, and clinical status are never touched here.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+    phone: str | None
 
 
 def _patient_payload(patient: Any) -> dict[str, Any]:
@@ -128,6 +145,69 @@ def list_patients(
                 else None,
             },
             headers={"Cache-Control": "private, no-store"},
+        )
+
+
+@router.patch("/patients/{patient_id}")
+def patch_patient_phone(
+    patient_id: UUID, body: PatientPhonePatch, request: Request
+) -> JSONResponse:
+    """Update only the optional phone text (S12 slice 2, minimal).
+
+    Mirrors the S07 author/revision pattern for encounters: session +
+    physician role required (anonymous 401, admin 403), If-Match revision
+    required (stale 412), revision bumped, attributed patient.update audit.
+    Follow-up copy semantics belong to S14.
+    """
+    with db.transaction() as conn:
+        denied, actor = _require_session(request, conn)
+        if denied is not None:
+            return denied
+        if actor["role"] != "physician":
+            raise HTTPException(403, "Physician access required.")
+        csrf_denied = _check_csrf(request, actor)
+        if csrf_denied is not None:
+            return csrf_denied
+        row = (
+            conn.execute(
+                text("SELECT * FROM patients WHERE id = :id FOR UPDATE"),
+                {"id": str(patient_id)},
+            )
+            .mappings()
+            .first()
+        )
+        if row is None:
+            raise HTTPException(404, "Patient not found.")
+        if parse_if_match(request.headers) != str(row["revision"]):
+            raise HTTPException(
+                412, "The patient changed. Reload and reconcile your edits."
+            )
+        updated = (
+            conn.execute(
+                text(
+                    "UPDATE patients SET phone = :phone, "
+                    " revision = revision + 1, updated_at = now() "
+                    "WHERE id = :id RETURNING *"
+                ),
+                {"id": str(patient_id), "phone": body.phone},
+            )
+            .mappings()
+            .one()
+        )
+        record_audit(
+            conn,
+            operation="patient.update",
+            actor_id=str(actor["id"]),
+            request_id=_request_id(request),
+            result_reference=str(updated["id"]),
+            target_display=str(updated["patient_id_text"]),
+        )
+        return JSONResponse(
+            {"schema_version": 1, "patient": _patient_payload(updated)},
+            headers={
+                "ETag": f'"{updated["revision"]}"',
+                "Cache-Control": "private, no-store",
+            },
         )
 
 

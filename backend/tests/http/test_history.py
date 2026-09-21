@@ -254,6 +254,257 @@ def test_effect_status_and_severity_validation_round_trips_with_provenance():
         assert effects["provenance"]["recorded_at"].endswith("Z")
 
 
+def test_undeclared_history_field_rejected_revision_unchanged():
+    """S12 slice A: undeclared history field -> 422, revision/draft unchanged."""
+    values = {
+        "synthetic_flag_true": {"status": "known", "value": True},
+        "undeclared_synthetic_field": {"status": "known", "value": True},
+    }
+
+    with TestClient(app) as admin, TestClient(app) as physician:
+        _login(admin)
+        created_physician = admin.post(
+            "/api/v1/physicians",
+            json={"username": "undeclareddoc", "password": "secret"},
+            headers=_mutation_headers(admin, key="undeclared-create-physician"),
+        )
+        assert created_physician.status_code == 201
+
+        _login(physician, "undeclareddoc", "secret", "physician")
+        created_patient = physician.post(
+            "/api/v1/patients",
+            json={
+                "first_name": "Anna",
+                "last_name": "Muller",
+                "sex": "F",
+                "age": 30,
+                "patient_id": "0799555554",
+                "clinical_status": "first_time",
+            },
+            headers=_mutation_headers(physician, key="undeclared-create-patient"),
+        )
+        assert created_patient.status_code == 201
+        encounter = created_patient.json()["encounter"]
+
+        rejected = physician.patch(
+            f"/api/v1/encounters/{encounter['id']}",
+            json={
+                "draft_data": {
+                    "history": {
+                        "definition_version": "synthetic-history-v1",
+                        "values": values,
+                    }
+                }
+            },
+            headers=_mutation_headers(physician, revision=1),
+        )
+        assert rejected.status_code == 422
+
+        fetched = physician.get(f"/api/v1/encounters/{encounter['id']}")
+        assert fetched.status_code == 200
+        unchanged = _encounter(fetched.json())
+        assert unchanged["revision"] == 1
+        assert unchanged["draft_data"] == {}
+
+
+def test_excluded_medication_regimen_fields_rejected():
+    """S12 slice A (RED): FR-14-excluded regimen fields -> 422, never stored.
+
+    FR-14 excludes dose/unit/route/frequency/active/stopped from history and
+    medication payloads (see content/history/history-effects-v0.1-draft.json
+    source_derived_constraints.medication_regimen_exclusions). A medication
+    entry carrying any of these fields must be rejected with 422 and must not
+    bump the revision or persist. Currently no medication validator exists, so
+    the payload is stored verbatim (200) -- this test fails red until
+    dev-backend adds the guard.
+    """
+    medications = [
+        {
+            "catalog_drug_id": "synthetic-drug",
+            "dose": "10",
+            "unit": "mg",
+            "route": "oral",
+            "frequency": "daily",
+            "active": True,
+            "stopped": False,
+        }
+    ]
+
+    with TestClient(app) as admin, TestClient(app) as physician:
+        _login(admin)
+        created_physician = admin.post(
+            "/api/v1/physicians",
+            json={"username": "regimendoc", "password": "secret"},
+            headers=_mutation_headers(admin, key="regimen-create-physician"),
+        )
+        assert created_physician.status_code == 201
+
+        _login(physician, "regimendoc", "secret", "physician")
+        created_patient = physician.post(
+            "/api/v1/patients",
+            json={
+                "first_name": "Anna",
+                "last_name": "Muller",
+                "sex": "F",
+                "age": 30,
+                "patient_id": "0799555555",
+                "clinical_status": "first_time",
+            },
+            headers=_mutation_headers(physician, key="regimen-create-patient"),
+        )
+        assert created_patient.status_code == 201
+        encounter = created_patient.json()["encounter"]
+
+        rejected = physician.patch(
+            f"/api/v1/encounters/{encounter['id']}",
+            json={"draft_data": {"medications": medications}},
+            headers=_mutation_headers(physician, revision=1),
+        )
+        assert rejected.status_code == 422
+
+        fetched = physician.get(f"/api/v1/encounters/{encounter['id']}")
+        assert fetched.status_code == 200
+        unchanged = _encounter(fetched.json())
+        assert unchanged["revision"] == 1
+        assert unchanged["draft_data"] == {}
+
+
+def test_physician_phone_update_via_patient_patch():
+    """S12 slice B (RED): optional phone text update belongs to S12 step 4.
+
+    Expected contract (plan.md 2.2/4.3): physician PATCH /patients/{id} updates
+    the optional phone text (no country validation; plain text, not a number),
+    guarded by session + physician role + If-Match revision. Admin PATCH is 403,
+    anonymous is 401. No such route exists yet (patients.py has GET/POST only),
+    so this fails red with 404/405 until dev-backend adds it. Open question for
+    dev-backend (do NOT guess in this test): whether empty string clears the
+    phone or is stored verbatim; S14 owns follow-up phone reconciliation.
+    """
+    with TestClient(app) as admin, TestClient(app) as physician:
+        _login(admin)
+        created_physician = admin.post(
+            "/api/v1/physicians",
+            json={"username": "phonedoc", "password": "secret"},
+            headers=_mutation_headers(admin, key="phone-create-physician"),
+        )
+        assert created_physician.status_code == 201
+
+        _login(physician, "phonedoc", "secret", "physician")
+        created_patient = physician.post(
+            "/api/v1/patients",
+            json={
+                "first_name": "Anna",
+                "last_name": "Muller",
+                "sex": "F",
+                "age": 30,
+                "patient_id": "0799555556",
+                "clinical_status": "first_time",
+            },
+            headers=_mutation_headers(physician, key="phone-create-patient"),
+        )
+        assert created_patient.status_code == 201
+        patient = created_patient.json()["patient"]
+
+        updated = physician.patch(
+            f"/api/v1/patients/{patient['id']}",
+            json={"phone": "synthetic-phone-text"},
+            headers=_mutation_headers(physician, revision=patient["revision"]),
+        )
+        assert updated.status_code == 200
+        assert updated.json()["patient"]["phone"] == "synthetic-phone-text"
+
+        forbidden = admin.patch(
+            f"/api/v1/patients/{patient['id']}",
+            json={"phone": "synthetic-admin-phone"},
+            headers=_mutation_headers(admin, revision=patient["revision"]),
+        )
+        assert forbidden.status_code == 403
+
+
+def test_history_reconciliation_shape_rejected_when_not_explicit():
+    """S12 slice B (RED): reconciliation state must be validated, not verbatim.
+
+    S12 step 4 requires a history reconciliation state for follow-up (copied
+    history stays pending until explicitly confirmed/updated). No validator
+    exists yet: any draft_data.history_reconciliation value is stored verbatim
+    (200). This test pins only the shape rule -- a bare non-object marker must
+    be 422 with revision unchanged -- and deliberately does NOT define the
+    valid pending/confirmed enum or copy semantics; those belong to S14
+    (follow-up entry) + dev-backend. Fails red (200) until the guard exists.
+    """
+    with TestClient(app) as admin, TestClient(app) as physician:
+        _login(admin)
+        created_physician = admin.post(
+            "/api/v1/physicians",
+            json={"username": "reconciledoc", "password": "secret"},
+            headers=_mutation_headers(admin, key="reconcile-create-physician"),
+        )
+        assert created_physician.status_code == 201
+
+        _login(physician, "reconciledoc", "secret", "physician")
+        created_patient = physician.post(
+            "/api/v1/patients",
+            json={
+                "first_name": "Anna",
+                "last_name": "Muller",
+                "sex": "F",
+                "age": 30,
+                "patient_id": "0799555557",
+                "clinical_status": "first_time",
+            },
+            headers=_mutation_headers(physician, key="reconcile-create-patient"),
+        )
+        assert created_patient.status_code == 201
+        encounter = created_patient.json()["encounter"]
+
+        rejected = physician.patch(
+            f"/api/v1/encounters/{encounter['id']}",
+            json={"draft_data": {"history_reconciliation": "reconciled"}},
+            headers=_mutation_headers(physician, revision=1),
+        )
+        assert rejected.status_code == 422
+
+        fetched = physician.get(f"/api/v1/encounters/{encounter['id']}")
+        assert fetched.status_code == 200
+        unchanged = _encounter(fetched.json())
+        assert unchanged["revision"] == 1
+        assert unchanged["draft_data"] == {}
+
+
+def test_history_content_route_exposes_released_only(monkeypatch):
+    """S12 slice B (RED): GET /content/history serves released versions only.
+
+    Mirrors the S08 assessments content contract (assessments/content.py):
+    anonymous -> 401; authenticated against the default content dir (whose
+    history-effects-v0.1-draft.json is awaiting_review, never released) -> 404;
+    authenticated with X_INSIGHT_HISTORY_CONTENT_DIR pointing at the synthetic
+    released fixture -> 200 with the released version. No such route exists
+    yet, so the released-fixture leg fails red (404) until dev-backend adds it.
+    Uses the synthetic fixture env only; never touches the released draft.
+    """
+    with TestClient(app) as anonymous:
+        assert anonymous.get("/api/v1/content/history").status_code == 401
+
+    with TestClient(app) as admin, TestClient(app) as physician:
+        _login(admin)
+        created_physician = admin.post(
+            "/api/v1/physicians",
+            json={"username": "historycontentdoc", "password": "secret"},
+            headers=_mutation_headers(admin, key="historycontent-create-physician"),
+        )
+        assert created_physician.status_code == 201
+        _login(physician, "historycontentdoc", "secret", "physician")
+
+        monkeypatch.delenv("X_INSIGHT_HISTORY_CONTENT_DIR", raising=False)
+        draft_default = physician.get("/api/v1/content/history")
+        assert draft_default.status_code == 404
+
+        monkeypatch.setenv("X_INSIGHT_HISTORY_CONTENT_DIR", str(SYNTHETIC_HISTORY_DIR))
+        released = physician.get("/api/v1/content/history")
+        assert released.status_code == 200
+        assert released.json()["definition_version"] == "synthetic-history-v1"
+
+
 def test_effect_status_change_requires_explicit_severity_clear():
     present_effects = {
         "tardive_dyskinesia": {

@@ -18,6 +18,8 @@ from x_insight.assessments.panss import evaluate_panss
 from x_insight.cases.history import (
     validate_and_stamp_effects,
     validate_and_stamp_history,
+    validate_history_reconciliation,
+    validate_medications,
 )
 from x_insight.contracts import content_hash, parse_if_match, to_utc_z, utc_now
 from x_insight.identity.routes import _check_csrf, _request_id, _require_session
@@ -337,6 +339,26 @@ def _apply_effects_validation(
     return updated
 
 
+def _apply_medications_guard(incoming: dict[str, Any]) -> dict[str, Any]:
+    if "medications" not in incoming:
+        return incoming
+    try:
+        validate_medications(incoming["medications"])
+    except ValueError as exc:
+        raise HTTPException(422, "Invalid medication content.") from exc
+    return incoming
+
+
+def _apply_reconciliation_guard(incoming: dict[str, Any]) -> dict[str, Any]:
+    if "history_reconciliation" not in incoming:
+        return incoming
+    try:
+        validate_history_reconciliation(incoming["history_reconciliation"])
+    except ValueError as exc:
+        raise HTTPException(422, "Invalid history reconciliation.") from exc
+    return incoming
+
+
 @router.patch("/encounters/{encounter_id}")
 def patch_encounter(
     encounter_id: UUID, body: DraftPatch, request: Request
@@ -380,23 +402,27 @@ def patch_encounter(
         stored_draft = row["draft_data"] if isinstance(row["draft_data"], dict) else {}
         actor_id = str(actor["user_id"])
         new_revision = int(row["revision"]) + 1
-        new_draft = _apply_effects_validation(
-            _apply_history_validation(
-                _apply_cssrs_validation(
-                    _apply_panss_validation(
-                        _apply_diagnosis_ack(
-                            dict(body.draft_data),
-                            stored_draft,
-                            actor_id,
-                            new_revision,
-                        )
-                    )
-                ),
-                actor_id,
-                new_revision,
-            ),
-            actor_id,
-            new_revision,
+        new_draft = _apply_reconciliation_guard(
+            _apply_medications_guard(
+                _apply_effects_validation(
+                    _apply_history_validation(
+                        _apply_cssrs_validation(
+                            _apply_panss_validation(
+                                _apply_diagnosis_ack(
+                                    dict(body.draft_data),
+                                    stored_draft,
+                                    actor_id,
+                                    new_revision,
+                                )
+                            )
+                        ),
+                        actor_id,
+                        new_revision,
+                    ),
+                    actor_id,
+                    new_revision,
+                )
+            )
         )
         updated = (
             conn.execute(

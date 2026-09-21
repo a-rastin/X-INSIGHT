@@ -255,6 +255,78 @@ export async function patchEncounter(
   return payload.encounter;
 }
 
+export interface HistoryContentField {
+  id: string;
+}
+
+export interface HistoryContentEffect {
+  id: string;
+  severity_values: string[];
+}
+
+export interface HistoryContent {
+  definition_version: string;
+  fields: HistoryContentField[];
+  effects: HistoryContentEffect[];
+}
+
+/** Released-only structured-history definition (S12). 404 = draft unreleased. */
+export async function getHistoryContent(): Promise<HistoryContent> {
+  const response = await fetch("/api/v1/content/history", {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw Object.assign(new Error("History content unavailable."), {
+      status: response.status,
+    });
+  }
+  const payload = (await response.json()) as {
+    definition_version: string;
+    definition: {
+      fields: HistoryContentField[];
+      effects: HistoryContentEffect[];
+    };
+  };
+  return {
+    definition_version: payload.definition_version,
+    fields: payload.definition.fields ?? [],
+    effects: payload.definition.effects ?? [],
+  };
+}
+
+export async function patchPatientPhone(
+  patientUuid: string,
+  phone: string | null,
+  revision: number,
+): Promise<Patient> {
+  const csrf = csrfToken();
+  const response = await fetch(`/api/v1/patients/${patientUuid}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(csrf ? { "X-CSRF-Token": csrf } : {}),
+      "If-Match": String(revision),
+    },
+    body: JSON.stringify({ phone }),
+  });
+  if (response.status === 412) {
+    throw Object.assign(new Error("Stale revision."), { status: 412 });
+  }
+  if (response.status === 403) {
+    throw Object.assign(new Error("Physician access required."), {
+      status: 403,
+    });
+  }
+  if (!response.ok) {
+    throw Object.assign(new Error("Could not save the phone."), {
+      status: response.status,
+    });
+  }
+  const payload = (await response.json()) as { patient: Patient };
+  return payload.patient;
+}
+
 export async function discardEncounter(
   encounterId: string,
   revision: number,
