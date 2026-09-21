@@ -13,6 +13,7 @@ from sqlalchemy import text
 
 from x_insight import db
 from x_insight.assessments.diagnosis import evaluate_diagnosis
+from x_insight.assessments.panss import evaluate_panss
 from x_insight.contracts import content_hash, parse_if_match, to_utc_z, utc_now
 from x_insight.identity.routes import _check_csrf, _request_id, _require_session
 from x_insight.operations.audit import record_audit
@@ -230,6 +231,39 @@ def _apply_diagnosis_ack(
     return updated
 
 
+def _apply_panss_validation(incoming: dict[str, Any]) -> dict[str, Any]:
+    """Validate PANSS answers on autosave (S10 slice 3, arithmetic-only).
+
+    If draft_data contains a panss dict with an answers dict, validate via
+    evaluate_panss; partial/complete/not_assessed persist verbatim (200),
+    ValueError maps to 422 with revision untouched. Also accepts the skip
+    shape {not_assessed: True} at panss level (no answers key), validated
+    as {not_assessed: True} answers; stored verbatim on success. Missing
+    panss or non-dict panss is left untouched for other flows.
+    """
+    if "panss" not in incoming:
+        return incoming
+    panss = incoming["panss"]
+    if not isinstance(panss, dict):
+        return incoming
+    if "answers" in panss:
+        answers = panss["answers"]
+        if not isinstance(answers, dict):
+            raise HTTPException(422, "Invalid PANSS content.")
+        try:
+            evaluate_panss(answers)
+        except ValueError as exc:
+            raise HTTPException(422, "Invalid PANSS content.") from exc
+        return incoming
+    if set(panss.keys()) == {"not_assessed"} and panss.get("not_assessed") is True:
+        try:
+            evaluate_panss({"not_assessed": True})
+        except ValueError as exc:
+            raise HTTPException(422, "Invalid PANSS content.") from exc
+        return incoming
+    return incoming
+
+
 @router.patch("/encounters/{encounter_id}")
 def patch_encounter(
     encounter_id: UUID, body: DraftPatch, request: Request
@@ -271,11 +305,13 @@ def patch_encounter(
         if patient is not None and patient["archived"]:
             raise HTTPException(409, "Archived patient drafts are read-only.")
         stored_draft = row["draft_data"] if isinstance(row["draft_data"], dict) else {}
-        new_draft = _apply_diagnosis_ack(
-            dict(body.draft_data),
-            stored_draft,
-            str(actor["user_id"]),
-            int(row["revision"]) + 1,
+        new_draft = _apply_panss_validation(
+            _apply_diagnosis_ack(
+                dict(body.draft_data),
+                stored_draft,
+                str(actor["user_id"]),
+                int(row["revision"]) + 1,
+            )
         )
         updated = (
             conn.execute(

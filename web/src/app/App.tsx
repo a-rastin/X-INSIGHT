@@ -191,6 +191,298 @@ function diagAnswersFromStored(stored: unknown): DiagAnswers {
   return base;
 }
 
+/** S10 PANSS preview (mirrors backend evaluate_panss sums, no I/O). */
+const PANSS_POSITIVE_IDS = ["P1", "P2", "P3", "P4", "P5", "P6", "P7"];
+const PANSS_NEGATIVE_IDS = ["N1", "N2", "N3", "N4", "N5", "N6", "N7"];
+const PANSS_GENERAL_IDS = [
+  "G1",
+  "G2",
+  "G3",
+  "G4",
+  "G5",
+  "G6",
+  "G7",
+  "G8",
+  "G9",
+  "G10",
+  "G11",
+  "G12",
+  "G13",
+  "G14",
+  "G15",
+  "G16",
+];
+const PANSS_ALL_IDS = [
+  ...PANSS_POSITIVE_IDS,
+  ...PANSS_NEGATIVE_IDS,
+  ...PANSS_GENERAL_IDS,
+];
+
+const PANSS_PROMPTS: Record<string, string> = {
+  P1: "Does the person hold fixed, implausible beliefs that are not shared by the person’s cultural or social context and are resistant to evidence?",
+  P2: "Is the person’s thinking or speech difficult to follow because of loose associations, tangentiality, incoherence, or derailment?",
+  P3: "Does the person report or appear to respond to perceptual experiences without an external stimulus?",
+  P4: "Is there unusually increased activation, energy, motor activity, or emotional intensity?",
+  P5: "Does the person express an exaggerated sense of power, importance, ability, identity, or status?",
+  P6: "Does the person show suspiciousness or beliefs that others intend to harm, exploit, monitor, or persecute them?",
+  P7: "Does the person show verbal or physical hostility, anger, resentment, or aggression toward others?",
+  N1: "Is the person’s emotional expression noticeably reduced in facial expression, voice, gestures, or emotional responsiveness?",
+  N2: "Does the person show reduced involvement in relationships and limited emotional contact with others?",
+  N3: "Is it difficult to establish a natural, cooperative, and empathetic interpersonal relationship with the person?",
+  N4: "Does the person show reduced interest, initiative, or participation in social interaction?",
+  N5: "Does the person have difficulty moving beyond concrete or literal thinking when asked to interpret concepts, similarities, or proverbs?",
+  N6: "Is the person’s conversation reduced in spontaneous initiation, productivity, or conversational flow?",
+  N7: "Is the person’s thinking repetitive, rigid, simplistic, or stereotyped?",
+  G1: "Is the person excessively concerned about physical health, bodily symptoms, or illness?",
+  G2: "Does the person show excessive fear, worry, apprehension, or nervousness?",
+  G3: "Does the person experience excessive or inappropriate guilt, self-blame, or remorse?",
+  G4: "Does the person show observable or reported physical and psychological tension, restlessness, or agitation?",
+  G5: "Are there unusual, odd, artificial, or socially inappropriate movements, gestures, poses, or mannerisms?",
+  G6: "Does the person show a depressed mood, hopelessness, sadness, or reduced interest and pleasure?",
+  G7: "Is there a noticeable slowing of movement, speech, or activity?",
+  G8: "Does the person resist the interview, treatment, or reasonable requests without adequate explanation?",
+  G9: "Does the person express unusual, implausible, or bizarre ideas that do not meet the threshold for a fixed delusion?",
+  G10: "Is the person confused about time, place, person, or the current situation?",
+  G11: "Does the person have difficulty sustaining, shifting, or directing attention during the interview?",
+  G12: "Does the person have impaired understanding of their condition, symptoms, consequences, or need for help?",
+  G13: "Is there reduced ability to initiate, sustain, or direct purposeful activity?",
+  G14: "Does the person have difficulty controlling urges or behavior, with risk of sudden or poorly considered actions?",
+  G15: "Is the person excessively absorbed in internal thoughts, feelings, or ideas in a way that interferes with the interview or functioning?",
+  G16: "Does the person deliberately avoid social contact because of fear, distrust, hostility, or unusual beliefs?",
+};
+
+type PanssAnswers = Record<string, number | null>;
+
+function emptyPanssAnswers(): PanssAnswers {
+  const out: PanssAnswers = {};
+  for (const id of PANSS_ALL_IDS) {
+    out[id] = null;
+  }
+  return out;
+}
+
+function panssFromStored(stored: unknown): {
+  answers: PanssAnswers;
+  notAssessed: boolean;
+} {
+  const base = emptyPanssAnswers();
+  if (typeof stored !== "object" || stored === null) {
+    return { answers: base, notAssessed: false };
+  }
+  const raw = stored as Record<string, unknown>;
+  if (raw.not_assessed === true) {
+    return { answers: base, notAssessed: true };
+  }
+  const answersRaw =
+    typeof raw.answers === "object" && raw.answers !== null
+      ? (raw.answers as Record<string, unknown>)
+      : null;
+  if (answersRaw === null) {
+    return { answers: base, notAssessed: false };
+  }
+  for (const id of PANSS_ALL_IDS) {
+    const value = answersRaw[id];
+    if (typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 7) {
+      base[id] = value;
+    } else {
+      base[id] = null;
+    }
+  }
+  return { answers: base, notAssessed: false };
+}
+
+function previewPanss(
+  answers: PanssAnswers,
+  notAssessed: boolean,
+): {
+  status: "skipped" | "unanswered" | "partial" | "complete";
+  positive: number | null;
+  negative: number | null;
+  general: number | null;
+  total: number | null;
+  answered: number;
+  missing: number;
+} {
+  if (notAssessed) {
+    return {
+      status: "skipped",
+      positive: null,
+      negative: null,
+      general: null,
+      total: null,
+      answered: 0,
+      missing: PANSS_ALL_IDS.length,
+    };
+  }
+  const missingIds = PANSS_ALL_IDS.filter((id) => answers[id] === null || answers[id] === undefined);
+  const answered = PANSS_ALL_IDS.length - missingIds.length;
+  if (missingIds.length === PANSS_ALL_IDS.length) {
+    return {
+      status: "unanswered",
+      positive: null,
+      negative: null,
+      general: null,
+      total: null,
+      answered,
+      missing: missingIds.length,
+    };
+  }
+  if (missingIds.length > 0) {
+    return {
+      status: "partial",
+      positive: null,
+      negative: null,
+      general: null,
+      total: null,
+      answered,
+      missing: missingIds.length,
+    };
+  }
+  let positive = 0;
+  for (const id of PANSS_POSITIVE_IDS) {
+    positive += answers[id] as number;
+  }
+  let negative = 0;
+  for (const id of PANSS_NEGATIVE_IDS) {
+    negative += answers[id] as number;
+  }
+  let general = 0;
+  for (const id of PANSS_GENERAL_IDS) {
+    general += answers[id] as number;
+  }
+  return {
+    status: "complete",
+    positive,
+    negative,
+    general,
+    total: positive + negative + general,
+    answered,
+    missing: 0,
+  };
+}
+
+function serializePanss(
+  answers: PanssAnswers,
+  notAssessed: boolean,
+): Record<string, unknown> | undefined {
+  if (notAssessed) {
+    return { not_assessed: true };
+  }
+  const out: Record<string, unknown> = {};
+  for (const id of PANSS_ALL_IDS) {
+    const value = answers[id];
+    if (typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 7) {
+      out[id] = value;
+    }
+  }
+  if (Object.keys(out).length === 0) {
+    return undefined;
+  }
+  return { answers: out };
+}
+
+function panssDirtyKey(answers: PanssAnswers, notAssessed: boolean): string {
+  const ordered: Record<string, unknown> = {};
+  for (const id of PANSS_ALL_IDS) {
+    ordered[id] = answers[id] ?? null;
+  }
+  return JSON.stringify({ answers: ordered, notAssessed });
+}
+
+/**
+ * S10 PANSS section reusing the S07 autosave path (revisionRef/timer/saveState
+ * live in DraftEditor; this section only edits items + requests skip).
+ * No treatment gates; prior scores are historical text only, never prefilled.
+ */
+function PanssSection({
+  encounterId,
+  answers,
+  notAssessed,
+  readOnly,
+  onItemChange,
+  onSkip,
+}: {
+  encounterId: string;
+  answers: PanssAnswers;
+  notAssessed: boolean;
+  readOnly: boolean;
+  onItemChange: (id: string, value: number | null) => void;
+  onSkip: () => void;
+}) {
+  const preview = previewPanss(answers, notAssessed);
+  const dash = "—";
+  return (
+    <section data-testid="panss-section" aria-label="PANSS">
+      <h3>PANSS</h3>
+      <p>Rate each item for the previous 7 days (1–7).</p>
+      <p>No prior PANSS score — prior: none (historical only; never prefilled as answers).</p>
+      {preview.status === "skipped" ? <p>Not assessed — skipped.</p> : null}
+      {preview.status === "unanswered" ? <p>Unanswered — select a rating for each item.</p> : null}
+      {preview.status === "partial" ? (
+        <p>
+          Partial — {preview.missing} missing ({preview.answered} of 30 answered).
+        </p>
+      ) : null}
+      {preview.status === "complete" ? <p>Complete.</p> : null}
+      <p>
+        Positive subscale: <span data-testid="panss-positive">{preview.positive === null ? dash : String(preview.positive)}</span>
+      </p>
+      <p>
+        Negative subscale: <span data-testid="panss-negative">{preview.negative === null ? dash : String(preview.negative)}</span>
+      </p>
+      <p>
+        General subscale: <span data-testid="panss-general">{preview.general === null ? dash : String(preview.general)}</span>
+      </p>
+      <p>
+        Total: <span data-testid="panss-total">{preview.total === null ? dash : String(preview.total)}</span>
+      </p>
+      {PANSS_ALL_IDS.map((id) => (
+        <div className="x-field" key={id}>
+          <label htmlFor={`panss-${encounterId}-${id}`}>
+            {id} — {PANSS_PROMPTS[id] ?? id}
+          </label>
+          <select
+            id={`panss-${encounterId}-${id}`}
+            data-testid={`panss-item-${id}`}
+            disabled={readOnly}
+            value={answers[id] === null || answers[id] === undefined ? "" : String(answers[id])}
+            onChange={(event) => {
+              const raw = event.target.value;
+              if (raw === "") {
+                onItemChange(id, null);
+                return;
+              }
+              const parsed = Number.parseInt(raw, 10);
+              if (!Number.isInteger(parsed) || parsed < 1 || parsed > 7) {
+                return;
+              }
+              onItemChange(id, parsed);
+            }}
+          >
+            <option value="">Select…</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+      ))}
+      <button
+        type="button"
+        className="x-button"
+        data-testid="panss-skip"
+        disabled={readOnly}
+        onClick={onSkip}
+      >
+        Skip
+      </button>
+    </section>
+  );
+}
+
 /**
  * S09 diagnosis gate reusing the S07 autosave path (revisionRef/timer/saveState
  * live in DraftEditor; this section only edits answers + requests ack/bypass).
@@ -734,9 +1026,18 @@ function DraftEditor({
   const diagAnswersRef = useRef<DiagAnswers>(DIAG_DEFAULTS);
   const savedDiagRef = useRef(JSON.stringify(DIAG_DEFAULTS));
   const ackCheckedRef = useRef(false);
+  const [panssAnswers, setPanssAnswers] = useState<PanssAnswers>(() => emptyPanssAnswers());
+  const [panssNotAssessed, setPanssNotAssessed] = useState(false);
+  const panssAnswersRef = useRef<PanssAnswers>(emptyPanssAnswers());
+  const panssNotAssessedRef = useRef(false);
+  const savedPanssRef = useRef(panssDirtyKey(emptyPanssAnswers(), false));
 
   function isDiagDirty(): boolean {
     return JSON.stringify(diagAnswersRef.current) !== savedDiagRef.current;
+  }
+
+  function isPanssDirty(): boolean {
+    return panssDirtyKey(panssAnswersRef.current, panssNotAssessedRef.current) !== savedPanssRef.current;
   }
 
   async function reloadPreservingEdits(): Promise<void> {
@@ -806,6 +1107,16 @@ function DraftEditor({
           storedAck !== null && typeof storedAck.actor_id === "string";
         setAckChecked(stampedAck);
         ackCheckedRef.current = stampedAck;
+        const storedPanss =
+          typeof full.draft_data?.panss === "object" && full.draft_data?.panss !== null
+            ? (full.draft_data.panss as unknown)
+            : null;
+        const initialPanss = panssFromStored(storedPanss);
+        setPanssAnswers(initialPanss.answers);
+        panssAnswersRef.current = initialPanss.answers;
+        setPanssNotAssessed(initialPanss.notAssessed);
+        panssNotAssessedRef.current = initialPanss.notAssessed;
+        savedPanssRef.current = panssDirtyKey(initialPanss.answers, initialPanss.notAssessed);
         staleRef.current = false;
         setServerNote(null);
         setSaveState("Saved");
@@ -832,7 +1143,7 @@ function DraftEditor({
   useEffect(() => {
     function onBeforeUnload(event: BeforeUnloadEvent): void {
       if (
-        (noteRef.current !== savedNoteRef.current || isDiagDirty()) &&
+        (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty()) &&
         encounter !== null
       ) {
         event.preventDefault();
@@ -845,13 +1156,13 @@ function DraftEditor({
   // Shared dirty flag so in-app navigation (open another draft) can warn.
   useEffect(() => {
     (window as unknown as { __xinsight_dirty?: boolean }).__xinsight_dirty =
-      (noteRef.current !== savedNoteRef.current || isDiagDirty()) &&
+      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty()) &&
       encounter !== null;
   });
 
   function handleClose(): void {
     if (
-      (noteRef.current !== savedNoteRef.current || isDiagDirty()) &&
+      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty()) &&
       encounter !== null
     ) {
       // Warn while local edits remain; dismiss keeps the editor + edits.
@@ -904,15 +1215,23 @@ function DraftEditor({
       return;
     }
     setSaveState("Saving…");
+    // Snapshot PANSS at fire time so concurrent edits merge via refs.
+    const panssAnsSnapshot: PanssAnswers = { ...panssAnswersRef.current };
+    const panssSkipSnapshot = panssNotAssessedRef.current;
+    const panssBlock = serializePanss(panssAnsSnapshot, panssSkipSnapshot);
     try {
+      const basePayload = buildDraftPayload(value, diagValue, extra);
+      const payload =
+        panssBlock === undefined ? basePayload : { ...basePayload, panss: panssBlock };
       const updated = await patchEncounter(
         encounter.id,
-        buildDraftPayload(value, diagValue, extra),
+        payload,
         revision,
       );
       revisionRef.current = updated.revision;
       savedNoteRef.current = value;
       savedDiagRef.current = JSON.stringify(diagValue);
+      savedPanssRef.current = panssDirtyKey(panssAnsSnapshot, panssSkipSnapshot);
       setEncounter(updated);
       const storedDiag =
         typeof updated.draft_data?.diagnosis === "object" &&
@@ -930,7 +1249,12 @@ function DraftEditor({
           : null,
       );
       // Only advertise Saved after the write is acknowledged.
-      if (noteRef.current === value && JSON.stringify(diagAnswersRef.current) === JSON.stringify(diagValue)) {
+      if (
+        noteRef.current === value &&
+        JSON.stringify(diagAnswersRef.current) === JSON.stringify(diagValue) &&
+        panssDirtyKey(panssAnswersRef.current, panssNotAssessedRef.current) ===
+          panssDirtyKey(panssAnsSnapshot, panssSkipSnapshot)
+      ) {
         setSaveState(`Saved (rev ${updated.revision})`);
       }
     } catch (failure: unknown) {
@@ -1058,6 +1382,47 @@ function DraftEditor({
     scheduleSave(noteRef.current, diagAnswersRef.current);
   }
 
+  function handlePanssItem(id: string, value: number | null): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    if (!PANSS_ALL_IDS.includes(id)) {
+      return;
+    }
+    if (value !== null && (!Number.isInteger(value) || value < 1 || value > 7)) {
+      return;
+    }
+    const next = { ...panssAnswersRef.current, [id]: value };
+    setPanssAnswers(next);
+    panssAnswersRef.current = next;
+    // Selecting any item after skip replaces the skip with answers.
+    if (panssNotAssessedRef.current) {
+      setPanssNotAssessed(false);
+      panssNotAssessedRef.current = false;
+    }
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
+  function handlePanssSkip(): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    const cleared = emptyPanssAnswers();
+    setPanssAnswers(cleared);
+    panssAnswersRef.current = cleared;
+    setPanssNotAssessed(true);
+    panssNotAssessedRef.current = true;
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
   async function handleDiscard(): Promise<void> {
     if (!encounter || encounter.state !== "draft" || readOnly) {
       return;
@@ -1076,6 +1441,7 @@ function DraftEditor({
       revisionRef.current = discarded.revision;
       savedNoteRef.current = noteRef.current;
       savedDiagRef.current = JSON.stringify(diagAnswersRef.current);
+      savedPanssRef.current = panssDirtyKey(panssAnswersRef.current, panssNotAssessedRef.current);
       staleRef.current = false;
       setEncounter(discarded);
       setSaveState("Draft discarded.");
@@ -1149,6 +1515,14 @@ function DraftEditor({
             onAckChange={handleDiagAck}
             onBypass={handleDiagBypass}
             onComplete={handleDiagComplete}
+          />
+          <PanssSection
+            encounterId={encounter.id}
+            answers={panssAnswers}
+            notAssessed={panssNotAssessed}
+            readOnly={readOnly}
+            onItemChange={handlePanssItem}
+            onSkip={handlePanssSkip}
           />
           <p role="status">{saveState}</p>
           {readOnly ? <p>Read-only draft.</p> : null}

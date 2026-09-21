@@ -57,7 +57,7 @@ def test_unknown_assessment_type_not_found():
 
 
 def test_draft_definitions_not_exposed():
-    # diagnosis-v1 owner-released -> 200; panss/cssrs still draft -> 404.
+    # diagnosis-v1 + panss-v1 owner-released -> 200; cssrs still draft -> 404.
     with TestClient(app) as client:
         login(client)
         released = client.get("/api/v1/content/assessments/diagnosis")
@@ -65,7 +65,12 @@ def test_draft_definitions_not_exposed():
         body = released.json()
         assert body["assessment_type"] == "diagnosis"
         assert body["definition_version"] == "diagnosis-v1"
-        for assessment_type in ("panss", "cssrs"):
+        panss = client.get("/api/v1/content/assessments/panss")
+        assert panss.status_code == 200
+        panss_body = panss.json()
+        assert panss_body["assessment_type"] == "panss"
+        assert panss_body["definition_version"] == "panss-v1"
+        for assessment_type in ("cssrs",):
             response = client.get(f"/api/v1/content/assessments/{assessment_type}")
             assert response.status_code == 404
 
