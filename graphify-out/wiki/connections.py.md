@@ -22,8 +22,7 @@
 - [MCPConnection](MCPConnection.md) (6 shared connections)
 - [MCPConnectionStdio](MCPConnectionStdio.md) (3 shared connections)
 - [evaluation.py](evaluation.py.md) (3 shared connections)
-- [contracts.py](contracts.py.md) (1 shared connections)
-- [db.py](db.py.md) (1 shared connections)
+- [patients.py](patients.py.md) (2 shared connections)
 
 ## Source Files
 

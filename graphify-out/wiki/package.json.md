@@ -1,28 +1,40 @@
 # package.json
 
-> 11 nodes
+> 26 nodes
 
 ## Key Concepts
 
 - **package.json** (15 connections) — `web/package.json`
+- **devDependencies** (7 connections) — `web/package.json`
+- **scripts** (5 connections) — `web/package.json`
+- **dependencies** (3 connections) — `web/package.json`
 - **vite.config.ts** (2 connections) — `web/vite.config.ts`
 - **vite** (2 connections) — `web/package.json`
 - **@vitejs/plugin-react** (2 connections) — `web/package.json`
+- **react** (1 connections) — `web/package.json`
+- **react-dom** (1 connections) — `web/package.json`
+- **@playwright/test** (1 connections) — `web/package.json`
+- **@types/react** (1 connections) — `web/package.json`
+- **@types/react-dom** (1 connections) — `web/package.json`
+- **typescript** (1 connections) — `web/package.json`
+- **vite** (1 connections) — `web/package.json`
+- **@vitejs/plugin-react** (1 connections) — `web/package.json`
 - **name** (1 connections) — `web/package.json`
 - **private** (1 connections) — `web/package.json`
+- **build** (1 connections) — `web/package.json`
+- **check** (1 connections) — `web/package.json`
+- **dev** (1 connections) — `web/package.json`
+- **preview** (1 connections) — `web/package.json`
 - **type** (1 connections) — `web/package.json`
 - **version** (1 connections) — `web/package.json`
 - **@types/react** (1 connections) — `web/package.json`
 - **@types/react-dom** (1 connections) — `web/package.json`
-- **typescript** (1 connections) — `web/package.json`
+- *... and 1 more nodes in this community*
 
 ## Relationships
 
 - [App.tsx](App.tsx.md) (2 shared connections)
 - [identity.spec.ts](identity.spec.ts.md) (1 shared connections)
-- [dependencies](dependencies.md) (1 shared connections)
-- [devDependencies](devDependencies.md) (1 shared connections)
-- [scripts](scripts.md) (1 shared connections)
 
 ## Source Files
 
@@ -31,7 +43,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 17 (100%)
+- EXTRACTED: 29 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

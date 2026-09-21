@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "backend/src/x_insight/app.py": {
-    "mtime": 1789976118.8296385,
-    "seen": 1789982028.2475522,
-    "ast_hash": "53ce3d4914cd2f4eae5c9a1ee8330705",
+    "mtime": 1789982982.6055348,
+    "seen": 1789983754.8666334,
+    "ast_hash": "ed3ef9f3d7c753313645d107f614dbec",
     "semantic_hash": ""
   },
   "backend/src/x_insight/contracts.py": {
@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "backend/src/x_insight/db.py": {
-    "mtime": 1789976118.8656383,
-    "seen": 1789982028.2475533,
-    "ast_hash": "b5f024a46fa0b4eec22f68fa94269880",
+    "mtime": 1789982982.6055348,
+    "seen": 1789983754.8666363,
+    "ast_hash": "a48d1a85b693008812df0a005fe0bd55",
     "semantic_hash": ""
   },
   "backend/src/x_insight/identity/__init__.py": {
@@ -186,15 +186,15 @@
     "semantic_hash": ""
   },
   "web/src/app/App.tsx": {
-    "mtime": 1789981052.834411,
-    "seen": 1789982028.247562,
-    "ast_hash": "22e4da5f472248255956e992653b1d11",
+    "mtime": 1789983092.8005698,
+    "seen": 1789983754.8666477,
+    "ast_hash": "1e4d6cf590fa834c3f979360e59c4c37",
     "semantic_hash": ""
   },
   "web/src/app/api.ts": {
-    "mtime": 1789981163.0774472,
-    "seen": 1789982028.2475624,
-    "ast_hash": "f4154d5ffe9060ccda4135aa331b5208",
+    "mtime": 1789983065.6368077,
+    "seen": 1789983754.8666484,
+    "ast_hash": "e9ac41d0db83f73823c984d803b4e4c0",
     "semantic_hash": ""
   },
   "web/src/main.tsx": {
@@ -516,9 +516,9 @@
     "semantic_hash": ""
   },
   "docs/dev/progress-tracker.md": {
-    "mtime": 1789981386.6234896,
-    "seen": 1789982028.2475903,
-    "ast_hash": "265ae523caf4f8b44ec8821e6102a711",
+    "mtime": 1789983195.0316744,
+    "seen": 1789983754.8666744,
+    "ast_hash": "61791234ec3bd0829735ccbaa39c171e",
     "semantic_hash": ""
   },
   "docs/dev/system-design/DDI-Module.md": {
@@ -1497,6 +1497,36 @@
     "mtime": 1789972626.6053095,
     "seen": 1789982028.2476618,
     "ast_hash": "4f4002fbb6723534c24f010ee740869d",
+    "semantic_hash": ""
+  },
+  "backend/migrations/versions/0004_patients.py": {
+    "mtime": 1789982463.2300694,
+    "seen": 1789983754.8666303,
+    "ast_hash": "14dce2d2d8740f78d7d811ea899bb7ac",
+    "semantic_hash": ""
+  },
+  "backend/src/x_insight/cases/__init__.py": {
+    "mtime": 1789982395.2746603,
+    "seen": 1789983754.8666341,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "backend/src/x_insight/cases/patients.py": {
+    "mtime": 1789982964.9056897,
+    "seen": 1789983754.8666348,
+    "ast_hash": "7f7373c884cc646f119e063f4dbb0747",
+    "semantic_hash": ""
+  },
+  "backend/tests/http/test_patients.py": {
+    "mtime": 1789982978.693569,
+    "seen": 1789983754.8666437,
+    "ast_hash": "f00b14b89885d4d677086464067028c5",
+    "semantic_hash": ""
+  },
+  "e2e/registration.spec.ts": {
+    "mtime": 1789983052.2129254,
+    "seen": 1789983754.8666458,
+    "ast_hash": "8f17e8c2f06a5c7c7693cbc742d49c0c",
     "semantic_hash": ""
   }
 }

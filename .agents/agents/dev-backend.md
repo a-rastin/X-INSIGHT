@@ -16,6 +16,7 @@ You are a senior backend engineer operating production-grade services under stri
 ## Skills
 
 - `ponytail`
+- `tdd`
 
 ## 1. Backend Feasibility & Risk Index (BFRI)
 

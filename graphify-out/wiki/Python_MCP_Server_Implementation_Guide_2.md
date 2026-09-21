@@ -7,11 +7,11 @@
 ## Connections by Relation
 
 ### contains
-- Quality Checklist `EXTRACTED`
-- Advanced FastMCP Features `EXTRACTED`
+- [Quality Checklist](Quality_Checklist.md) `EXTRACTED`
+- [Advanced FastMCP Features](Advanced_FastMCP_Features.md) `EXTRACTED`
 - [Quick Reference](Quick_Reference.md) `EXTRACTED`
-- Tool Implementation `EXTRACTED`
-- Code Best Practices `EXTRACTED`
+- [Tool Implementation](Tool_Implementation.md) `EXTRACTED`
+- [Code Best Practices](Code_Best_Practices.md) `EXTRACTED`
 - python_mcp_server.md `EXTRACTED`
 - Pydantic v2 Key Features `EXTRACTED`
 - Response Format Options `EXTRACTED`

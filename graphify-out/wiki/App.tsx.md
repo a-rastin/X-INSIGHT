@@ -1,35 +1,35 @@
 # App.tsx
 
-> 50 nodes
+> 64 nodes
 
 ## Key Concepts
 
-- **App.tsx** (35 connections) — `web/src/app/App.tsx`
-- **api.ts** (22 connections) — `web/src/app/api.ts`
+- **App.tsx** (41 connections) — `web/src/app/App.tsx`
+- **api.ts** (27 connections) — `web/src/app/api.ts`
+- **DraftEditor()** (11 connections) — `web/src/app/App.tsx`
+- **csrfToken()** (8 connections) — `web/src/app/api.ts`
 - **createPatient()** (6 connections) — `web/src/app/api.ts`
 - **createPhysician()** (6 connections) — `web/src/app/api.ts`
-- **csrfToken()** (6 connections) — `web/src/app/api.ts`
 - **changeOwnPassword()** (5 connections) — `web/src/app/api.ts`
+- **discardEncounter()** (5 connections) — `web/src/app/api.ts`
+- **getEncounter()** (5 connections) — `web/src/app/api.ts`
 - **login()** (5 connections) — `web/src/app/api.ts`
+- **patchEncounter()** (5 connections) — `web/src/app/api.ts`
 - **App()** (5 connections) — `web/src/app/App.tsx`
 - **main.tsx** (5 connections) — `web/src/main.tsx`
 - **logout()** (4 connections) — `web/src/app/api.ts`
 - **mutating()** (4 connections) — `web/src/app/api.ts`
 - **updateTheme()** (4 connections) — `web/src/app/api.ts`
+- **saveNow()** (4 connections) — `web/src/app/App.tsx`
+- **PatientsSection()** (4 connections) — `web/src/app/App.tsx`
+- **Encounter** (3 connections) — `web/src/app/api.ts`
 - **Patient** (3 connections) — `web/src/app/api.ts`
 - **fetchSession()** (3 connections) — `web/src/app/api.ts`
 - **idempotencyKey()** (3 connections) — `web/src/app/api.ts`
+- **listEncounters()** (3 connections) — `web/src/app/api.ts`
 - **listPatients()** (3 connections) — `web/src/app/api.ts`
 - **listPhysicians()** (3 connections) — `web/src/app/api.ts`
-- **CreatePhysicianForm()** (3 connections) — `web/src/app/App.tsx`
-- **LoginForm()** (3 connections) — `web/src/app/App.tsx`
-- **navigate()** (3 connections) — `web/src/app/App.tsx`
-- **PasswordForm()** (3 connections) — `web/src/app/App.tsx`
-- **PatientForm()** (3 connections) — `web/src/app/App.tsx`
-- **react** (3 connections) — `web/package.json`
-- **PhysicianAccount** (2 connections) — `web/src/app/api.ts`
-- **SessionUser** (2 connections) — `web/src/app/api.ts`
-- *... and 25 more nodes in this community*
+- *... and 39 more nodes in this community*
 
 ## Relationships
 
@@ -46,8 +46,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 92 (98%)
-- INFERRED: 2 (2%)
+- EXTRACTED: 121 (97%)
+- INFERRED: 4 (3%)
 - AMBIGUOUS: 0 (0%)
 
 ---
