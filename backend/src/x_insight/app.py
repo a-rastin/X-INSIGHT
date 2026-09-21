@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from x_insight import db
+from x_insight.assessments.content import router as assessments_content_router
 from x_insight.cases.encounters import router as encounters_router
 from x_insight.cases.patients import router as patients_router
 from x_insight.contracts import MAX_BODY_BYTES, error_body, new_request_id
@@ -171,6 +172,7 @@ app.include_router(identity_router, prefix="/api/v1")
 app.include_router(accounts_router, prefix="/api/v1")
 app.include_router(patients_router, prefix="/api/v1")
 app.include_router(encounters_router, prefix="/api/v1")
+app.include_router(assessments_content_router, prefix="/api/v1")
 
 
 @app.get("/api/v1/health")
