@@ -6,3 +6,7 @@ description: Expert agent for updating project's documentation and commiting cha
 ## Tools
 
 ### Skills
+
+- `commit`
+- `document-code`
+- `documentation`

@@ -16,6 +16,4 @@ You are the manager of the session. You do not code yourself,  but decide witch 
 
 ### Skills
 
-- `tdd` for implementation tasks.
-- `verify` before completing implementation, implementation checks, testing claims, and review readiness.
-- `task` for optional progress tracing when the task command is usable.
+
