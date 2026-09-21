@@ -1,16 +1,21 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "../shared/theme.css";
 import {
   RESEARCH_NOTICE,
   changeOwnPassword,
   createPhysician,
   createPatient,
+  discardEncounter,
   fetchSession,
+  getEncounter,
+  listEncounters,
   listPhysicians,
   login,
   logout,
   listPatients,
+  patchEncounter,
   updateTheme,
+  type Encounter,
   type Patient,
   type PhysicianAccount,
   type SessionUser,
@@ -177,7 +182,7 @@ function Dashboard({ user }: { user: SessionUser }) {
     <>
       <h1>{user.role === "admin" ? "Admin dashboard" : "Physician dashboard"}</h1>
       <p>Signed in as {user.username}.</p>
-      <PatientsSection role={user.role} />
+      <PatientsSection role={user.role} userId={user.id} />
       <PasswordForm />
     </>
   );
@@ -186,12 +191,46 @@ function Dashboard({ user }: { user: SessionUser }) {
 const PATIENT_NAME_RE = /^\p{L}+$/u;
 const PATIENT_ID_RE = /^[0-9]{10}$/;
 
-function PatientsSection({ role }: { role: string }) {
+function PatientsSection({ role, userId }: { role: string; userId: string }) {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
   const [refresh, setRefresh] = useState(0);
   const [items, setItems] = useState<Patient[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Restart recovery: remember the open draft across reload/restart.
+  const [openPatient, setOpenPatient] = useState<Patient | null>(() => {
+    try {
+      const raw = localStorage.getItem("xinsight.openPatient");
+      return raw ? (JSON.parse(raw) as Patient) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  function openDraft(item: Patient): void {
+    // Warn when switching drafts with pending local edits.
+    if (
+      (window as unknown as { __xinsight_dirty?: boolean }).__xinsight_dirty &&
+      !window.confirm("You have unsaved edits. Leave without saving?")
+    ) {
+      return;
+    }
+    setOpenPatient(item);
+    try {
+      localStorage.setItem("xinsight.openPatient", JSON.stringify(item));
+    } catch {
+      /* storage unavailable; editor still opens for this session */
+    }
+  }
+
+  function closeDraft(): void {
+    setOpenPatient(null);
+    try {
+      localStorage.removeItem("xinsight.openPatient");
+    } catch {
+      /* ignore */
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -269,6 +308,7 @@ function PatientsSection({ role }: { role: string }) {
               <th scope="col">Patient ID</th>
               <th scope="col">First name</th>
               <th scope="col">Last name</th>
+              <th scope="col">Draft</th>
             </tr>
           </thead>
           <tbody>
@@ -277,10 +317,300 @@ function PatientsSection({ role }: { role: string }) {
                 <td>{item.patient_id}</td>
                 <td>{item.first_name}</td>
                 <td>{item.last_name}</td>
+                <td>
+                  <button
+                    type="button"
+                    className="x-button"
+                    onClick={() => openDraft(item)}
+                  >
+                    Open draft {item.patient_id}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+      )}
+      {openPatient ? (
+        <DraftEditor
+          patient={openPatient}
+          userId={userId}
+          onClose={closeDraft}
+        />
+      ) : null}
+    </section>
+  );
+}
+
+/**
+ * Single autosave path for all draft pages (S07 handoff).
+ * Revision ownership: the encounter revision is the only write precondition
+ * (If-Match); every assessment page must reuse getEncounter/patchEncounter,
+ * never a separate persistence mechanism.
+ */
+function DraftEditor({
+  patient,
+  userId,
+  onClose,
+}: {
+  patient: Patient;
+  userId: string;
+  onClose: () => void;
+}) {
+  const [encounter, setEncounter] = useState<Encounter | null>(null);
+  const [note, setNote] = useState("");
+  const [saveState, setSaveState] = useState("Loading…");
+  const [serverNote, setServerNote] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const revisionRef = useRef(0);
+  const savedNoteRef = useRef("");
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const noteRef = useRef("");
+  const staleRef = useRef(false);
+
+  async function reloadPreservingEdits(): Promise<void> {
+    if (!encounter) {
+      return;
+    }
+    try {
+      const fresh = await getEncounter(encounter.id);
+      const freshNote =
+        typeof fresh.draft_data?.note === "string"
+          ? (fresh.draft_data.note as string)
+          : "";
+      // Preserve unsaved edits; only refresh the server preview.
+      setServerNote(freshNote);
+      setSaveState("Stale revision");
+    } catch {
+      setSaveState("Stale revision");
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+    setSaveState("Loading…");
+    setLoadError(null);
+    listEncounters(patient.id)
+      .then((all) => {
+        const resumable = all.find((e) => e.state === "draft") ?? all[0];
+        if (!resumable) {
+          throw new Error("No resumable draft.");
+        }
+        return getEncounter(resumable.id);
+      })
+      .then((full) => {
+        if (cancelled) {
+          return;
+        }
+        setEncounter(full);
+        revisionRef.current = full.revision;
+        const initial =
+          typeof full.draft_data?.note === "string"
+            ? (full.draft_data.note as string)
+            : "";
+        setNote(initial);
+        noteRef.current = initial;
+        savedNoteRef.current = initial;
+        staleRef.current = false;
+        setServerNote(null);
+        setSaveState("Saved");
+      })
+      .catch((failure: unknown) => {
+        if (!cancelled) {
+          setLoadError(
+            failure instanceof Error ? failure.message : "Could not load the draft.",
+          );
+          setSaveState("Save failed");
+        }
+      });
+    return () => {
+      cancelled = true;
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [patient.id]);
+
+  // Page-transition flush: attempt a final save when leaving.
+  useEffect(() => {
+    function onBeforeUnload(event: BeforeUnloadEvent): void {
+      if (noteRef.current !== savedNoteRef.current && encounter !== null) {
+        event.preventDefault();
+      }
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [encounter]);
+
+  // Shared dirty flag so in-app navigation (open another draft) can warn.
+  useEffect(() => {
+    (window as unknown as { __xinsight_dirty?: boolean }).__xinsight_dirty =
+      noteRef.current !== savedNoteRef.current && encounter !== null;
+  });
+
+  function handleClose(): void {
+    if (noteRef.current !== savedNoteRef.current && encounter !== null) {
+      // Warn while local edits remain; dismiss keeps the editor + edits.
+      if (!window.confirm("You have unsaved edits. Leave without saving?")) {
+        return;
+      }
+    }
+    onClose();
+  }
+
+  async function saveNow(value: string, revision: number): Promise<void> {
+    if (!encounter) {
+      return;
+    }
+    setSaveState("Saving…");
+    try {
+      const updated = await patchEncounter(encounter.id, { note: value }, revision);
+      revisionRef.current = updated.revision;
+      savedNoteRef.current = value;
+      setEncounter(updated);
+      // Only advertise Saved after the write is acknowledged.
+      if (noteRef.current === value) {
+        setSaveState(`Saved (rev ${updated.revision})`);
+      }
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      if (status === 412) {
+        staleRef.current = true;
+        setSaveState("Stale revision");
+        try {
+          const fresh = await getEncounter(encounter.id);
+          const freshNote =
+            typeof fresh.draft_data?.note === "string"
+              ? (fresh.draft_data.note as string)
+              : "";
+          setServerNote(freshNote);
+        } catch {
+          /* keep edits; server preview stays empty */
+        }
+      } else if (status === 403) {
+        setSaveState("Read-only draft.");
+      } else {
+        // Failed network/database save never shows Saved; keep edits.
+        setSaveState("Save failed");
+      }
+    }
+  }
+
+  function scheduleSave(value: string): void {
+    if (encounter?.state !== "draft") {
+      return;
+    }
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    setSaveState("Saving…");
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      if (!staleRef.current) {
+        void saveNow(value, revisionRef.current);
+      }
+    }, 1000);
+  }
+
+  async function handleDiscard(): Promise<void> {
+    if (!encounter || encounter.state !== "draft" || readOnly) {
+      return;
+    }
+    if (!window.confirm("Discard this draft? This cannot be undone.")) {
+      return;
+    }
+    // Explicit confirmation + current revision; tombstone retained server-side.
+    // No jobs exist yet, so jobs cancellation is a no-op (S51 integrates it).
+    try {
+      const discarded = await discardEncounter(encounter.id, revisionRef.current);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      revisionRef.current = discarded.revision;
+      savedNoteRef.current = noteRef.current;
+      staleRef.current = false;
+      setEncounter(discarded);
+      setSaveState("Draft discarded.");
+    } catch {
+      setSaveState("Save failed");
+    }
+  }
+
+  const readOnly =
+    encounter !== null && encounter.author_id !== null && encounter.author_id !== userId;
+  const discarded = encounter !== null && encounter.state !== "draft";
+
+  return (
+    <section aria-labelledby="draft-heading">
+      <h3 id="draft-heading">Draft</h3>
+      <p>
+        Patient {patient.patient_id} ·{" "}
+        <button type="button" className="x-button" onClick={handleClose}>
+          Close
+        </button>
+      </p>
+      {loadError ? (
+        <p role="alert" className="x-error">
+          {loadError}
+        </p>
+      ) : encounter === null ? (
+        <p role="status">Loading…</p>
+      ) : discarded ? (
+        <>
+          <div className="x-field">
+            <label htmlFor={`draft-note-${encounter.id}`}>Draft note</label>
+            <textarea
+              id={`draft-note-${encounter.id}`}
+              value={note}
+              disabled
+              readOnly
+            />
+          </div>
+          <p role="status">Draft discarded.</p>
+        </>
+      ) : (
+        <>
+          <div className="x-field">
+            <label htmlFor={`draft-note-${encounter.id}`}>Draft note</label>
+            <textarea
+              id={`draft-note-${encounter.id}`}
+              value={note}
+              disabled={readOnly}
+              onChange={(event) => {
+                const value = event.target.value;
+                setNote(value);
+                noteRef.current = value;
+                if (staleRef.current) {
+                  setSaveState("Stale revision");
+                  return;
+                }
+                scheduleSave(value);
+              }}
+            />
+          </div>
+          <p role="status">{saveState}</p>
+          {readOnly ? <p>Read-only draft.</p> : null}
+          {!readOnly ? (
+            <button type="button" className="x-button" onClick={() => void handleDiscard()}>
+              Discard draft
+            </button>
+          ) : null}
+          {saveState === "Stale revision" ? (
+            <>
+              {serverNote !== null ? <p>Server value: {serverNote}</p> : null}
+              <button
+                type="button"
+                className="x-button"
+                onClick={() => void reloadPreservingEdits()}
+              >
+                Reload draft
+              </button>
+            </>
+          ) : null}
+        </>
       )}
     </section>
   );

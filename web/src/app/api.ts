@@ -190,6 +190,101 @@ export async function createPatient(body: PatientCreate): Promise<Patient> {
   return payload.patient;
 }
 
+export interface Encounter {
+  id: string;
+  patient_id: string;
+  kind: string;
+  author_id: string | null;
+  state: string;
+  revision: number;
+  draft_data: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function listEncounters(patientUuid: string): Promise<Encounter[]> {
+  const response = await fetch(`/api/v1/patients/${patientUuid}/encounters`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error("Could not load drafts.");
+  }
+  const payload = (await response.json()) as { items: Encounter[] };
+  return payload.items;
+}
+
+export async function getEncounter(encounterId: string): Promise<Encounter> {
+  const response = await fetch(`/api/v1/encounters/${encounterId}`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error("Could not load the draft.");
+  }
+  const payload = (await response.json()) as { encounter: Encounter };
+  return payload.encounter;
+}
+
+export async function patchEncounter(
+  encounterId: string,
+  draftData: Record<string, unknown>,
+  revision: number,
+): Promise<Encounter> {
+  const csrf = csrfToken();
+  const response = await fetch(`/api/v1/encounters/${encounterId}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(csrf ? { "X-CSRF-Token": csrf } : {}),
+      "If-Match": String(revision),
+    },
+    body: JSON.stringify({ draft_data: draftData }),
+  });
+  if (response.status === 412) {
+    throw Object.assign(new Error("Stale revision."), { status: 412 });
+  }
+  if (response.status === 403) {
+    throw Object.assign(new Error("Only the author may edit."), { status: 403 });
+  }
+  if (!response.ok) {
+    throw Object.assign(new Error("Could not save the draft."), {
+      status: response.status,
+    });
+  }
+  const payload = (await response.json()) as { encounter: Encounter };
+  return payload.encounter;
+}
+
+export async function discardEncounter(
+  encounterId: string,
+  revision: number,
+): Promise<Encounter> {
+  const csrf = csrfToken();
+  const response = await fetch(`/api/v1/encounters/${encounterId}/discard`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(csrf ? { "X-CSRF-Token": csrf } : {}),
+      "If-Match": String(revision),
+    },
+    body: JSON.stringify({ confirm: true }),
+  });
+  if (response.status === 412) {
+    throw Object.assign(new Error("Stale revision."), { status: 412 });
+  }
+  if (response.status === 403) {
+    throw Object.assign(new Error("Only the author may discard."), { status: 403 });
+  }
+  if (!response.ok) {
+    throw Object.assign(new Error("Could not discard the draft."), {
+      status: response.status,
+    });
+  }
+  const payload = (await response.json()) as { encounter: Encounter };
+  return payload.encounter;
+}
+
 export async function fetchSession(): Promise<SessionUser | null> {
   const response = await fetch("/api/v1/me", { credentials: "include" });
   if (response.status === 401) {
