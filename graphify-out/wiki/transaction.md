@@ -2,7 +2,7 @@
 
 > God node · 25 connections · `backend/src/x_insight/db.py`
 
-**Community:** [Physician Accounts and Transactions](Physician_Accounts_and_Transactions.md)
+**Community:** [Patient and Session Routes](Patient_and_Session_Routes.md)
 
 ## Connections by Relation
 

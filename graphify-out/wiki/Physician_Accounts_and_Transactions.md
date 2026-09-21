@@ -1,11 +1,10 @@
 # Physician Accounts and Transactions
 
-> 44 nodes · cohesion 0.14
+> 43 nodes · cohesion 0.14
 
 ## Key Concepts
 
 - **accounts.py** (51 connections) — `backend/src/x_insight/identity/accounts.py`
-- **transaction()** (25 connections) — `backend/src/x_insight/db.py`
 - **start_command()** (18 connections) — `backend/src/x_insight/identity/accounts.py`
 - **change_active()** (14 connections) — `backend/src/x_insight/identity/accounts.py`
 - **edit_physician()** (13 connections) — `backend/src/x_insight/identity/accounts.py`
@@ -15,6 +14,7 @@
 - **list_physicians()** (11 connections) — `backend/src/x_insight/identity/accounts.py`
 - **UUID** (11 connections)
 - **require_admin()** (11 connections) — `backend/src/x_insight/identity/accounts.py`
+- **parse_if_match()** (10 connections) — `backend/src/x_insight/contracts.py`
 - **create_physician()** (10 connections) — `backend/src/x_insight/identity/accounts.py`
 - **finish_command()** (10 connections) — `backend/src/x_insight/identity/accounts.py`
 - **get_physician()** (9 connections) — `backend/src/x_insight/identity/accounts.py`
@@ -29,28 +29,25 @@
 - **draft_review()** (5 connections) — `backend/src/x_insight/identity/accounts.py`
 - **BaseModel** (5 connections)
 - **safe_account()** (5 connections) — `backend/src/x_insight/identity/accounts.py`
-- *... and 19 more nodes in this community*
+- *... and 18 more nodes in this community*
 
 ## Relationships
 
-- [Identity Login and Sessions](Identity_Login_and_Sessions.md) (26 shared connections)
-- [Patient Registration](Patient_Registration.md) (11 shared connections)
+- [Patient and Session Routes](Patient_and_Session_Routes.md) (17 shared connections)
+- [App Wiring and Persistence](App_Wiring_and_Persistence.md) (13 shared connections)
+- [Identity Login and Sessions](Identity_Login_and_Sessions.md) (13 shared connections)
+- [Encounter Draft Validation](Encounter_Draft_Validation.md) (12 shared connections)
 - [History HTTP Tests](History_HTTP_Tests.md) (8 shared connections)
-- [Assessment Content Endpoints](Assessment_Content_Endpoints.md) (7 shared connections)
-- [Encounter Draft Validation](Encounter_Draft_Validation.md) (7 shared connections)
-- [Shared HTTP Contracts](Shared_HTTP_Contracts.md) (6 shared connections)
-- [Database Engine and Readiness](Database_Engine_and_Readiness.md) (4 shared connections)
-- [App Middleware and Errors](App_Middleware_and_Errors.md) (1 shared connections)
+- [Identity HTTP Tests](Identity_HTTP_Tests.md) (1 shared connections)
 
 ## Source Files
 
 - `backend/src/x_insight/contracts.py`
-- `backend/src/x_insight/db.py`
 - `backend/src/x_insight/identity/accounts.py`
 
 ## Audit Trail
 
-- EXTRACTED: 202 (100%)
+- EXTRACTED: 191 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

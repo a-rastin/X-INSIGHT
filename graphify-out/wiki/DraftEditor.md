@@ -1,6 +1,6 @@
 # DraftEditor()
 
-> God node · 50 connections · `web/src/app/App.tsx`
+> God node · 44 connections · `web/src/app/App.tsx`
 
 **Community:** [Draft Editor Handlers](Draft_Editor_Handlers.md)
 
@@ -11,18 +11,12 @@
 - cssrsDirtyKey() `EXTRACTED`
 - historyDirtyKey() `EXTRACTED`
 - effectsDirtyKey() `EXTRACTED`
-- getEncounter() `EXTRACTED`
-- patchEncounter() `EXTRACTED`
-- patchPatientPhone() `EXTRACTED`
-- discardEncounter() `EXTRACTED`
 - emptyPanssAnswers() `EXTRACTED`
 - emptyCssrs() `EXTRACTED`
 - emptyEffects() `EXTRACTED`
-- listEncounters() `EXTRACTED`
 - panssFromStored() `EXTRACTED`
 - cssrsFromStored() `EXTRACTED`
 - effectsFromStored() `EXTRACTED`
-- getHistoryContent() `EXTRACTED`
 - diagAnswersFromStored() `EXTRACTED`
 - historyFromStored() `EXTRACTED`
 - reconFromStored() `EXTRACTED`
@@ -43,11 +37,11 @@
 - handleDiagAck() `EXTRACTED`
 - handlePanssSkip() `EXTRACTED`
 - handleCssrsSkip() `EXTRACTED`
-- reloadPreservingEdits() `EXTRACTED`
-- handlePhoneSave() `EXTRACTED`
 - buildDraftPayload() `EXTRACTED`
 - handleDiagBool() `EXTRACTED`
 - handleDiagDomains() `EXTRACTED`
+- handleDiagMonths() `EXTRACTED`
+- handleDiagBypass() `EXTRACTED`
 - *…and 10 more `contains` connection(s) not listed (lowest-degree first to go)*
 
 ### indirect_call

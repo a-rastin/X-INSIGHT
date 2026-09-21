@@ -1,11 +1,10 @@
 # Progress Tracking Ledger
 
-> 3 nodes · cohesion 0.67
+> 2 nodes · cohesion 1.00
 
 ## Key Concepts
 
-- **Vertical-Slice Coding Sessions** (2 connections) — `docs/dev/tasks.md`
-- **Execution and Content Review Ledger** (1 connections) — `docs/dev/progress-tracker.md`
+- **Vertical-Slice Coding Sessions** (1 connections) — `docs/dev/tasks.md`
 - **Canonical Teal and Neutral Palette** (1 connections) — `docs/dev/ui-context.md`
 
 ## Relationships
@@ -14,14 +13,13 @@
 
 ## Source Files
 
-- `docs/dev/progress-tracker.md`
 - `docs/dev/tasks.md`
 - `docs/dev/ui-context.md`
 
 ## Audit Trail
 
 - EXTRACTED: 0 (0%)
-- INFERRED: 2 (100%)
+- INFERRED: 1 (100%)
 - AMBIGUOUS: 0 (0%)
 
 ---

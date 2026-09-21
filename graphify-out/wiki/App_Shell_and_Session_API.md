@@ -1,56 +1,52 @@
 # App Shell and Session API
 
-> 54 nodes · cohesion 0.04
+> 60 nodes · cohesion 0.04
 
 ## Key Concepts
 
-- **App.tsx** (94 connections) — `web/src/app/App.tsx`
-- **App()** (5 connections) — `web/src/app/App.tsx`
-- **main.tsx** (5 connections) — `web/src/main.tsx`
-- **react** (3 connections) — `web/package.json`
-- **fetchSession()** (3 connections) — `web/src/app/api.ts`
-- **listPhysicians()** (3 connections) — `web/src/app/api.ts`
+- **App.tsx** (99 connections) — `web/src/app/App.tsx`
 - **DiagnosisSection()** (3 connections) — `web/src/app/App.tsx`
-- **navigate()** (3 connections) — `web/src/app/App.tsx`
 - **previewDiagnosis()** (3 connections) — `web/src/app/App.tsx`
-- **react-dom** (2 connections) — `web/package.json`
+- **CreatePhysicianForm()** (2 connections) — `web/src/app/App.tsx`
 - **CssrsSection()** (2 connections) — `web/src/app/App.tsx`
-- **currentRoute()** (2 connections) — `web/src/app/App.tsx`
 - **EffectsSection()** (2 connections) — `web/src/app/App.tsx`
 - **HistorySection()** (2 connections) — `web/src/app/App.tsx`
-- **NavLink()** (2 connections) — `web/src/app/App.tsx`
+- **LoginForm()** (2 connections) — `web/src/app/App.tsx`
+- **NotesSection()** (2 connections) — `web/src/app/App.tsx`
 - **PanssSection()** (2 connections) — `web/src/app/App.tsx`
-- **PhysiciansPage()** (2 connections) — `web/src/app/App.tsx`
+- **PasswordForm()** (2 connections) — `web/src/app/App.tsx`
+- **PatientForm()** (2 connections) — `web/src/app/App.tsx`
 - **previewCssrs()** (2 connections) — `web/src/app/App.tsx`
 - **previewPanss()** (2 connections) — `web/src/app/App.tsx`
+- **web_src_app_api_addnote** (1 connections)
+- **web_src_app_api_listnotes** (1 connections)
+- **web_src_app_api_pagenote** (1 connections)
+- **submit()** (1 connections) — `web/src/app/App.tsx`
 - **CSSRS_IDS** (1 connections) — `web/src/app/App.tsx`
 - **CSSRS_PROMPTS** (1 connections) — `web/src/app/App.tsx`
 - **CssrsLevel** (1 connections) — `web/src/app/App.tsx`
 - **CssrsLevelId** (1 connections) — `web/src/app/App.tsx`
 - **CssrsLevels** (1 connections) — `web/src/app/App.tsx`
 - **CssrsPeriod** (1 connections) — `web/src/app/App.tsx`
-- *... and 29 more nodes in this community*
+- **Dashboard()** (1 connections) — `web/src/app/App.tsx`
+- *... and 35 more nodes in this community*
 
 ## Relationships
 
-- [Frontend API Client](Frontend_API_Client.md) (22 shared connections)
-- [Draft Editor Handlers](Draft_Editor_Handlers.md) (12 shared connections)
-- [Draft Actions and Payload](Draft_Actions_and_Payload.md) (9 shared connections)
-- [Patient Physician Forms](Patient_Physician_Forms.md) (4 shared connections)
-- [Web Dependencies](Web_Dependencies.md) (2 shared connections)
-- [Patient Section API](Patient_Section_API.md) (2 shared connections)
+- [Frontend API Client](Frontend_API_Client.md) (23 shared connections)
+- [Draft Editor Handlers](Draft_Editor_Handlers.md) (11 shared connections)
+- [Draft Actions and Payload](Draft_Actions_and_Payload.md) (8 shared connections)
+- [App Shell and Navigation](App_Shell_and_Navigation.md) (6 shared connections)
+- [Patient Section API](Patient_Section_API.md) (1 shared connections)
 
 ## Source Files
 
-- `web/package.json`
 - `web/src/app/App.tsx`
-- `web/src/app/api.ts`
-- `web/src/main.tsx`
 
 ## Audit Trail
 
-- EXTRACTED: 113 (99%)
-- INFERRED: 1 (1%)
+- EXTRACTED: 111 (100%)
+- INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 
 ---

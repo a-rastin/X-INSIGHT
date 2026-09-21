@@ -11,8 +11,8 @@
 - record_audit() `EXTRACTED`
 - _request_id() `EXTRACTED`
 - error_body() `EXTRACTED`
-- ensure_admin_seeded() `EXTRACTED`
 - normalize_username() `EXTRACTED`
+- ensure_admin_seeded() `EXTRACTED`
 - verify_password() `EXTRACTED`
 - get_user_by_username() `EXTRACTED`
 - create_session() `EXTRACTED`

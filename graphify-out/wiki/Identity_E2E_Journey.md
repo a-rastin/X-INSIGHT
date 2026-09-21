@@ -4,7 +4,7 @@
 
 ## Key Concepts
 
-- **@playwright/test** (13 connections) — `web/package.json`
+- **@playwright/test** (14 connections) — `web/package.json`
 - **identity.spec.ts** (6 connections) — `e2e/identity.spec.ts`
 - **createPhysicianViaAdminApi()** (1 connections) — `e2e/identity.spec.ts`
 - **dismissResearchNotice()** (1 connections) — `e2e/identity.spec.ts`
@@ -23,6 +23,7 @@
 - [Discard E2E Journey](Discard_E2E_Journey.md) (1 shared connections)
 - [Draft Safety E2E Journey](Draft_Safety_E2E_Journey.md) (1 shared connections)
 - [History E2E Journey](History_E2E_Journey.md) (1 shared connections)
+- [Notes E2E Journey](Notes_E2E_Journey.md) (1 shared connections)
 - [PANSS E2E Journey](PANSS_E2E_Journey.md) (1 shared connections)
 - [Registration E2E Journey](Registration_E2E_Journey.md) (1 shared connections)
 - [Theme E2E Checks](Theme_E2E_Checks.md) (1 shared connections)
@@ -35,7 +36,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 18 (100%)
+- EXTRACTED: 19 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

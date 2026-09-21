@@ -22,9 +22,8 @@
 - [MCP Connection Class](MCP_Connection_Class.md) (4 shared connections)
 - [MCP Evaluation Harness](MCP_Evaluation_Harness.md) (3 shared connections)
 - [MCP SSE Connection](MCP_SSE_Connection.md) (3 shared connections)
+- [App Wiring and Persistence](App_Wiring_and_Persistence.md) (2 shared connections)
 - [MCP HTTP Connection](MCP_HTTP_Connection.md) (2 shared connections)
-- [Assessment Content Endpoints](Assessment_Content_Endpoints.md) (1 shared connections)
-- [Database Engine and Readiness](Database_Engine_and_Readiness.md) (1 shared connections)
 
 ## Source Files
 

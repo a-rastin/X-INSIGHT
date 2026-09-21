@@ -1,10 +1,9 @@
 # App Middleware and Errors
 
-> 20 nodes · cohesion 0.18
+> 28 nodes · cohesion 0.11
 
 ## Key Concepts
 
-- **app.py** (36 connections) — `backend/src/x_insight/app.py`
 - **error_body()** (15 connections) — `backend/src/x_insight/contracts.py`
 - **ready()** (9 connections) — `backend/src/x_insight/app.py`
 - **_http_exception_handler()** (8 connections) — `backend/src/x_insight/app.py`
@@ -12,33 +11,33 @@
 - **_validation_exception_handler()** (8 connections) — `backend/src/x_insight/app.py`
 - **_request_id()** (7 connections) — `backend/src/x_insight/app.py`
 - **Request** (5 connections)
+- **.__call__()** (5 connections) — `backend/src/x_insight/app.py`
+- **new_request_id()** (5 connections) — `backend/src/x_insight/contracts.py`
+- **RequestContextMiddleware** (4 connections) — `backend/src/x_insight/app.py`
+- **health()** (3 connections) — `backend/src/x_insight/app.py`
+- **Any** (3 connections)
 - **JSONResponse** (3 connections)
 - **exception_handler** (3 connections)
+- **get** (2 connections)
+- **.__init__()** (2 connections) — `backend/src/x_insight/app.py`
 - **Exception** (1 connections)
 - **Standard envelope for HTTP errors (shared with handler registration).** (1 connections) — `backend/src/x_insight/app.py`
 - **Standard 422 envelope with field errors.** (1 connections) — `backend/src/x_insight/app.py`
 - **Safe 500 envelope: no traceback, no secrets.** (1 connections) — `backend/src/x_insight/app.py`
+- **Liveness only; never touches the database.** (1 connections) — `backend/src/x_insight/app.py`
 - **Readiness: database reachable and schema at the expected revision.** (1 connections) — `backend/src/x_insight/app.py`
-- **Build the standard error envelope (plan section 4.3).** (1 connections) — `backend/src/x_insight/contracts.py`
-- **fastapi_exceptions** (1 connections)
-- **RequestValidationError** (1 connections)
-- **starlette_exceptions** (1 connections)
-- **StarletteHTTPException** (1 connections)
+- **Propagate/generate request IDs, enforce body size, echo ID on errors.** (1 connections) — `backend/src/x_insight/app.py`
+- **send_with_id()** (1 connections) — `backend/src/x_insight/app.py`
+- **Return a new random request correlation ID (UUID text).** (1 connections) — `backend/src/x_insight/contracts.py`
+- *... and 3 more nodes in this community*
 
 ## Relationships
 
-- [Assessment Content Endpoints](Assessment_Content_Endpoints.md) (7 shared connections)
-- [Identity Login and Sessions](Identity_Login_and_Sessions.md) (7 shared connections)
-- [Request ID Middleware](Request_ID_Middleware.md) (5 shared connections)
-- [Shared HTTP Contracts](Shared_HTTP_Contracts.md) (3 shared connections)
-- [Released Content Tests](Released_Content_Tests.md) (2 shared connections)
-- [Database Engine and Readiness](Database_Engine_and_Readiness.md) (2 shared connections)
-- [Health Endpoint](Health_Endpoint.md) (2 shared connections)
-- [Encounter Draft Validation](Encounter_Draft_Validation.md) (1 shared connections)
-- [Patient Registration](Patient_Registration.md) (1 shared connections)
-- [Physician Accounts and Transactions](Physician_Accounts_and_Transactions.md) (1 shared connections)
-- [HTTP Contract Tests](HTTP_Contract_Tests.md) (1 shared connections)
-- [C-SSRS HTTP Tests](C-SSRS_HTTP_Tests.md) (1 shared connections)
+- [App Wiring and Persistence](App_Wiring_and_Persistence.md) (10 shared connections)
+- [Patient and Session Routes](Patient_and_Session_Routes.md) (3 shared connections)
+- [Identity Login and Sessions](Identity_Login_and_Sessions.md) (3 shared connections)
+- [Encounter Draft Validation](Encounter_Draft_Validation.md) (3 shared connections)
+- [Knowledge Base Skill](Knowledge_Base_Skill.md) (1 shared connections)
 
 ## Source Files
 
@@ -47,8 +46,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 76 (99%)
-- INFERRED: 1 (1%)
+- EXTRACTED: 59 (97%)
+- INFERRED: 2 (3%)
 - AMBIGUOUS: 0 (0%)
 
 ---

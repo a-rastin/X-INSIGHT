@@ -1,16 +1,17 @@
 # Database Migrations
 
-> 24 nodes · cohesion 0.09
+> 27 nodes · cohesion 0.08
 
 ## Key Concepts
 
-- **alembic** (7 connections)
+- **alembic** (8 connections)
 - **env.py** (7 connections) — `backend/migrations/env.py`
 - **0003_physicians.py** (5 connections) — `backend/migrations/versions/0003_physicians.py`
 - **0005_drafts.py** (5 connections) — `backend/migrations/versions/0005_drafts.py`
 - **0001_init.py** (4 connections) — `backend/migrations/versions/0001_init.py`
 - **0002_identity.py** (4 connections) — `backend/migrations/versions/0002_identity.py`
 - **0004_patients.py** (4 connections) — `backend/migrations/versions/0004_patients.py`
+- **0006_notes.py** (4 connections) — `backend/migrations/versions/0006_notes.py`
 - **_database_url()** (3 connections) — `backend/migrations/env.py`
 - **run_migrations_offline()** (3 connections) — `backend/migrations/env.py`
 - **run_migrations_online()** (3 connections) — `backend/migrations/env.py`
@@ -27,13 +28,13 @@
 - **upgrade()** (1 connections) — `backend/migrations/versions/0004_patients.py`
 - **downgrade()** (1 connections) — `backend/migrations/versions/0005_drafts.py`
 - **upgrade()** (1 connections) — `backend/migrations/versions/0005_drafts.py`
-- **logging_config** (1 connections)
+- **downgrade()** (1 connections) — `backend/migrations/versions/0006_notes.py`
+- *... and 2 more nodes in this community*
 
 ## Relationships
 
-- [Identity Login and Sessions](Identity_Login_and_Sessions.md) (6 shared connections)
-- [Identity HTTP Tests](Identity_HTTP_Tests.md) (1 shared connections)
-- [Database Engine and Readiness](Database_Engine_and_Readiness.md) (1 shared connections)
+- [App Wiring and Persistence](App_Wiring_and_Persistence.md) (8 shared connections)
+- [HTTP Tests and Fixtures](HTTP_Tests_and_Fixtures.md) (1 shared connections)
 
 ## Source Files
 
@@ -43,10 +44,11 @@
 - `backend/migrations/versions/0003_physicians.py`
 - `backend/migrations/versions/0004_patients.py`
 - `backend/migrations/versions/0005_drafts.py`
+- `backend/migrations/versions/0006_notes.py`
 
 ## Audit Trail
 
-- EXTRACTED: 34 (100%)
+- EXTRACTED: 38 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

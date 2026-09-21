@@ -33,14 +33,10 @@
 
 ## Relationships
 
+- [Encounter Draft Validation](Encounter_Draft_Validation.md) (6 shared connections)
 - [History HTTP Tests](History_HTTP_Tests.md) (5 shared connections)
-- [Encounter Draft Validation](Encounter_Draft_Validation.md) (3 shared connections)
-- [Shared HTTP Contracts](Shared_HTTP_Contracts.md) (3 shared connections)
-- [Assessment Content Endpoints](Assessment_Content_Endpoints.md) (2 shared connections)
-- [Identity HTTP Tests](Identity_HTTP_Tests.md) (1 shared connections)
-- [Released Content Tests](Released_Content_Tests.md) (1 shared connections)
-- [Identity Login and Sessions](Identity_Login_and_Sessions.md) (1 shared connections)
-- [App Middleware and Errors](App_Middleware_and_Errors.md) (1 shared connections)
+- [App Wiring and Persistence](App_Wiring_and_Persistence.md) (4 shared connections)
+- [HTTP Tests and Fixtures](HTTP_Tests_and_Fixtures.md) (2 shared connections)
 - [Login Throttle and Clock](Login_Throttle_and_Clock.md) (1 shared connections)
 - [Test Fixture Resets](Test_Fixture_Resets.md) (1 shared connections)
 

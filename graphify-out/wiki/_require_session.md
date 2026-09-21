@@ -2,7 +2,7 @@
 
 > God node · 28 connections · `backend/src/x_insight/identity/routes.py`
 
-**Community:** [Identity Login and Sessions](Identity_Login_and_Sessions.md)
+**Community:** [Patient and Session Routes](Patient_and_Session_Routes.md)
 
 ## Connections by Relation
 

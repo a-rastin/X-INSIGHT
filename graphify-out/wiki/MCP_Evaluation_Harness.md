@@ -21,10 +21,9 @@
 ## Relationships
 
 - [Evaluation Agent Loop](Evaluation_Agent_Loop.md) (7 shared connections)
+- [App Wiring and Persistence](App_Wiring_and_Persistence.md) (4 shared connections)
 - [MCP Connection Factory](MCP_Connection_Factory.md) (3 shared connections)
-- [Assessment Content Endpoints](Assessment_Content_Endpoints.md) (3 shared connections)
 - [Login Throttle and Clock](Login_Throttle_and_Clock.md) (1 shared connections)
-- [Patient Registration](Patient_Registration.md) (1 shared connections)
 
 ## Source Files
 

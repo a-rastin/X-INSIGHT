@@ -33,7 +33,7 @@
 
 ## Relationships
 
-- [App Shell and Session API](App_Shell_and_Session_API.md) (2 shared connections)
+- [App Shell and Navigation](App_Shell_and_Navigation.md) (2 shared connections)
 - [Identity E2E Journey](Identity_E2E_Journey.md) (1 shared connections)
 
 ## Source Files

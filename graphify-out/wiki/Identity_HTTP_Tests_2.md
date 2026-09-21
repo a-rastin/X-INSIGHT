@@ -1,18 +1,14 @@
-# Red Green Evidence
+# Identity HTTP Tests
 
 > 1 nodes · cohesion 1.00
 
 ## Key Concepts
 
-- **Red-Then-Green Session Evidence** (0 connections) — `docs/dev/progress-tracker.md`
+- **TestClient** (0 connections)
 
 ## Relationships
 
 - No strong cross-community connections detected
-
-## Source Files
-
-- `docs/dev/progress-tracker.md`
 
 ## Audit Trail
 

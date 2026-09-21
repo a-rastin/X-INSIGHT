@@ -4,9 +4,8 @@
 
 ## Key Concepts
 
-- **DraftEditor()** (50 connections) — `web/src/app/App.tsx`
+- **DraftEditor()** (44 connections) — `web/src/app/App.tsx`
 - **scheduleSave()** (15 connections) — `web/src/app/App.tsx`
-- **getEncounter()** (5 connections) — `web/src/app/api.ts`
 - **handleDiagAnswers()** (5 connections) — `web/src/app/App.tsx`
 - **emptyCssrs()** (4 connections) — `web/src/app/App.tsx`
 - **emptyPanssAnswers()** (4 connections) — `web/src/app/App.tsx`
@@ -29,22 +28,21 @@
 - **handleEffectStatus()** (2 connections) — `web/src/app/App.tsx`
 - **handleHistoryField()** (2 connections) — `web/src/app/App.tsx`
 - **handlePanssItem()** (2 connections) — `web/src/app/App.tsx`
+- **handleReconStatus()** (2 connections) — `web/src/app/App.tsx`
 - *... and 4 more nodes in this community*
 
 ## Relationships
 
-- [Draft Actions and Payload](Draft_Actions_and_Payload.md) (18 shared connections)
-- [App Shell and Session API](App_Shell_and_Session_API.md) (12 shared connections)
-- [Frontend API Client](Frontend_API_Client.md) (6 shared connections)
+- [Draft Actions and Payload](Draft_Actions_and_Payload.md) (16 shared connections)
+- [App Shell and Session API](App_Shell_and_Session_API.md) (11 shared connections)
 
 ## Source Files
 
 - `web/src/app/App.tsx`
-- `web/src/app/api.ts`
 
 ## Audit Trail
 
-- EXTRACTED: 85 (99%)
+- EXTRACTED: 75 (99%)
 - INFERRED: 1 (1%)
 - AMBIGUOUS: 0 (0%)
 

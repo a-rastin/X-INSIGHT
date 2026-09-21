@@ -4,7 +4,7 @@
 
 ## Key Concepts
 
-- **throttle.py** (17 connections) — `backend/src/x_insight/identity/throttle.py`
+- **throttle.py** (15 connections) — `backend/src/x_insight/identity/throttle.py`
 - **clock.py** (6 connections) — `backend/src/x_insight/identity/clock.py`
 - **record_failure()** (5 connections) — `backend/src/x_insight/identity/throttle.py`
 - **throttled()** (5 connections) — `backend/src/x_insight/identity/throttle.py`
@@ -27,14 +27,12 @@
 ## Relationships
 
 - [Identity Login and Sessions](Identity_Login_and_Sessions.md) (5 shared connections)
-- [Released Content Tests](Released_Content_Tests.md) (1 shared connections)
 - [C-SSRS HTTP Tests](C-SSRS_HTTP_Tests.md) (1 shared connections)
 - [Diagnosis Evaluation Tests](Diagnosis_Evaluation_Tests.md) (1 shared connections)
 - [Draft Lifecycle Tests](Draft_Lifecycle_Tests.md) (1 shared connections)
 - [History HTTP Tests](History_HTTP_Tests.md) (1 shared connections)
-- [PANSS Evaluation Tests](PANSS_Evaluation_Tests.md) (1 shared connections)
+- [Assessment Engine and PANSS Tests](Assessment_Engine_and_PANSS_Tests.md) (1 shared connections)
 - [Patient Registration Tests](Patient_Registration_Tests.md) (1 shared connections)
-- [Physician Admin Tests](Physician_Admin_Tests.md) (1 shared connections)
 - [Test Fixture Resets](Test_Fixture_Resets.md) (1 shared connections)
 - [MCP Evaluation Harness](MCP_Evaluation_Harness.md) (1 shared connections)
 
@@ -46,7 +44,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 37 (100%)
+- EXTRACTED: 35 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

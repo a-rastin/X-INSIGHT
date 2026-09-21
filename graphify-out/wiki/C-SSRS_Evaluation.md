@@ -29,8 +29,8 @@
 ## Relationships
 
 - [Encounter Draft Validation](Encounter_Draft_Validation.md) (3 shared connections)
-- [Assessment Content Endpoints](Assessment_Content_Endpoints.md) (1 shared connections)
-- [Identity HTTP Tests](Identity_HTTP_Tests.md) (1 shared connections)
+- [App Wiring and Persistence](App_Wiring_and_Persistence.md) (1 shared connections)
+- [HTTP Tests and Fixtures](HTTP_Tests_and_Fixtures.md) (1 shared connections)
 
 ## Source Files
 

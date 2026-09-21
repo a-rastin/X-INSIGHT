@@ -144,16 +144,16 @@
     "semantic_hash": "81f614e793bdab420d23d0cd7bb77f94"
   },
   "backend/tests/http/test_identity.py": {
-    "mtime": 1789975387.4601681,
-    "seen": 1790031938.3473117,
-    "ast_hash": "8a200b43a7876d0efb638fb47650b79e",
-    "semantic_hash": "8a200b43a7876d0efb638fb47650b79e"
+    "mtime": 1790033086.750551,
+    "seen": 1790033863.8713233,
+    "ast_hash": "66bb0194b83ace127b5f21a4651836e1",
+    "semantic_hash": "66bb0194b83ace127b5f21a4651836e1"
   },
   "backend/tests/http/test_physicians.py": {
-    "mtime": 1789976624.009242,
-    "seen": 1790031938.3473144,
-    "ast_hash": "15cef72ce48904cc6329309889793ba9",
-    "semantic_hash": "15cef72ce48904cc6329309889793ba9"
+    "mtime": 1790033084.358572,
+    "seen": 1790033863.8713257,
+    "ast_hash": "085d23b40eaed12dedce60533122cc65",
+    "semantic_hash": "085d23b40eaed12dedce60533122cc65"
   },
   "e2e/accessibility.spec.ts": {
     "mtime": 1789981259.9525995,
@@ -186,14 +186,14 @@
     "semantic_hash": "9dabc179c0c4baf748fbd412b794e259"
   },
   "web/src/app/App.tsx": {
-    "mtime": 1790031988.612063,
-    "seen": 1790032055.635604,
-    "ast_hash": "87504f55c570c041458c4ac6e1e6a414",
-    "semantic_hash": "87504f55c570c041458c4ac6e1e6a414"
+    "mtime": 1790033202.0815463,
+    "seen": 1790033863.871336,
+    "ast_hash": "0b276c0754369b13e95944f1449abc38",
+    "semantic_hash": "0b276c0754369b13e95944f1449abc38"
   },
   "web/src/app/api.ts": {
-    "mtime": 1790031965.812258,
-    "seen": 1790032055.6356046,
+    "mtime": 1790033178.1817546,
+    "seen": 1790033863.8713365,
     "ast_hash": "d9bdf54043a2fd7c6c4a3a99684f9d8e",
     "semantic_hash": "d9bdf54043a2fd7c6c4a3a99684f9d8e"
   },
@@ -510,10 +510,10 @@
     "semantic_hash": "4640c8e15049089467e5161c3f4f4b1b"
   },
   "docs/dev/progress-tracker.md": {
-    "mtime": 1790029882.7542174,
-    "seen": 1790031938.3473864,
-    "ast_hash": "b1dc309fee952af013c0b97748bd52e4",
-    "semantic_hash": "b1dc309fee952af013c0b97748bd52e4"
+    "mtime": 1790033273.260926,
+    "seen": 1790033863.8713388,
+    "ast_hash": "0e3e705ad62b0b6b676482901e7a8102",
+    "semantic_hash": "0e3e705ad62b0b6b676482901e7a8102"
   },
   "docs/dev/system-design/DDI-Module.md": {
     "mtime": 1789870692.093964,
@@ -1512,8 +1512,8 @@
     "semantic_hash": "dcc9e93aeeb7a23bb91c702a7d731a7b"
   },
   "backend/tests/http/test_patients.py": {
-    "mtime": 1790031943.7644465,
-    "seen": 1790032055.6355863,
+    "mtime": 1790032120.5069306,
+    "seen": 1790033863.8713253,
     "ast_hash": "7496f87b1b6c9834f5fb52e0c391da14",
     "semantic_hash": "7496f87b1b6c9834f5fb52e0c391da14"
   },
@@ -1536,8 +1536,8 @@
     "semantic_hash": "dc52bc2b5936c20bb7ab469bc3c1236f"
   },
   "backend/tests/http/test_drafts.py": {
-    "mtime": 1790031943.7644465,
-    "seen": 1790032055.6355817,
+    "mtime": 1790032120.5069306,
+    "seen": 1790033863.871322,
     "ast_hash": "c71c0b44173cdda222e81dc1db4c9ea6",
     "semantic_hash": "c71c0b44173cdda222e81dc1db4c9ea6"
   },
@@ -1578,10 +1578,10 @@
     "semantic_hash": "99aa4891fc391eb8397c458f7a453126"
   },
   "backend/tests/http/test_content.py": {
-    "mtime": 1790024221.9282985,
-    "seen": 1790031938.347305,
-    "ast_hash": "ec5cb88083360ce0d8aabc70a59a26cc",
-    "semantic_hash": "ec5cb88083360ce0d8aabc70a59a26cc"
+    "mtime": 1790033084.358572,
+    "seen": 1790033863.8713198,
+    "ast_hash": "5535470e5ccaf3a7ac9546e66ff407af",
+    "semantic_hash": "5535470e5ccaf3a7ac9546e66ff407af"
   },
   "content/assessments/cssrs.json": {
     "mtime": 1790024214.1763654,
@@ -1614,8 +1614,8 @@
     "semantic_hash": "4e9057b4a320d54e1b2484f2c8ea906d"
   },
   "backend/tests/http/test_diagnosis.py": {
-    "mtime": 1790031943.7644465,
-    "seen": 1790032055.6355813,
+    "mtime": 1790032120.5069306,
+    "seen": 1790033863.8713214,
     "ast_hash": "a9c79daa626fee8a7153a1961cc3fb8e",
     "semantic_hash": "a9c79daa626fee8a7153a1961cc3fb8e"
   },
@@ -1638,8 +1638,8 @@
     "semantic_hash": "f6a306e4c106dbaac691050a01494f39"
   },
   "backend/tests/http/test_panss.py": {
-    "mtime": 1790031943.7644465,
-    "seen": 1790032055.6355855,
+    "mtime": 1790032120.5069306,
+    "seen": 1790033863.8713248,
     "ast_hash": "4af9145b7b672834c3a83b1e2049f701",
     "semantic_hash": "4af9145b7b672834c3a83b1e2049f701"
   },
@@ -1662,8 +1662,8 @@
     "semantic_hash": "536ce7c8629893c7d7e83174a2694819"
   },
   "backend/tests/http/test_cssrs.py": {
-    "mtime": 1790031943.7644465,
-    "seen": 1790032055.6355803,
+    "mtime": 1790032120.5069306,
+    "seen": 1790033863.8713212,
     "ast_hash": "a4fdcc02fb0920de8f0e17c78b3d9f58",
     "semantic_hash": "a4fdcc02fb0920de8f0e17c78b3d9f58"
   },
@@ -1686,8 +1686,8 @@
     "semantic_hash": "52074fb111eb82171a4f658043cfd181"
   },
   "backend/tests/http/test_history.py": {
-    "mtime": 1790031943.7644465,
-    "seen": 1790032055.6355834,
+    "mtime": 1790032120.5069306,
+    "seen": 1790033863.8713229,
     "ast_hash": "3eeef1d700cf2bd674ae98f8b8eb2fad",
     "semantic_hash": "3eeef1d700cf2bd674ae98f8b8eb2fad"
   },
@@ -1714,5 +1714,29 @@
     "seen": 1790031938.347341,
     "ast_hash": "02c75d14b983ea5dd0c77bcef828ed73",
     "semantic_hash": "02c75d14b983ea5dd0c77bcef828ed73"
+  },
+  "backend/migrations/versions/0006_notes.py": {
+    "mtime": 1790031838.4853446,
+    "seen": 1790033863.8713021,
+    "ast_hash": "738f63bcfe8971a50eacf219734c1d22",
+    "semantic_hash": "738f63bcfe8971a50eacf219734c1d22"
+  },
+  "backend/src/x_insight/cases/notes.py": {
+    "mtime": 1790031858.053178,
+    "seen": 1790033863.87131,
+    "ast_hash": "769874a9462277a1d7401de626f4299e",
+    "semantic_hash": "769874a9462277a1d7401de626f4299e"
+  },
+  "backend/tests/http/test_notes.py": {
+    "mtime": 1790031924.2246137,
+    "seen": 1790033863.8713238,
+    "ast_hash": "3ef02ca3c540f0caeabc99ffa24d97db",
+    "semantic_hash": "3ef02ca3c540f0caeabc99ffa24d97db"
+  },
+  "e2e/notes.spec.ts": {
+    "mtime": 1790031227.0664828,
+    "seen": 1790033863.8713326,
+    "ast_hash": "6707e6464394149099538edd27ea4f47",
+    "semantic_hash": "6707e6464394149099538edd27ea4f47"
   }
 }

@@ -1,6 +1,6 @@
 # physician()
 
-> God node · 42 connections · `backend/src/x_insight/identity/accounts.py`
+> God node · 39 connections · `backend/src/x_insight/identity/accounts.py`
 
 **Community:** [History HTTP Tests](History_HTTP_Tests.md)
 
@@ -36,7 +36,7 @@
 - test_undeclared_history_field_rejected_revision_unchanged() `INFERRED`
 - test_invalid_panss_rejected_server_side() `INFERRED`
 - test_concurrent_duplicate_archived_and_idempotent_create() `INFERRED`
-- *…and 14 more `indirect_call` connection(s) not listed (lowest-degree first to go)*
+- *…and 11 more `indirect_call` connection(s) not listed (lowest-degree first to go)*
 
 ### references
 - UUID `EXTRACTED`

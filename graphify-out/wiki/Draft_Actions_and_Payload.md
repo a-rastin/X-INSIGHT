@@ -1,15 +1,14 @@
 # Draft Actions and Payload
 
-> 20 nodes · cohesion 0.16
+> 19 nodes · cohesion 0.17
 
 ## Key Concepts
 
-- **saveNow()** (13 connections) — `web/src/app/App.tsx`
+- **saveNow()** (11 connections) — `web/src/app/App.tsx`
 - **handleClose()** (7 connections) — `web/src/app/App.tsx`
 - **onBeforeUnload()** (7 connections) — `web/src/app/App.tsx`
-- **handleDiscard()** (6 connections) — `web/src/app/App.tsx`
-- **discardEncounter()** (5 connections) — `web/src/app/api.ts`
 - **cssrsDirtyKey()** (5 connections) — `web/src/app/App.tsx`
+- **handleDiscard()** (5 connections) — `web/src/app/App.tsx`
 - **effectsDirtyKey()** (5 connections) — `web/src/app/App.tsx`
 - **historyDirtyKey()** (5 connections) — `web/src/app/App.tsx`
 - **panssDirtyKey()** (5 connections) — `web/src/app/App.tsx`
@@ -27,18 +26,16 @@
 
 ## Relationships
 
-- [Draft Editor Handlers](Draft_Editor_Handlers.md) (18 shared connections)
-- [App Shell and Session API](App_Shell_and_Session_API.md) (9 shared connections)
-- [Frontend API Client](Frontend_API_Client.md) (3 shared connections)
+- [Draft Editor Handlers](Draft_Editor_Handlers.md) (16 shared connections)
+- [App Shell and Session API](App_Shell_and_Session_API.md) (8 shared connections)
 
 ## Source Files
 
 - `web/src/app/App.tsx`
-- `web/src/app/api.ts`
 
 ## Audit Trail
 
-- EXTRACTED: 59 (98%)
+- EXTRACTED: 52 (98%)
 - INFERRED: 1 (2%)
 - AMBIGUOUS: 0 (0%)
 
