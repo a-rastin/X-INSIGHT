@@ -1,0 +1,675 @@
+{
+  "schema_version": 1,
+  "content_type": "structured_history_and_adverse_effects",
+  "package_version": "history-effects-v0.1-draft",
+  "review_status": "awaiting_review",
+  "reviewer": null,
+  "review_date": null,
+  "clinical_activation_allowed": false,
+  "requirements": [
+    "FR-14",
+    "FR-20",
+    "FR-21"
+  ],
+  "review_notice": "Draft for owner review. The proposed fields, periods, mappings, and severity definitions are not clinically approved and must not be activated.",
+  "source_classification": {
+    "source_derived": "Requirements and source-document statements reproduced or conservatively constrained without adding a clinical threshold.",
+    "proposed_for_review": "Application field, period, severity, or mapping semantics proposed by the agent; not a source-derived clinical rule.",
+    "drafting_lead": "BN-04 through BN-14 are incomplete, inference-disabled drafting leads and are not approved patient mappings."
+  },
+  "sources": [
+    {
+      "path": "docs/dev/user-requirements.md",
+      "bytes": 7150,
+      "sha256": "d50724f604ac3f61d6a54211f9310912e6ff60dd429c98c7a6df320d2cfaab29",
+      "locators": [
+        "FR-14",
+        "FR-20",
+        "FR-21"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "docs/dev/plan.md",
+      "bytes": 66198,
+      "sha256": "9f006a3b07720b16589d057760f575238abf0a17ef6e1902968ceeaa0e4448fe",
+      "locators": [
+        "Section 2.2 Registration and follow-up",
+        "Section 5 Assessment and clinical-content contracts: History",
+        "Section 5 Assessment and clinical-content contracts: Adverse effects",
+        "Section 7.1 Required inventory and ordering"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "docs/dev/system-design/system-design.md",
+      "bytes": 63305,
+      "sha256": "5d0f70275010e22fdb70550e9d38e7ad728149d527d7dfc86f4f66f4198a2d81",
+      "locators": [
+        "Section 4.1 Registration",
+        "Section 4.2 Follow-up",
+        "Section 4.3 Notes and algorithm-visible history",
+        "Section 5 Persistence and invariants: History and AdverseEffect"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "docs/medical-docs/tardive-dyskinesia-criteria.md",
+      "bytes": 1581,
+      "sha256": "ca9bd22fb0064d3ae24b61ecc20bacddc33592ebd25d6a4966e8cd83ef4cfe5a",
+      "locators": [
+        "Diagnostic features",
+        "Differential diagnosis",
+        "Research criteria and assessment"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "docs/medical-docs/akathisia-criteria.md",
+      "bytes": 7184,
+      "sha256": "93ae8c76a2b26b2af79ea3a9e20271089eac683a0ce29d9579caffac1e626a47",
+      "locators": [
+        "Diagnostic features",
+        "Clinical assessment and exclusions",
+        "Barnes Akathisia Rating Scale (BARS): Item 4",
+        "Scoring and interpretation"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "docs/medical-docs/parkinsonism-criteria.md",
+      "bytes": 9237,
+      "sha256": "d1b7fe5fcc820c54aebb06aba5372f47f65e910ddea7ae0adc0d7adbfad79994",
+      "locators": [
+        "Diagnostic features",
+        "Clinical assessment and exclusions",
+        "Assessment tool and documentation",
+        "Simpson-Angus Scale (SAS): Scoring and interpretation"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "docs/medical-docs/acute-dystonia-criteria.md",
+      "bytes": 1354,
+      "sha256": "495a60d767a32558583b092fcf072ec1a7eb49d70a730725e97986d11a01db7d",
+      "locators": [
+        "Diagnostic features",
+        "Clinical assessment and exclusions",
+        "Urgency and documentation"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "BNs/BN-04.xml",
+      "bytes": 60681,
+      "sha256": "a362a886197e8f1aef9ae2c8bbdef8331b01f3808d178c643de38ed27f958023",
+      "locators": [
+        "PriorTreatmentDifficulty",
+        "AdherenceDifficulty",
+        "SymptomResponse",
+        "SignificantAntipsychoticSideEffects",
+        "TrialDuration and DoseExposureCategory"
+      ],
+      "classification": "drafting_lead"
+    },
+    {
+      "path": "BNs/BN-05.xml",
+      "bytes": 26766,
+      "sha256": "eedb214f83a9c3981849e56a9d640ea73266198b53dd14a86c9746b0fa4a0c7d",
+      "locators": [
+        "PriorSymptomImprovement",
+        "ChronicOrRepeatedRelapseCourse",
+        "AdherenceDifficulty",
+        "PsychiatricHospitalization"
+      ],
+      "classification": "drafting_lead"
+    },
+    {
+      "path": "BNs/BN-06.xml",
+      "bytes": 30421,
+      "sha256": "f46c83837641b7949ee7a2230d9baafb865ff632e47eff39fbbe52a154ad9270",
+      "locators": [
+        "SymptomImprovementOnCurrentAntipsychotic",
+        "ResidualClinicalBurden",
+        "OtherTolerabilityConcern",
+        "AssignedRegimenDiscontinued"
+      ],
+      "classification": "drafting_lead"
+    },
+    {
+      "path": "BNs/BN-07.xml",
+      "bytes": 36754,
+      "sha256": "3bfd302f6d800f803326746c5fa9f294b1535fc8963afd0f8e8e9e4615272226",
+      "locators": [
+        "PersistentSignificantSymptoms",
+        "Trial1Assessment and Trial2Assessment",
+        "SymptomsAtLeast12Weeks",
+        "ClozapineTreatmentStatus"
+      ],
+      "classification": "drafting_lead"
+    },
+    {
+      "path": "BNs/BN-08.xml",
+      "bytes": 24079,
+      "sha256": "92f260fce741fc0f718d07c4875744b3e4f10b642966cb15b5410a0d533fc158",
+      "locators": [
+        "SuicideRiskPersistsDespiteOtherTreatments",
+        "AdherenceConcern",
+        "ClozapineTreatmentStatus"
+      ],
+      "classification": "drafting_lead"
+    },
+    {
+      "path": "BNs/BN-09.xml",
+      "bytes": 25905,
+      "sha256": "a02b778ac9926e3b8fd53bc7372acd2733df7cadff7272509b31eb2f79135b2c",
+      "locators": [
+        "AggressionRiskPersistsDespiteOtherTreatments",
+        "AdherenceConcern",
+        "ClozapineTreatmentStatus"
+      ],
+      "classification": "drafting_lead"
+    },
+    {
+      "path": "BNs/BN-10.xml",
+      "bytes": 28457,
+      "sha256": "72410c912d593249527c9eaedb90c2b5a50e4babee604a34ccb29285875ce0e5",
+      "locators": [
+        "AdherenceHistory",
+        "SameDrugOralExperience",
+        "PriorNeurolepticMalignantSyndrome",
+        "LAITreatmentStatus"
+      ],
+      "classification": "drafting_lead"
+    },
+    {
+      "path": "BNs/BN-11.xml",
+      "bytes": 23060,
+      "sha256": "0d4c06d2bffab411f4f49b9bbb28b82b734ae35b0af79afb40080223f8251b03",
+      "locators": [
+        "AirwayConcern",
+        "AcuteDystoniaEpisodePhase",
+        "AcuteDystoniaAntipsychoticAssociation"
+      ],
+      "classification": "drafting_lead"
+    },
+    {
+      "path": "BNs/BN-12.xml",
+      "bytes": 33898,
+      "sha256": "362789df0efd2929143d4b51b4986267c9b1eddc893a30dac5fdc35520ed45ab",
+      "locators": [
+        "ParkinsonismAssessment",
+        "ParkinsonismAntipsychoticAssociation",
+        "PriorSignificantParkinsonism"
+      ],
+      "classification": "drafting_lead"
+    },
+    {
+      "path": "BNs/BN-13.xml",
+      "bytes": 32022,
+      "sha256": "cc8ca010a794e6cc9f2300d6206b159fd8e89b7f6f51c8bd4828d6a02aaa9b82",
+      "locators": [
+        "AkathisiaAssessment",
+        "AkathisiaAntipsychoticAssociation",
+        "DistressOrAdherenceConcern"
+      ],
+      "classification": "drafting_lead"
+    },
+    {
+      "path": "BNs/BN-14.xml",
+      "bytes": 28109,
+      "sha256": "4d4b90dbc12f426649fa3b3ccb5433f2428735b3d89740605c97c7608743d5d8",
+      "locators": [
+        "TardiveDyskinesiaAssessment",
+        "TardiveDyskinesiaMotorSeverity",
+        "TardiveDyskinesiaDisablingImpact",
+        "DoseReductionTemporalLink"
+      ],
+      "classification": "drafting_lead"
+    }
+  ],
+  "source_derived_constraints": {
+    "history": [
+      "History is structured; unknown or not-assessed values must remain distinct from an assessed negative.",
+      "A history value carries its clinical period and runtime provenance.",
+      "Follow-up copies relevant signed history with provenance and requires reconciliation before it is treated as current.",
+      "Page notes never influence analysis."
+    ],
+    "adverse_effects": [
+      "Exactly four v1 effect types are recorded: tardive dyskinesia, akathisia, parkinsonism, and acute dystonia.",
+      "Each effect status is present, absent, or not_assessed.",
+      "Severity is required only for present and is null for absent or not_assessed.",
+      "BARS, SAS, and AIMS are supporting sources; none is a mandatory full questionnaire in this package."
+    ],
+    "medication_regimen_exclusions": {
+      "excluded_field_ids": [
+        "dose",
+        "unit",
+        "route",
+        "frequency",
+        "active",
+        "stopped"
+      ],
+      "rule": "These fields are undeclared and invalid in history or medication payloads. A BN drafting lead that asks for one of them has a mapping gap; it does not expand this schema.",
+      "medication_boundary": "Medication entries are drug catalog references or explicit unknown labels under the separate medication contract. This history package does not add regimen records."
+    }
+  },
+  "proposed_definitions": {
+    "periods": [
+      {
+        "id": "current_encounter",
+        "kind": "encounter_timestamp",
+        "definition": "The dated registration or follow-up encounter in which the value is assessed."
+      },
+      {
+        "id": "since_preceding_signed_encounter",
+        "kind": "closed_open_interval",
+        "definition": "The interval after the selected preceding signed encounter through the current encounter; available only for follow-up."
+      },
+      {
+        "id": "historical_interval",
+        "kind": "date_interval",
+        "definition": "An explicitly recorded historical start date and optional end date. Missing dates remain null and are never guessed."
+      },
+      {
+        "id": "historical_event_dates",
+        "kind": "date_list",
+        "definition": "Zero or more explicitly recorded event dates. An empty list is meaningful only with an assessed-absent status."
+      }
+    ],
+    "runtime_value_envelope": {
+      "required_properties": [
+        "value",
+        "period",
+        "provenance"
+      ],
+      "provenance_properties": [
+        "source_encounter_id",
+        "source_revision",
+        "recorded_by",
+        "recorded_at"
+      ],
+      "rule": "A copied follow-up value retains source encounter/revision and remains pending reconciliation until explicitly confirmed unchanged or updated."
+    },
+    "history_fields": [
+      {
+        "id": "prior_treatment_difficulty_status",
+        "label": "Prior important inadequate response or intolerance",
+        "kind": "enum",
+        "values": [
+          "present",
+          "absent",
+          "unknown",
+          "not_assessed"
+        ],
+        "allowed_periods": [
+          "historical_interval"
+        ],
+        "basis": "BN-04 PriorTreatmentDifficulty drafting lead",
+        "classification": "proposed_for_review"
+      },
+      {
+        "id": "prior_symptom_response",
+        "label": "Prior symptom response",
+        "kind": "enum",
+        "values": [
+          "inadequate",
+          "partial",
+          "adequate",
+          "uncertain",
+          "not_assessed"
+        ],
+        "allowed_periods": [
+          "historical_interval"
+        ],
+        "basis": "BN-04 SymptomResponse and BN-05 PriorSymptomImprovement drafting leads; no numerical response threshold is proposed",
+        "classification": "proposed_for_review"
+      },
+      {
+        "id": "adherence_history",
+        "label": "Treatment adherence history",
+        "kind": "enum",
+        "values": [
+          "adequate",
+          "difficulty",
+          "uncertain",
+          "not_assessed"
+        ],
+        "allowed_periods": [
+          "historical_interval",
+          "since_preceding_signed_encounter"
+        ],
+        "basis": "BN-04/05 AdherenceDifficulty and BN-10 AdherenceHistory drafting leads; local window and criteria remain unresolved",
+        "classification": "proposed_for_review"
+      },
+      {
+        "id": "relapse_course",
+        "label": "Chronic or repeated relapse course",
+        "kind": "enum",
+        "values": [
+          "neither_identified",
+          "chronic_symptoms",
+          "repeated_relapses",
+          "both",
+          "not_assessed"
+        ],
+        "allowed_periods": [
+          "historical_interval"
+        ],
+        "basis": "BN-05 ChronicOrRepeatedRelapseCourse drafting lead; operational criteria remain unresolved",
+        "classification": "proposed_for_review"
+      },
+      {
+        "id": "psychiatric_hospitalization_history",
+        "label": "Psychiatric hospitalization history",
+        "kind": "record",
+        "properties": {
+          "status": [
+            "present",
+            "absent",
+            "unknown",
+            "not_assessed"
+          ],
+          "event_dates": "date_list"
+        },
+        "allowed_periods": [
+          "historical_event_dates"
+        ],
+        "validation": "present permits one or more known event dates but dates may be incomplete; absent, unknown, and not_assessed require an empty list",
+        "basis": "Registration hospitalization question and BN-05 PsychiatricHospitalization drafting lead; admission definition remains unresolved",
+        "classification": "proposed_for_review"
+      },
+      {
+        "id": "prior_neuroleptic_malignant_syndrome_status",
+        "label": "Prior neuroleptic malignant syndrome",
+        "kind": "enum",
+        "values": [
+          "present",
+          "absent",
+          "unknown",
+          "not_assessed"
+        ],
+        "allowed_periods": [
+          "historical_interval"
+        ],
+        "basis": "BN-10 PriorNeurolepticMalignantSyndrome drafting lead",
+        "classification": "proposed_for_review"
+      },
+      {
+        "id": "prior_significant_parkinsonism_status",
+        "label": "Prior significant parkinsonism",
+        "kind": "enum",
+        "values": [
+          "present",
+          "absent",
+          "unknown",
+          "not_assessed"
+        ],
+        "allowed_periods": [
+          "historical_interval"
+        ],
+        "basis": "BN-12 PriorSignificantParkinsonism drafting lead",
+        "classification": "proposed_for_review"
+      },
+      {
+        "id": "substance_contribution_status",
+        "label": "Possible substance contribution to symptom response",
+        "kind": "enum",
+        "values": [
+          "present",
+          "absent",
+          "unknown",
+          "not_assessed"
+        ],
+        "allowed_periods": [
+          "current_encounter",
+          "since_preceding_signed_encounter"
+        ],
+        "basis": "BN-04 SubstanceContribution drafting lead; this is an assessed contribution, not a substance-use diagnosis",
+        "classification": "proposed_for_review"
+      }
+    ],
+    "analysis_visible_text": {
+      "id": "analysis_history_summary",
+      "label": "History used for analysis",
+      "kind": "text",
+      "analysis_visible": true,
+      "allowed_periods": [
+        "current_encounter",
+        "since_preceding_signed_encounter",
+        "historical_interval"
+      ],
+      "rule": "This is the only free-text history field eligible for question-specific mapped analysis. It is never automatically sent in full and must not contain page notes.",
+      "classification": "proposed_for_review"
+    },
+    "adverse_effect_contract": {
+      "status_values": [
+        "present",
+        "absent",
+        "not_assessed"
+      ],
+      "validation": [
+        "present requires exactly one severity value from that effect's reviewed enum",
+        "absent requires severity null",
+        "not_assessed requires severity null",
+        "a status transition away from present must explicitly write severity null; silently retaining obsolete severity is invalid"
+      ],
+      "period": "current_encounter",
+      "full_scale_requirement": "none",
+      "effects": [
+        {
+          "id": "tardive_dyskinesia",
+          "label": "Tardive dyskinesia",
+          "severity_values": [
+            {
+              "id": "mild",
+              "definition": "Clinician rates the current motor manifestations as mild. Functional impact is documented separately when a later reviewed mapping requires it; an AIMS total is not used as an automatic diagnostic or intervention threshold."
+            },
+            {
+              "id": "moderate_or_severe",
+              "definition": "Clinician rates the current motor manifestations as moderate or severe. The grouped category follows the BN-14 drafting lead and remains a proposed discretization."
+            }
+          ],
+          "basis": "The criteria source distinguishes mild and moderate regional findings in the Schooler-Kane research threshold and warns that AIMS total alone does not establish diagnosis or intervention; BN-14 proposes Mild versus ModerateOrSevere without an AIMS cutoff.",
+          "classification": "proposed_for_review"
+        },
+        {
+          "id": "akathisia",
+          "label": "Akathisia",
+          "severity_values": [
+            {
+              "id": "mild",
+              "definition": "Leg or inner restlessness, especially when required to stand still; characteristic movements need not exceed fidgeting and distress is minimal or absent."
+            },
+            {
+              "id": "moderate",
+              "definition": "Subjective restlessness plus characteristic movement and distress."
+            },
+            {
+              "id": "marked",
+              "definition": "Compelling desire to walk or pace with obvious distress, while able to remain seated for at least five minutes."
+            },
+            {
+              "id": "severe",
+              "definition": "Strong urge to pace most of the time, inability to sit or lie for more than a few minutes, constant restlessness, intense distress, and insomnia."
+            }
+          ],
+          "basis": "Labels and anchors reproduce BARS global clinical assessment scores 2 through 5. Recording these categories does not require administering every BARS item and does not establish medication causation.",
+          "classification": "source_derived_labels_proposed_as_v1_enum"
+        },
+        {
+          "id": "parkinsonism",
+          "label": "Parkinsonism",
+          "severity_values": [
+            {
+              "id": "signs_without_documented_functional_limitation",
+              "definition": "Current bradykinesia/akinesia, rigidity, or parkinsonian tremor is present, with no functional limitation or fall documented in this assessment and no urgent feature identified."
+            },
+            {
+              "id": "functional_limitation_or_falls",
+              "definition": "Current parkinsonian signs are accompanied by a documented functional limitation or fall, without an urgent feature."
+            },
+            {
+              "id": "severe_or_urgent_features",
+              "definition": "Severe generalized rigidity or fever, altered consciousness, or autonomic instability is present and requires urgent evaluation rather than routine attribution to uncomplicated parkinsonism."
+            }
+          ],
+          "basis": "The source directs documentation of falls or functional limitations and identifies severe generalized rigidity with fever, altered consciousness, or autonomic instability as urgent. These are proposed operational categories, not validated SAS bands.",
+          "classification": "proposed_for_review"
+        },
+        {
+          "id": "acute_dystonia",
+          "label": "Acute dystonia",
+          "severity_values": [
+            {
+              "id": "without_speech_swallowing_or_breathing_involvement",
+              "definition": "Sustained contractions or abnormal postures are present without documented impairment of speech, swallowing, or breathing."
+            },
+            {
+              "id": "speech_or_swallowing_involvement",
+              "definition": "Throat-muscle involvement impairs speech or swallowing, without breathing difficulty or stridor."
+            },
+            {
+              "id": "breathing_difficulty_or_stridor",
+              "definition": "Breathing difficulty or stridor is present; emergency airway assessment takes priority over completing this record."
+            }
+          ],
+          "basis": "The criteria source distinguishes abnormal postures, speech/swallowing involvement, and breathing difficulty or stridor requiring emergency assessment. The grouping is proposed for review.",
+          "classification": "proposed_for_review"
+        }
+      ]
+    }
+  },
+  "mapping_gaps": [
+    {
+      "id": "no_approved_question_mappings",
+      "affected_questions": "all R1-R7 and F1-F6",
+      "gap": "No question package has an approved patient mapping. The fields in this package are candidates only and cannot activate a workflow."
+    },
+    {
+      "id": "regimen_detail_conflict",
+      "affected_sources": [
+        "BN-04 TrialDuration and DoseExposureCategory",
+        "BN-06 AssignedRegimenDiscontinued",
+        "BN-07 Trial1Assessment and Trial2Assessment",
+        "BN-08/09 ClozapineTreatmentStatus",
+        "BN-10 SameDrugOralExperience and LAITreatmentStatus"
+      ],
+      "gap": "These leads require dose, duration, current/stopped status, or regimen interpretation that the FR-14 contract does not provide. Question design must remove, replace, or source those nodes from a separately reviewed non-regimen assessment without expanding medication fields."
+    },
+    {
+      "id": "unresolved_is_not_not_assessed",
+      "affected_sources": [
+        "BN-12 ParkinsonismAssessment",
+        "BN-13 AkathisiaAssessment",
+        "BN-14 TardiveDyskinesiaAssessment"
+      ],
+      "gap": "The BN leads distinguish an assessed unresolved differential, while FR-21 supplies present, absent, and not_assessed. A future reviewed question package must add a separate diagnostic-certainty input or revise the node; it must not coerce unresolved to not_assessed or absent."
+    },
+    {
+      "id": "effect_specific_inputs_not_in_minimum_record",
+      "affected_sources": [
+        "BN-11 AcuteDystoniaAntipsychoticAssociation",
+        "BN-12 ParkinsonismAntipsychoticAssociation",
+        "BN-13 AkathisiaAntipsychoticAssociation",
+        "BN-14 TardiveDyskinesiaAntipsychoticAssociation, DisablingImpact, and DoseReductionTemporalLink"
+      ],
+      "gap": "FR-21 status and severity do not supply causation, disability, or medication-change linkage. Those values need separately reviewed fields in the relevant question package; they are not inferred from status, severity, or medication presence."
+    },
+    {
+      "id": "hospitalization_definition",
+      "affected_questions": "R1 hospitalization",
+      "gap": "There is no executable source network and no reviewed definition of admission type, jurisdiction, causes, or lookback window. Event history may be recorded, but applicability and recommendation logic remain undefined."
+    },
+    {
+      "id": "response_and_adherence_operationalization",
+      "affected_sources": [
+        "BN-04/05/06",
+        "BN-07",
+        "BN-08/09",
+        "BN-10"
+      ],
+      "gap": "Response thresholds, adherence evidence, and assessment windows differ or remain unspecified. The candidate history enums cannot be directly mapped until each question package reviews its transform and time window."
+    },
+    {
+      "id": "tardive_dyskinesia_impact",
+      "affected_sources": "BN-14 TardiveDyskinesiaDisablingImpact",
+      "gap": "Motor severity and disabling impact are explicitly distinct. This minimum package records severity only; a later reviewed question package must add a typed impact field if the node remains."
+    }
+  ],
+  "unresolved_assumptions": [
+    "Owner/clinical review must accept, change, or reject every proposed history field, period, and severity value before release.",
+    "The locally intended meanings and evidence requirements for adequate, partial, inadequate, difficulty, and uncertain are not approved.",
+    "The lookback window and event definition for psychiatric hospitalization are not approved.",
+    "The tardive-dyskinesia two-level motor severity grouping is a BN-14 drafting proposal, not a validated clinical scale.",
+    "The parkinsonism and acute-dystonia severity groupings are proposed operational categories, not validated global scales.",
+    "Whether an effect-specific functional-impact field is needed beyond severity remains unresolved.",
+    "No severity enum establishes diagnosis, medication causation, treatment selection, probability, or safety clearance."
+  ],
+  "independent_examples": [
+    {
+      "name": "assessed negative is not missing",
+      "provenance": "synthetic author-created contract example; not a clinical oracle",
+      "input": {
+        "field_id": "prior_neuroleptic_malignant_syndrome_status",
+        "value": "absent",
+        "period": "historical_interval"
+      },
+      "expected": "valid assessed-negative value; must remain distinct from not_assessed"
+    },
+    {
+      "name": "unknown history is not negative or unassessed",
+      "provenance": "synthetic author-created contract example; not a clinical oracle",
+      "input": {
+        "field_id": "prior_neuroleptic_malignant_syndrome_status",
+        "value": "unknown",
+        "period": "historical_interval"
+      },
+      "expected": "valid explicit unknown; must remain distinct from absent and not_assessed"
+    },
+    {
+      "name": "unknown adherence remains explicit",
+      "provenance": "synthetic author-created contract example; not a clinical oracle",
+      "input": {
+        "field_id": "adherence_history",
+        "value": "uncertain",
+        "period": "since_preceding_signed_encounter"
+      },
+      "expected": "valid assessed uncertainty; must not be converted to adequate, difficulty, or not_assessed"
+    },
+    {
+      "name": "present effect needs severity",
+      "provenance": "synthetic author-created contract example; not a clinical oracle",
+      "input": {
+        "effect": "akathisia",
+        "status": "present",
+        "severity": null
+      },
+      "expected": "invalid because present requires one reviewed akathisia severity"
+    },
+    {
+      "name": "status change explicitly clears severity",
+      "provenance": "synthetic author-created contract example; not a clinical oracle",
+      "prior": {
+        "effect": "acute_dystonia",
+        "status": "present",
+        "severity": "without_speech_swallowing_or_breathing_involvement"
+      },
+      "update": {
+        "effect": "acute_dystonia",
+        "status": "absent",
+        "severity": null
+      },
+      "expected": "valid explicit clear; retaining the prior severity would be invalid"
+    },
+    {
+      "name": "analysis history is separate from page notes",
+      "provenance": "synthetic author-created contract example; not a clinical oracle",
+      "input": {
+        "analysis_history_summary": "Synthetic mapped history text",
+        "page_note": "Synthetic note text"
+      },
+      "expected": "only analysis_history_summary may be selected by an approved question mapping; page_note is excluded"
+    }
+  ]
+}

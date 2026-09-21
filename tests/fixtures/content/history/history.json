@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "content_type": "history",
+  "content_version": "synthetic-history-v1",
+  "review_status": "released",
+  "synthetic_fixture": true,
+  "definition": {
+    "definition_version": "synthetic-history-v1",
+    "fields": [
+      {
+        "id": "synthetic_flag_false",
+        "kind": "tri_state_boolean",
+        "allowed_statuses": ["known", "unknown", "not_assessed"],
+        "analysis_visible": true
+      },
+      {
+        "id": "synthetic_flag_true",
+        "kind": "tri_state_boolean",
+        "allowed_statuses": ["known", "unknown", "not_assessed"],
+        "analysis_visible": true
+      },
+      {
+        "id": "synthetic_flag_unknown",
+        "kind": "tri_state_boolean",
+        "allowed_statuses": ["known", "unknown", "not_assessed"],
+        "analysis_visible": true
+      },
+      {
+        "id": "synthetic_flag_not_assessed",
+        "kind": "tri_state_boolean",
+        "allowed_statuses": ["known", "unknown", "not_assessed"],
+        "analysis_visible": true
+      }
+    ],
+    "effects": [
+      {
+        "id": "tardive_dyskinesia",
+        "status_values": ["present", "absent", "not_assessed"],
+        "severity_values": [
+          "synthetic_tardive_severity_one",
+          "synthetic_tardive_severity_two"
+        ]
+      },
+      {
+        "id": "akathisia",
+        "status_values": ["present", "absent", "not_assessed"],
+        "severity_values": [
+          "synthetic_akathisia_severity_one",
+          "synthetic_akathisia_severity_two"
+        ]
+      },
+      {
+        "id": "parkinsonism",
+        "status_values": ["present", "absent", "not_assessed"],
+        "severity_values": [
+          "synthetic_parkinsonism_severity_one",
+          "synthetic_parkinsonism_severity_two"
+        ]
+      },
+      {
+        "id": "acute_dystonia",
+        "status_values": ["present", "absent", "not_assessed"],
+        "severity_values": [
+          "synthetic_dystonia_severity_one",
+          "synthetic_dystonia_severity_two"
+        ]
+      }
+    ]
+  }
+}

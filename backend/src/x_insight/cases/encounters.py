@@ -15,6 +15,10 @@ from x_insight import db
 from x_insight.assessments.cssrs import evaluate_cssrs
 from x_insight.assessments.diagnosis import evaluate_diagnosis
 from x_insight.assessments.panss import evaluate_panss
+from x_insight.cases.history import (
+    validate_and_stamp_effects,
+    validate_and_stamp_history,
+)
 from x_insight.contracts import content_hash, parse_if_match, to_utc_z, utc_now
 from x_insight.identity.routes import _check_csrf, _request_id, _require_session
 from x_insight.operations.audit import record_audit
@@ -297,6 +301,42 @@ def _apply_cssrs_validation(incoming: dict[str, Any]) -> dict[str, Any]:
     return incoming
 
 
+def _apply_history_validation(
+    incoming: dict[str, Any], actor_id: str, new_revision: int
+) -> dict[str, Any]:
+    if "history" not in incoming:
+        return incoming
+    try:
+        history = validate_and_stamp_history(
+            incoming["history"],
+            actor_id=actor_id,
+            encounter_revision=new_revision,
+        )
+    except ValueError as exc:
+        raise HTTPException(422, "Invalid history content.") from exc
+    updated = dict(incoming)
+    updated["history"] = history
+    return updated
+
+
+def _apply_effects_validation(
+    incoming: dict[str, Any], actor_id: str, new_revision: int
+) -> dict[str, Any]:
+    if "effects" not in incoming:
+        return incoming
+    try:
+        effects = validate_and_stamp_effects(
+            incoming["effects"],
+            actor_id=actor_id,
+            encounter_revision=new_revision,
+        )
+    except ValueError as exc:
+        raise HTTPException(422, "Invalid adverse-effect content.") from exc
+    updated = dict(incoming)
+    updated["effects"] = effects
+    return updated
+
+
 @router.patch("/encounters/{encounter_id}")
 def patch_encounter(
     encounter_id: UUID, body: DraftPatch, request: Request
@@ -338,15 +378,25 @@ def patch_encounter(
         if patient is not None and patient["archived"]:
             raise HTTPException(409, "Archived patient drafts are read-only.")
         stored_draft = row["draft_data"] if isinstance(row["draft_data"], dict) else {}
-        new_draft = _apply_cssrs_validation(
-            _apply_panss_validation(
-                _apply_diagnosis_ack(
-                    dict(body.draft_data),
-                    stored_draft,
-                    str(actor["user_id"]),
-                    int(row["revision"]) + 1,
-                )
-            )
+        actor_id = str(actor["user_id"])
+        new_revision = int(row["revision"]) + 1
+        new_draft = _apply_effects_validation(
+            _apply_history_validation(
+                _apply_cssrs_validation(
+                    _apply_panss_validation(
+                        _apply_diagnosis_ack(
+                            dict(body.draft_data),
+                            stored_draft,
+                            actor_id,
+                            new_revision,
+                        )
+                    )
+                ),
+                actor_id,
+                new_revision,
+            ),
+            actor_id,
+            new_revision,
         )
         updated = (
             conn.execute(
