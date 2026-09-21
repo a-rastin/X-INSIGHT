@@ -12,7 +12,12 @@ from x_insight.identity.throttle import reset_all
 @pytest.fixture(autouse=True)
 def clean_accounts():
     with db.transaction() as conn:
-        conn.execute(text("TRUNCATE sessions, users"))
+        conn.execute(
+            text(
+                "TRUNCATE encounter_notes, sessions, users, "
+                "patients, encounters, audit_events"
+            )
+        )
     reset_all()
     yield
     reset_all()

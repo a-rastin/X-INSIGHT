@@ -13,7 +13,10 @@ from x_insight.identity.throttle import reset_all
 def clean_patients():
     with db.transaction() as conn:
         conn.execute(
-            text("TRUNCATE sessions, users, patients, encounters, audit_events")
+            text(
+                "TRUNCATE encounter_notes, sessions, users, "
+                "patients, encounters, audit_events"
+            )
         )
     reset_all()
     yield

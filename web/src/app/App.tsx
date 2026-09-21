@@ -7,8 +7,10 @@ import {
   createPatient,
   discardEncounter,
   fetchSession,
+  addNote,
   getEncounter,
   getHistoryContent,
+  listNotes,
   listEncounters,
   listPhysicians,
   login,
@@ -19,6 +21,7 @@ import {
   updateTheme,
   type Encounter,
   type HistoryContent,
+  type PageNote,
   type Patient,
   type PhysicianAccount,
   type SessionUser,
@@ -830,6 +833,115 @@ function HistorySection({
  * explicitly cleared client-side on status change (absent/not_assessed always
  * send severity null).
  */
+/**
+ * S13 page notes: attributed, append-only entries rendered separately from
+ * structured history. React escapes note text by default; literal markup
+ * renders as text, never as HTML. Server derives author/time; corrections
+ * are new notes. Notes never enter analysis projections (see backend
+ * ANALYSIS_EXCLUDED_TOP_LEVEL_KEYS; S40/S41/S59 prove noninterference).
+ */
+const NOTE_PAGES = [
+  "demographics",
+  "diagnosis",
+  "severity",
+  "suicide",
+  "history",
+  "review",
+  "plan",
+] as const;
+
+function NotesSection({
+  encounterId,
+  readOnly,
+}: {
+  encounterId: string;
+  readOnly: boolean;
+}) {
+  const [items, setItems] = useState<PageNote[]>([]);
+  const [page, setPage] = useState<string>("demographics");
+  const [text, setText] = useState("");
+  const [status, setStatus] = useState("");
+  useEffect(() => {
+    let cancelled = false;
+    setStatus("");
+    listNotes(encounterId)
+      .then((loaded) => {
+        if (cancelled) return;
+        setItems(loaded);
+        setStatus("");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("Could not load notes.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [encounterId]);
+  async function handleAdd(): Promise<void> {
+    const trimmed = text.trim();
+    if (!trimmed || readOnly) return;
+    setStatus("Saving note…");
+    try {
+      const created = await addNote(encounterId, page, trimmed);
+      setItems((prev) => [...prev, created]);
+      setText("");
+      setStatus("Note saved.");
+    } catch {
+      setStatus("Could not save the note.");
+    }
+  }
+  return (
+    <section data-testid="notes-section" aria-label="Notes">
+      <h3>Notes</h3>
+      <p>Page notes are separate from structured history and never used for analysis.</p>
+      <div className="x-field">
+        <label htmlFor={`notes-page-${encounterId}`}>Page</label>
+        <select
+          id={`notes-page-${encounterId}`}
+          data-testid="notes-page"
+          value={page}
+          disabled={readOnly}
+          onChange={(event) => setPage(event.target.value)}
+        >
+          {NOTE_PAGES.map((id) => (
+            <option key={id} value={id}>
+              {id}
+            </option>
+          ))}
+        </select>
+        <label htmlFor={`notes-text-${encounterId}`}>Note</label>
+        <textarea
+          id={`notes-text-${encounterId}`}
+          data-testid="notes-text"
+          value={text}
+          disabled={readOnly}
+          onChange={(event) => setText(event.target.value)}
+        />
+        <button
+          type="button"
+          className="x-button"
+          data-testid="notes-add"
+          disabled={readOnly || text.trim() === ""}
+          onClick={() => void handleAdd()}
+        >
+          Add note
+        </button>
+      </div>
+      {status ? <p role="status" data-testid="notes-status">{status}</p> : null}
+      <div data-testid="notes-list">
+        {items.map((note) => (
+          <article key={note.id} data-testid="notes-item">
+            <p>
+              {note.page} · {note.author_display} · {note.created_at}
+            </p>
+            <p>{note.text}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function EffectsSection({
   encounterId,
   definition,
@@ -2530,6 +2642,7 @@ function DraftEditor({
             onPeriodChange={handleCssrsPeriod}
             onSkip={handleCssrsSkip}
           />
+          <NotesSection encounterId={encounter.id} readOnly={readOnly || discarded} />
           <HistorySection
             encounterId={encounter.id}
             definition={historyDef}

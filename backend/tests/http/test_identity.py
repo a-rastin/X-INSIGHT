@@ -21,14 +21,24 @@ def _clean_identity():
 
     try:
         with db.transaction() as conn:
-            conn.execute(text("TRUNCATE sessions, users"))
+            conn.execute(
+                text(
+                    "TRUNCATE encounter_notes, sessions, users, "
+                    "patients, encounters, audit_events"
+                )
+            )
     except Exception:
         pass
     reset_all()
     yield
     try:
         with db.transaction() as conn:
-            conn.execute(text("TRUNCATE sessions, users"))
+            conn.execute(
+                text(
+                    "TRUNCATE encounter_notes, sessions, users, "
+                    "patients, encounters, audit_events"
+                )
+            )
     except Exception:
         pass
     reset_all()

@@ -357,6 +357,53 @@ export async function discardEncounter(
   return payload.encounter;
 }
 
+export interface PageNote {
+  id: string;
+  encounter_id: string;
+  page: string;
+  text: string;
+  author_id: string;
+  author_display: string;
+  created_at: string;
+}
+
+/** S13 attributed page notes: append-only, server-stamped, separate table. */
+export async function listNotes(encounterId: string): Promise<PageNote[]> {
+  const response = await fetch(`/api/v1/encounters/${encounterId}/notes`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error("Could not load notes.");
+  }
+  const payload = (await response.json()) as { items: PageNote[] };
+  return payload.items;
+}
+
+export async function addNote(
+  encounterId: string,
+  page: string,
+  text: string,
+): Promise<PageNote> {
+  const csrf = csrfToken();
+  const response = await fetch(`/api/v1/encounters/${encounterId}/notes`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(csrf ? { "X-CSRF-Token": csrf } : {}),
+      "Idempotency-Key": idempotencyKey(),
+    },
+    body: JSON.stringify({ page, text }),
+  });
+  if (!response.ok) {
+    throw Object.assign(new Error("Could not save the note."), {
+      status: response.status,
+    });
+  }
+  const payload = (await response.json()) as { note: PageNote };
+  return payload.note;
+}
+
 export async function fetchSession(): Promise<SessionUser | null> {
   const response = await fetch("/api/v1/me", { credentials: "include" });
   if (response.status === 401) {
