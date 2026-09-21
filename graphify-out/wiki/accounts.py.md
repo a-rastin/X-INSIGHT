@@ -1,6 +1,6 @@
 # accounts.py
 
-> 43 nodes
+> 39 nodes
 
 ## Key Concepts
 
@@ -16,10 +16,8 @@
 - **UUID** (11 connections)
 - **create_physician()** (10 connections) — `backend/src/x_insight/identity/accounts.py`
 - **finish_command()** (10 connections) — `backend/src/x_insight/identity/accounts.py`
-- **normalize_username()** (10 connections) — `backend/src/x_insight/identity/store.py`
 - **get_physician()** (9 connections) — `backend/src/x_insight/identity/accounts.py`
 - **review_deactivation()** (9 connections) — `backend/src/x_insight/identity/accounts.py`
-- **parse_if_match()** (8 connections) — `backend/src/x_insight/contracts.py`
 - **Any** (8 connections)
 - **account_response()** (7 connections) — `backend/src/x_insight/identity/accounts.py`
 - **deactivate()** (7 connections) — `backend/src/x_insight/identity/accounts.py`
@@ -29,29 +27,28 @@
 - **draft_review()** (5 connections) — `backend/src/x_insight/identity/accounts.py`
 - **safe_account()** (5 connections) — `backend/src/x_insight/identity/accounts.py`
 - **BaseModel** (5 connections)
-- *... and 18 more nodes in this community*
+- **AccountCreate** (4 connections) — `backend/src/x_insight/identity/accounts.py`
+- **AccountEdit** (4 connections) — `backend/src/x_insight/identity/accounts.py`
+- *... and 14 more nodes in this community*
 
 ## Relationships
 
-- [encounters.py](encounters.py.md) (16 shared connections)
-- [routes.py](routes.py.md) (12 shared connections)
-- [transaction](transaction.md) (9 shared connections)
+- [app.py](app.py.md) (14 shared connections)
+- [routes.py](routes.py.md) (13 shared connections)
+- [encounters.py](encounters.py.md) (12 shared connections)
 - [physician](physician.md) (8 shared connections)
-- [store.py](store.py.md) (8 shared connections)
-- [patients.py](patients.py.md) (5 shared connections)
-- [record_audit](record_audit.md) (2 shared connections)
-- [app.py](app.py.md) (1 shared connections)
+- [store.py](store.py.md) (6 shared connections)
+- [content_hash](content_hash.md) (4 shared connections)
+- [create_patient](create_patient.md) (2 shared connections)
 - [test_identity.py](test_identity.py.md) (1 shared connections)
 
 ## Source Files
 
-- `backend/src/x_insight/contracts.py`
 - `backend/src/x_insight/identity/accounts.py`
-- `backend/src/x_insight/identity/store.py`
 
 ## Audit Trail
 
-- EXTRACTED: 191 (100%)
+- EXTRACTED: 180 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

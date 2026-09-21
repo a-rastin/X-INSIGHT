@@ -22,7 +22,7 @@
 - [MCPConnection](MCPConnection.md) (6 shared connections)
 - [MCPConnectionStdio](MCPConnectionStdio.md) (3 shared connections)
 - [evaluation.py](evaluation.py.md) (3 shared connections)
-- [encounters.py](encounters.py.md) (2 shared connections)
+- [app.py](app.py.md) (2 shared connections)
 
 ## Source Files
 

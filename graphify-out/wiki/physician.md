@@ -1,16 +1,19 @@
 # physician
 
-> 26 nodes
+> 51 nodes
 
 ## Key Concepts
 
-- **physician()** (28 connections) — `backend/src/x_insight/identity/accounts.py`
+- **physician()** (31 connections) — `backend/src/x_insight/identity/accounts.py`
 - **test_drafts.py** (28 connections) — `backend/tests/http/test_drafts.py`
+- **test_physicians.py** (15 connections) — `backend/tests/http/test_physicians.py`
+- **test_patients.py** (14 connections) — `backend/tests/http/test_patients.py`
 - **create_patient()** (13 connections) — `backend/tests/http/test_drafts.py`
 - **create_physician()** (13 connections) — `backend/tests/http/test_drafts.py`
 - **login()** (12 connections) — `backend/tests/http/test_drafts.py`
 - **encounter_body()** (9 connections) — `backend/tests/http/test_drafts.py`
 - **test_author_discards_draft_with_confirmation()** (9 connections) — `backend/tests/http/test_drafts.py`
+- **fastapi_testclient** (9 connections)
 - **test_malformed_patch_rejected_without_revision_bump()** (8 connections) — `backend/tests/http/test_drafts.py`
 - **discard_headers()** (7 connections) — `backend/tests/http/test_drafts.py`
 - **draft_headers()** (7 connections) — `backend/tests/http/test_drafts.py`
@@ -22,37 +25,35 @@
 - **test_revision_precondition_required()** (6 connections) — `backend/tests/http/test_drafts.py`
 - **test_shared_read_but_author_only_write()** (6 connections) — `backend/tests/http/test_drafts.py`
 - **test_terminal_invalid_and_archived_draft_rejected()** (6 connections) — `backend/tests/http/test_drafts.py`
+- **test_concurrent_duplicate_archived_and_idempotent_create()** (6 connections) — `backend/tests/http/test_patients.py`
+- **headers()** (6 connections) — `backend/tests/http/test_physicians.py`
+- **login()** (6 connections) — `backend/tests/http/test_physicians.py`
 - **test_unauthenticated_draft_access_denied()** (5 connections) — `backend/tests/http/test_drafts.py`
-- **patient_headers()** (3 connections) — `backend/tests/http/test_drafts.py`
-- **discard_audit_rows()** (2 connections) — `backend/tests/http/test_drafts.py`
-- **S07 slice 1: author saves/retrieves draft; shared read, author-only write.…** (1 connections) — `backend/tests/http/test_drafts.py`
-- **# NOTE: discard route lands in slice 4, so terminal states are set via** (1 connections) — `backend/tests/http/test_drafts.py`
-- **S07 slice 3: failed (malformed) save returns 422, revision stays 1.** (1 connections) — `backend/tests/http/test_drafts.py`
-- **CSRF + optional If-Match headers; never an Idempotency-Key (by design).** (1 connections) — `backend/tests/http/test_drafts.py`
-- *... and 1 more nodes in this community*
+- *... and 26 more nodes in this community*
 
 ## Relationships
 
+- [app.py](app.py.md) (10 shared connections)
 - [accounts.py](accounts.py.md) (8 shared connections)
-- [http/test_diagnosis.py](http-test_diagnosis.py.md) (5 shared connections)
-- [test_patients.py](test_patients.py.md) (3 shared connections)
-- [test_physicians.py](test_physicians.py.md) (3 shared connections)
-- [encounters.py](encounters.py.md) (2 shared connections)
-- [test_identity.py](test_identity.py.md) (1 shared connections)
-- [app.py](app.py.md) (1 shared connections)
-- [throttle.py](throttle.py.md) (1 shared connections)
-- [test_content.py](test_content.py.md) (1 shared connections)
-- [reset_all](reset_all.md) (1 shared connections)
+- [http/test_diagnosis.py](http-test_diagnosis.py.md) (6 shared connections)
+- [http/test_panss.py](http-test_panss.py.md) (4 shared connections)
+- [test_content.py](test_content.py.md) (4 shared connections)
+- [test_identity.py](test_identity.py.md) (4 shared connections)
+- [throttle.py](throttle.py.md) (3 shared connections)
+- [test_contracts.py](test_contracts.py.md) (1 shared connections)
 
 ## Source Files
 
 - `backend/src/x_insight/identity/accounts.py`
 - `backend/tests/http/test_drafts.py`
+- `backend/tests/http/test_health.py`
+- `backend/tests/http/test_patients.py`
+- `backend/tests/http/test_physicians.py`
 
 ## Audit Trail
 
-- EXTRACTED: 93 (82%)
-- INFERRED: 20 (18%)
+- EXTRACTED: 152 (86%)
+- INFERRED: 24 (14%)
 - AMBIGUOUS: 0 (0%)
 
 ---

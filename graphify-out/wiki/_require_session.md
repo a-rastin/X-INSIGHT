@@ -8,10 +8,10 @@
 
 ### calls
 - create_patient() `EXTRACTED`
+- patch_encounter() `EXTRACTED`
 - change_password() `EXTRACTED`
 - error_body() `EXTRACTED`
 - discard_encounter() `EXTRACTED`
-- patch_encounter() `EXTRACTED`
 - _request_id() `EXTRACTED`
 - _get_encounter() `EXTRACTED`
 - list_patients() `EXTRACTED`
@@ -30,13 +30,13 @@
 ### imports
 - [accounts.py](accounts.py.md) `EXTRACTED`
 - [encounters.py](encounters.py.md) `EXTRACTED`
-- [patients.py](patients.py.md) `EXTRACTED`
+- patients.py `EXTRACTED`
 - content.py `EXTRACTED`
 
 ### references
 - Request `EXTRACTED`
 - JSONResponse `EXTRACTED`
-- Any `EXTRACTED`
+- [Any](Any.md) `EXTRACTED`
 - Connection `EXTRACTED`
 
 ---

@@ -4,7 +4,7 @@
 
 ## Key Concepts
 
-- **@playwright/test** (10 connections) — `web/package.json`
+- **@playwright/test** (11 connections) — `web/package.json`
 - **identity.spec.ts** (6 connections) — `e2e/identity.spec.ts`
 - **createPhysicianViaAdminApi()** (1 connections) — `e2e/identity.spec.ts`
 - **dismissResearchNotice()** (1 connections) — `e2e/identity.spec.ts`
@@ -21,6 +21,7 @@
 - [diagnosis.spec.ts](diagnosis.spec.ts.md) (1 shared connections)
 - [discard.spec.ts](discard.spec.ts.md) (1 shared connections)
 - [draft-safety.spec.ts](draft-safety.spec.ts.md) (1 shared connections)
+- [panss.spec.ts](panss.spec.ts.md) (1 shared connections)
 - [registration.spec.ts](registration.spec.ts.md) (1 shared connections)
 - [themes.spec.ts](themes.spec.ts.md) (1 shared connections)
 
@@ -32,7 +33,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 15 (100%)
+- EXTRACTED: 16 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

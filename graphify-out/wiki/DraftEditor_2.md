@@ -1,16 +1,19 @@
 # DraftEditor()
 
-> God node · 21 connections · `web/src/app/App.tsx`
+> God node · 27 connections · `web/src/app/App.tsx`
 
 **Community:** [DraftEditor](DraftEditor.md)
 
 ## Connections by Relation
 
 ### calls
-- discardEncounter() `EXTRACTED`
+- panssDirtyKey() `EXTRACTED`
 - getEncounter() `EXTRACTED`
 - patchEncounter() `EXTRACTED`
+- discardEncounter() `EXTRACTED`
+- emptyPanssAnswers() `EXTRACTED`
 - listEncounters() `EXTRACTED`
+- panssFromStored() `EXTRACTED`
 - diagAnswersFromStored() `EXTRACTED`
 
 ### contains
@@ -18,17 +21,20 @@
 - scheduleSave() `EXTRACTED`
 - saveNow() `EXTRACTED`
 - handleDiagAnswers() `EXTRACTED`
+- isPanssDirty() `EXTRACTED`
 - isDiagDirty() `EXTRACTED`
-- handleDiagAck() `EXTRACTED`
 - handleDiscard() `EXTRACTED`
+- handleClose() `EXTRACTED`
+- handleDiagAck() `EXTRACTED`
+- handlePanssSkip() `EXTRACTED`
 - reloadPreservingEdits() `EXTRACTED`
+- buildDraftPayload() `EXTRACTED`
 - handleDiagBool() `EXTRACTED`
 - handleDiagDomains() `EXTRACTED`
 - handleDiagMonths() `EXTRACTED`
 - handleDiagBypass() `EXTRACTED`
 - handleDiagComplete() `EXTRACTED`
-- handleClose() `EXTRACTED`
-- buildDraftPayload() `EXTRACTED`
+- handlePanssItem() `EXTRACTED`
 
 ### indirect_call
 - onBeforeUnload() `INFERRED`

@@ -33,14 +33,13 @@
 
 ## Relationships
 
-- [encounters.py](encounters.py.md) (8 shared connections)
-- [physician](physician.md) (5 shared connections)
-- [transaction](transaction.md) (1 shared connections)
-- [test_identity.py](test_identity.py.md) (1 shared connections)
+- [physician](physician.md) (6 shared connections)
+- [app.py](app.py.md) (5 shared connections)
+- [encounters.py](encounters.py.md) (3 shared connections)
+- [content_hash](content_hash.md) (2 shared connections)
 - [test_content.py](test_content.py.md) (1 shared connections)
-- [app.py](app.py.md) (1 shared connections)
 - [throttle.py](throttle.py.md) (1 shared connections)
-- [reset_all](reset_all.md) (1 shared connections)
+- [test_identity.py](test_identity.py.md) (1 shared connections)
 
 ## Source Files
 

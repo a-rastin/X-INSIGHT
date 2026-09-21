@@ -1,6 +1,6 @@
 # physician()
 
-> God node · 28 connections · `backend/src/x_insight/identity/accounts.py`
+> God node · 31 connections · `backend/src/x_insight/identity/accounts.py`
 
 **Community:** [physician](physician.md)
 
@@ -26,20 +26,21 @@
 - test_author_saves_and_retrieves_draft_across_restart() `INFERRED`
 - test_discard_requires_explicit_confirmation() `INFERRED`
 - test_double_discard_conflicts() `INFERRED`
+- test_full_all_1_persists_and_resumes_complete() `INFERRED`
+- test_partial_persists_and_resume_preserves_completeness() `INFERRED`
 - test_discard_rejects_stale_revision() `INFERRED`
 - test_revision_precondition_required() `INFERRED`
 - test_terminal_invalid_and_archived_draft_rejected() `INFERRED`
+- test_invalid_panss_rejected_server_side() `INFERRED`
 - test_concurrent_duplicate_archived_and_idempotent_create() `INFERRED`
 - test_unauthenticated_draft_access_denied() `INFERRED`
 - test_patient_field_validation_rejects_bad_demographics() `INFERRED`
 - test_physician_registers_patient_with_registration_draft() `INFERRED`
-- test_account_commands_replay_without_duplicate_mutations_or_secret_audit() `INFERRED`
-- test_admin_manages_safe_physician_accounts_with_stable_identity() `INFERRED`
-- test_deactivation_requires_review_and_explicit_discard_confirmation() `INFERRED`
+- *…and 3 more `indirect_call` connection(s) not listed (lowest-degree first to go)*
 
 ### references
 - UUID `EXTRACTED`
-- Any `EXTRACTED`
+- [Any](Any.md) `EXTRACTED`
 - Connection `EXTRACTED`
 
 ---

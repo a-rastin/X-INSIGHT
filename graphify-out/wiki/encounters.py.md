@@ -1,56 +1,50 @@
 # encounters.py
 
-> 31 nodes
+> 33 nodes
 
 ## Key Concepts
 
-- **encounters.py** (32 connections) — `backend/src/x_insight/cases/encounters.py`
-- **contracts.py** (22 connections) — `backend/src/x_insight/contracts.py`
-- **sqlalchemy** (20 connections)
-- **db.py** (19 connections) — `backend/src/x_insight/db.py`
-- **content.py** (16 connections) — `backend/src/x_insight/assessments/content.py`
-- **typing** (13 connections)
-- **x_insight/__init__.py** (12 connections) — `backend/src/x_insight/__init__.py`
-- **audit.py** (11 connections) — `backend/src/x_insight/operations/audit.py`
-- **content_hash()** (10 connections) — `backend/src/x_insight/contracts.py`
-- **canonical_json()** (8 connections) — `backend/src/x_insight/contracts.py`
-- **assessments/__init__.py** (7 connections) — `backend/src/x_insight/assessments/__init__.py`
-- **FastAPI** (7 connections)
-- **json** (7 connections)
-- **fastapi_responses** (6 connections)
-- **utc_now()** (5 connections) — `backend/src/x_insight/contracts.py`
-- **sqlalchemy_engine** (5 connections)
-- **collections_abc** (4 connections)
-- **Any** (3 connections)
-- **datetime** (3 connections)
-- **dispose_engines()** (2 connections) — `backend/src/x_insight/db.py`
-- **Released-only assessment content serving.** (1 connections) — `backend/src/x_insight/assessments/content.py`
-- **Author-owned draft persistence (S07 slice 1: GET/PATCH with revisions).** (1 connections) — `backend/src/x_insight/cases/encounters.py`
-- **Shared HTTP/JSON contracts. Canonical JSON and UTC helpers are documented at…** (1 connections) — `backend/src/x_insight/contracts.py`
-- **Encode canonical UTF-8 JSON: sorted keys, compact, finite numbers. Object keys…** (1 connections) — `backend/src/x_insight/contracts.py`
-- **SHA-256 hex of the canonical JSON encoding.** (1 connections) — `backend/src/x_insight/contracts.py`
-- *... and 6 more nodes in this community*
+- **encounters.py** (35 connections) — `backend/src/x_insight/cases/encounters.py`
+- **transaction()** (23 connections) — `backend/src/x_insight/db.py`
+- **record_audit()** (16 connections) — `backend/src/x_insight/operations/audit.py`
+- **patch_encounter()** (15 connections) — `backend/src/x_insight/cases/encounters.py`
+- **discard_encounter()** (14 connections) — `backend/src/x_insight/cases/encounters.py`
+- **_get_encounter()** (11 connections) — `backend/src/x_insight/cases/encounters.py`
+- **_apply_diagnosis_ack()** (8 connections) — `backend/src/x_insight/cases/encounters.py`
+- **list_encounters()** (8 connections) — `backend/src/x_insight/cases/encounters.py`
+- **parse_if_match()** (8 connections) — `backend/src/x_insight/contracts.py`
+- **_payload()** (7 connections) — `backend/src/x_insight/cases/encounters.py`
+- **_apply_panss_validation()** (5 connections) — `backend/src/x_insight/cases/encounters.py`
+- **UUID** (5 connections)
+- **DiscardRequest** (4 connections) — `backend/src/x_insight/cases/encounters.py`
+- **Any** (4 connections)
+- **JSONResponse** (4 connections)
+- **Request** (4 connections)
+- **DraftPatch** (3 connections) — `backend/src/x_insight/cases/encounters.py`
+- **BaseModel** (2 connections)
+- **get** (2 connections)
+- **.check_confirmed()** (1 connections) — `backend/src/x_insight/cases/encounters.py`
+- **patch** (1 connections)
+- **post** (1 connections)
+- **Connection** (1 connections)
+- **Any** (1 connections)
+- **Connection** (1 connections)
+- *... and 8 more nodes in this community*
 
 ## Relationships
 
-- [routes.py](routes.py.md) (18 shared connections)
-- [accounts.py](accounts.py.md) (16 shared connections)
-- [patients.py](patients.py.md) (15 shared connections)
-- [transaction](transaction.md) (12 shared connections)
-- [test_definitions.py](test_definitions.py.md) (10 shared connections)
-- [test_identity.py](test_identity.py.md) (10 shared connections)
-- [app.py](app.py.md) (9 shared connections)
-- [http/test_diagnosis.py](http-test_diagnosis.py.md) (8 shared connections)
-- [get_engine](get_engine.md) (5 shared connections)
-- [store.py](store.py.md) (4 shared connections)
-- [test_content.py](test_content.py.md) (3 shared connections)
-- [record_audit](record_audit.md) (2 shared connections)
+- [routes.py](routes.py.md) (21 shared connections)
+- [app.py](app.py.md) (17 shared connections)
+- [accounts.py](accounts.py.md) (12 shared connections)
+- [create_patient](create_patient.md) (6 shared connections)
+- [http/test_diagnosis.py](http-test_diagnosis.py.md) (3 shared connections)
+- [http/test_panss.py](http-test_panss.py.md) (3 shared connections)
+- [content_hash](content_hash.md) (2 shared connections)
+- [test_definitions.py](test_definitions.py.md) (1 shared connections)
+- [get_engine](get_engine.md) (1 shared connections)
 
 ## Source Files
 
-- `backend/src/x_insight/__init__.py`
-- `backend/src/x_insight/assessments/__init__.py`
-- `backend/src/x_insight/assessments/content.py`
 - `backend/src/x_insight/cases/encounters.py`
 - `backend/src/x_insight/contracts.py`
 - `backend/src/x_insight/db.py`
@@ -58,7 +52,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 174 (100%)
+- EXTRACTED: 129 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

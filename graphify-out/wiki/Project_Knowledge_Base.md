@@ -1,11 +1,12 @@
 # Project Knowledge Base
 
-> 13 nodes
+> 14 nodes
 
 ## Key Concepts
 
 - **Project Knowledge Base** (12 connections) — `.agents/skills/knowledge-base/SKILL.md`
 - **details.md** (3 connections) — `.agents/skills/knowledge-base/SKILL.md`
+- **index.md** (2 connections) — `.agents/skills/knowledge-base/SKILL.md`
 - **knowledge-base/SKILL.md** (1 connections) — `.agents/skills/knowledge-base/SKILL.md`
 - **AGENTS.md** (1 connections) — `.agents/skills/knowledge-base/SKILL.md`
 - **Completion checks** (1 connections) — `.agents/skills/knowledge-base/SKILL.md`
@@ -20,7 +21,7 @@
 
 ## Relationships
 
-- [app.py](app.py.md) (1 shared connections)
+- [ready](ready.md) (1 shared connections)
 - [Workflows](Workflows.md) (1 shared connections)
 
 ## Source Files
@@ -29,8 +30,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 14 (100%)
-- INFERRED: 0 (0%)
+- EXTRACTED: 14 (93%)
+- INFERRED: 1 (7%)
 - AMBIGUOUS: 0 (0%)
 
 ---

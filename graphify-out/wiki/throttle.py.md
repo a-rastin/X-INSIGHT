@@ -4,7 +4,7 @@
 
 ## Key Concepts
 
-- **throttle.py** (14 connections) — `backend/src/x_insight/identity/throttle.py`
+- **throttle.py** (15 connections) — `backend/src/x_insight/identity/throttle.py`
 - **clock.py** (6 connections) — `backend/src/x_insight/identity/clock.py`
 - **record_failure()** (5 connections) — `backend/src/x_insight/identity/throttle.py`
 - **throttled()** (5 connections) — `backend/src/x_insight/identity/throttle.py`
@@ -27,12 +27,11 @@
 ## Relationships
 
 - [routes.py](routes.py.md) (5 shared connections)
+- [physician](physician.md) (3 shared connections)
 - [test_content.py](test_content.py.md) (1 shared connections)
 - [http/test_diagnosis.py](http-test_diagnosis.py.md) (1 shared connections)
-- [physician](physician.md) (1 shared connections)
-- [test_patients.py](test_patients.py.md) (1 shared connections)
-- [test_physicians.py](test_physicians.py.md) (1 shared connections)
-- [reset_all](reset_all.md) (1 shared connections)
+- [http/test_panss.py](http-test_panss.py.md) (1 shared connections)
+- [test_identity.py](test_identity.py.md) (1 shared connections)
 - [evaluation.py](evaluation.py.md) (1 shared connections)
 
 ## Source Files
@@ -43,7 +42,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 34 (100%)
+- EXTRACTED: 35 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

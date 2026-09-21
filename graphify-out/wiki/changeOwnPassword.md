@@ -14,8 +14,7 @@
 ## Relationships
 
 - [App.tsx](App.tsx.md) (4 shared connections)
-- [api.ts](api.ts.md) (3 shared connections)
-- [csrfToken](csrfToken.md) (1 shared connections)
+- [api.ts](api.ts.md) (4 shared connections)
 
 ## Source Files
 

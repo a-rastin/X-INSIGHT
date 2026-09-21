@@ -1,16 +1,15 @@
-# health
+# Any
 
-> 3 nodes
+> 2 nodes
 
 ## Key Concepts
 
-- **health()** (3 connections) — `backend/src/x_insight/app.py`
-- **get** (2 connections)
-- **Liveness only; never touches the database.** (1 connections) — `backend/src/x_insight/app.py`
+- **Any** (3 connections)
+- **.__init__()** (2 connections) — `backend/src/x_insight/app.py`
 
 ## Relationships
 
-- [app.py](app.py.md) (1 shared connections)
+- [app.py](app.py.md) (2 shared connections)
 - [ready](ready.md) (1 shared connections)
 
 ## Source Files

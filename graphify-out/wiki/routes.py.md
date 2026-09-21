@@ -1,6 +1,6 @@
 # routes.py
 
-> 33 nodes
+> 35 nodes
 
 ## Key Concepts
 
@@ -15,6 +15,7 @@
 - **Request** (11 connections)
 - **verify_password()** (10 connections) — `backend/src/x_insight/identity/hashing.py`
 - **logout()** (10 connections) — `backend/src/x_insight/identity/routes.py`
+- **normalize_username()** (10 connections) — `backend/src/x_insight/identity/store.py`
 - **update_preferences()** (9 connections) — `backend/src/x_insight/identity/routes.py`
 - **JSONResponse** (8 connections)
 - **me()** (7 connections) — `backend/src/x_insight/identity/routes.py`
@@ -28,21 +29,19 @@
 - **test_admin_password_is_hashed()** (3 connections) — `backend/tests/http/test_identity.py`
 - **BaseModel** (3 connections)
 - **post** (3 connections)
-- **Any** (2 connections)
-- *... and 8 more nodes in this community*
+- *... and 10 more nodes in this community*
 
 ## Relationships
 
-- [encounters.py](encounters.py.md) (18 shared connections)
-- [store.py](store.py.md) (15 shared connections)
-- [transaction](transaction.md) (13 shared connections)
-- [accounts.py](accounts.py.md) (12 shared connections)
-- [patients.py](patients.py.md) (11 shared connections)
-- [app.py](app.py.md) (6 shared connections)
+- [app.py](app.py.md) (22 shared connections)
+- [encounters.py](encounters.py.md) (21 shared connections)
+- [store.py](store.py.md) (17 shared connections)
+- [accounts.py](accounts.py.md) (13 shared connections)
+- [create_patient](create_patient.md) (5 shared connections)
 - [throttle.py](throttle.py.md) (5 shared connections)
 - [test_identity.py](test_identity.py.md) (5 shared connections)
-- [record_audit](record_audit.md) (4 shared connections)
-- [.__call__](__call__.md) (1 shared connections)
+- [ready](ready.md) (4 shared connections)
+- [content_hash](content_hash.md) (1 shared connections)
 - [test_definitions.py](test_definitions.py.md) (1 shared connections)
 
 ## Source Files
@@ -55,7 +54,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 177 (100%)
+- EXTRACTED: 184 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

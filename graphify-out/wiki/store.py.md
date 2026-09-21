@@ -29,11 +29,11 @@
 
 ## Relationships
 
-- [routes.py](routes.py.md) (15 shared connections)
-- [accounts.py](accounts.py.md) (8 shared connections)
-- [encounters.py](encounters.py.md) (4 shared connections)
-- [patients.py](patients.py.md) (3 shared connections)
+- [routes.py](routes.py.md) (17 shared connections)
+- [accounts.py](accounts.py.md) (6 shared connections)
+- [app.py](app.py.md) (6 shared connections)
 - [test_identity.py](test_identity.py.md) (3 shared connections)
+- [create_patient](create_patient.md) (1 shared connections)
 
 ## Source Files
 
