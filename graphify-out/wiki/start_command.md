@@ -26,7 +26,7 @@
 - JSONResponse `EXTRACTED`
 - Request `EXTRACTED`
 - UUID `EXTRACTED`
-- [Any](Any.md) `EXTRACTED`
+- Any `EXTRACTED`
 - BaseModel `EXTRACTED`
 - Connection `EXTRACTED`
 

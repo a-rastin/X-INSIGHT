@@ -2,12 +2,12 @@
 
 > God node · 20 connections · `backend/src/x_insight/identity/routes.py`
 
-**Community:** [routes.py](routes.py.md)
+**Community:** [_require_session](_require_session.md)
 
 ## Connections by Relation
 
 ### calls
-- [transaction()](transaction_2.md) `EXTRACTED`
+- [transaction()](transaction.md) `EXTRACTED`
 - record_audit() `EXTRACTED`
 - error_body() `EXTRACTED`
 - ensure_admin_seeded() `EXTRACTED`

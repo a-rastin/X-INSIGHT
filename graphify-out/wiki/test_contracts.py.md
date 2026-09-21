@@ -19,7 +19,7 @@
 
 ## Relationships
 
-- [patients.py](patients.py.md) (3 shared connections)
+- [routes.py](routes.py.md) (3 shared connections)
 - [test_drafts.py](test_drafts.py.md) (1 shared connections)
 
 ## Source Files

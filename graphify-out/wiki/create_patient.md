@@ -1,36 +1,40 @@
 # create_patient
 
-> 18 nodes
+> 23 nodes
 
 ## Key Concepts
 
 - **create_patient()** (16 connections) — `backend/src/x_insight/cases/patients.py`
 - **list_patients()** (11 connections) — `backend/src/x_insight/cases/patients.py`
-- **canonical_json()** (8 connections) — `backend/src/x_insight/contracts.py`
-- **content_hash()** (6 connections) — `backend/src/x_insight/contracts.py`
+- **to_utc_z()** (10 connections) — `backend/src/x_insight/contracts.py`
+- **PatientCreate** (5 connections) — `backend/src/x_insight/cases/patients.py`
 - **_patient_payload()** (5 connections) — `backend/src/x_insight/cases/patients.py`
 - **_encounter_payload()** (4 connections) — `backend/src/x_insight/cases/patients.py`
-- **Any** (3 connections)
+- **utc_now()** (3 connections) — `backend/src/x_insight/contracts.py`
+- **datetime** (3 connections)
+- **._letters_only()** (2 connections) — `backend/src/x_insight/cases/patients.py`
+- **._patient_id_ascii_digits()** (2 connections) — `backend/src/x_insight/cases/patients.py`
 - **Any** (2 connections)
+- **field_validator** (2 connections)
 - **JSONResponse** (2 connections)
 - **Request** (2 connections)
 - **UUID** (2 connections)
+- **BaseModel** (1 connections)
 - **ge** (1 connections)
 - **get** (1 connections)
 - **le** (1 connections)
 - **post** (1 connections)
 - **Query** (1 connections)
-- **Encode canonical UTF-8 JSON: sorted keys, compact, finite numbers. Object keys…** (1 connections) — `backend/src/x_insight/contracts.py`
-- **SHA-256 hex of the canonical JSON encoding.** (1 connections) — `backend/src/x_insight/contracts.py`
+- **Return the current timezone-aware UTC time (server timestamps).** (1 connections) — `backend/src/x_insight/contracts.py`
+- **Serialize a datetime as UTC ``...Z`` ISO-8601 text.** (1 connections) — `backend/src/x_insight/contracts.py`
 
 ## Relationships
 
-- [patients.py](patients.py.md) (11 shared connections)
-- [routes.py](routes.py.md) (6 shared connections)
-- [accounts.py](accounts.py.md) (4 shared connections)
-- [transaction](transaction.md) (3 shared connections)
+- [routes.py](routes.py.md) (11 shared connections)
+- [accounts.py](accounts.py.md) (6 shared connections)
+- [_require_session](_require_session.md) (5 shared connections)
+- [record_audit](record_audit.md) (2 shared connections)
 - [store.py](store.py.md) (1 shared connections)
-- [PatientCreate](PatientCreate.md) (1 shared connections)
 
 ## Source Files
 
@@ -39,7 +43,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 47 (100%)
+- EXTRACTED: 52 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

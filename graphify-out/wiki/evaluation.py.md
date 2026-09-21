@@ -22,9 +22,9 @@
 
 - [evaluate_single_task](evaluate_single_task.md) (7 shared connections)
 - [connections.py](connections.py.md) (3 shared connections)
-- [patients.py](patients.py.md) (3 shared connections)
-- [test_drafts.py](test_drafts.py.md) (1 shared connections)
-- [main](main.md) (1 shared connections)
+- [routes.py](routes.py.md) (3 shared connections)
+- [throttle.py](throttle.py.md) (1 shared connections)
+- [test_definitions.py](test_definitions.py.md) (1 shared connections)
 
 ## Source Files
 

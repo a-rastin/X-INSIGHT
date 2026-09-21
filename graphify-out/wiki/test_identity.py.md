@@ -1,13 +1,13 @@
 # test_identity.py
 
-> 32 nodes
+> 33 nodes
 
 ## Key Concepts
 
 - **test_identity.py** (30 connections) — `backend/tests/http/test_identity.py`
 - **_client()** (17 connections) — `backend/tests/http/test_identity.py`
 - **_login()** (16 connections) — `backend/tests/http/test_identity.py`
-- **reset_all()** (6 connections) — `backend/src/x_insight/identity/throttle.py`
+- **reset_all()** (7 connections) — `backend/src/x_insight/identity/throttle.py`
 - **test_second_initialization_preserves_changed_password()** (5 connections) — `backend/tests/http/test_identity.py`
 - **test_audit_records_success_and_failure_without_credentials()** (4 connections) — `backend/tests/http/test_identity.py`
 - **test_empty_password_fails_without_trimming()** (4 connections) — `backend/tests/http/test_identity.py`
@@ -26,18 +26,20 @@
 - **test_wrong_credentials_and_role_mismatch_share_generic_error()** (3 connections) — `backend/tests/http/test_identity.py`
 - **clean_patients()** (3 connections) — `backend/tests/http/test_patients.py`
 - **clean_accounts()** (3 connections) — `backend/tests/http/test_physicians.py`
+- **sqlalchemy_exc** (3 connections)
 - **_audit_rows()** (2 connections) — `backend/tests/http/test_identity.py`
 - **test_no_second_admin_can_be_provisioned()** (2 connections) — `backend/tests/http/test_identity.py`
-- **test_self_registration_is_denied()** (2 connections) — `backend/tests/http/test_identity.py`
-- *... and 7 more nodes in this community*
+- *... and 8 more nodes in this community*
 
 ## Relationships
 
-- [test_drafts.py](test_drafts.py.md) (5 shared connections)
-- [routes.py](routes.py.md) (5 shared connections)
-- [patients.py](patients.py.md) (4 shared connections)
+- [_require_session](_require_session.md) (5 shared connections)
+- [test_drafts.py](test_drafts.py.md) (4 shared connections)
+- [routes.py](routes.py.md) (4 shared connections)
 - [store.py](store.py.md) (3 shared connections)
-- [conftest.py](conftest.py.md) (1 shared connections)
+- [test_content.py](test_content.py.md) (2 shared connections)
+- [throttle.py](throttle.py.md) (1 shared connections)
+- [accounts.py](accounts.py.md) (1 shared connections)
 
 ## Source Files
 
@@ -49,7 +51,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 79 (99%)
+- EXTRACTED: 82 (99%)
 - INFERRED: 1 (1%)
 - AMBIGUOUS: 0 (0%)
 

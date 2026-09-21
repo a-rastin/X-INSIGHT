@@ -1,25 +1,27 @@
 # Quick Reference
 
-> 4 nodes
+> 6 nodes
 
 ## Key Concepts
 
-- **Quick Reference** (4 connections) — `.agents/skills/mcp-builder/reference/python_mcp_server.md`
-- **Key Imports** (1 connections) — `.agents/skills/mcp-builder/reference/python_mcp_server.md`
-- **Server Initialization** (1 connections) — `.agents/skills/mcp-builder/reference/python_mcp_server.md`
-- **Tool Registration Pattern** (1 connections) — `.agents/skills/mcp-builder/reference/python_mcp_server.md`
+- **Quick Reference** (6 connections) — `.agents/skills/mcp-builder/reference/mcp_best_practices.md`
+- **Pagination** (1 connections) — `.agents/skills/mcp-builder/reference/mcp_best_practices.md`
+- **Response Formats** (1 connections) — `.agents/skills/mcp-builder/reference/mcp_best_practices.md`
+- **Server Naming** (1 connections) — `.agents/skills/mcp-builder/reference/mcp_best_practices.md`
+- **Tool Naming** (1 connections) — `.agents/skills/mcp-builder/reference/mcp_best_practices.md`
+- **Transport** (1 connections) — `.agents/skills/mcp-builder/reference/mcp_best_practices.md`
 
 ## Relationships
 
-- [Python MCP Server Implementation Guide](Python_MCP_Server_Implementation_Guide.md) (1 shared connections)
+- [MCP Server Best Practices](MCP_Server_Best_Practices.md) (1 shared connections)
 
 ## Source Files
 
-- `.agents/skills/mcp-builder/reference/python_mcp_server.md`
+- `.agents/skills/mcp-builder/reference/mcp_best_practices.md`
 
 ## Audit Trail
 
-- EXTRACTED: 4 (100%)
+- EXTRACTED: 6 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 
