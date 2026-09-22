@@ -197,6 +197,8 @@ export interface Encounter {
   author_id: string | null;
   state: string;
   revision: number;
+  baseline_encounter_id: string | null;
+  baseline_changed: boolean;
   draft_data: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -248,6 +250,46 @@ export async function patchEncounter(
   }
   if (!response.ok) {
     throw Object.assign(new Error("Could not save the draft."), {
+      status: response.status,
+    });
+  }
+  const payload = (await response.json()) as { encounter: Encounter };
+  return payload.encounter;
+}
+
+/** S14 follow-up: open a follow_up draft copied from a signed baseline. */
+export async function createFollowup(
+  patientUuid: string,
+  baselineId: string,
+): Promise<Encounter> {
+  const csrf = csrfToken();
+  const response = await fetch(`/api/v1/patients/${patientUuid}/encounters`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(csrf ? { "X-CSRF-Token": csrf } : {}),
+      "Idempotency-Key": idempotencyKey(),
+    },
+    body: JSON.stringify({ baseline_encounter_id: baselineId }),
+  });
+  if (response.status === 403) {
+    throw Object.assign(new Error("Only physicians may start a follow-up."), {
+      status: 403,
+    });
+  }
+  if (response.status === 409) {
+    throw Object.assign(new Error("The baseline must be signed first."), {
+      status: 409,
+    });
+  }
+  if (response.status === 422) {
+    throw Object.assign(new Error("Could not start the follow-up."), {
+      status: 422,
+    });
+  }
+  if (!response.ok) {
+    throw Object.assign(new Error("Could not start the follow-up."), {
       status: response.status,
     });
   }

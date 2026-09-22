@@ -21,7 +21,15 @@ from x_insight.cases.history import (
     validate_history_reconciliation,
     validate_medications,
 )
-from x_insight.contracts import content_hash, parse_if_match, to_utc_z, utc_now
+from x_insight.contracts import (
+    canonical_json,
+    content_hash,
+    parse_idempotency_key,
+    parse_if_match,
+    to_utc_z,
+    utc_now,
+)
+from x_insight.identity.hashing import hash_password, verify_password
 from x_insight.identity.routes import _check_csrf, _request_id, _require_session
 from x_insight.operations.audit import record_audit
 
@@ -42,8 +50,14 @@ class DiscardRequest(BaseModel):
             raise HTTPException(422, "Explicit discard confirmation is required.")
 
 
-def _payload(row: Any) -> dict[str, Any]:
+class FollowupCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    baseline_encounter_id: UUID
+
+
+def _payload(row: Any, baseline_changed: bool = False) -> dict[str, Any]:
     data = dict(row)
+    baseline = data.get("baseline_encounter_id")
     return {
         "schema_version": 1,
         "encounter": {
@@ -53,11 +67,46 @@ def _payload(row: Any) -> dict[str, Any]:
             "author_id": str(data["author_id"]) if data["author_id"] else None,
             "state": data["state"],
             "revision": data["revision"],
+            "baseline_encounter_id": str(baseline) if baseline else None,
+            "baseline_changed": bool(baseline_changed),
             "draft_data": data.get("draft_data") or {},
             "created_at": to_utc_z(data["created_at"]),
             "updated_at": to_utc_z(data["updated_at"]),
         },
     }
+
+
+def _has_newer_signed(conn: Any, patient_id: str, baseline_id: str) -> bool:
+    row = (
+        conn.execute(
+            text(
+                "SELECT EXISTS(SELECT 1 FROM encounters b JOIN encounters s "
+                "ON s.patient_id = :pid WHERE b.id = :bid "
+                "AND s.patient_id = :pid AND s.state = 'signed' "
+                "AND s.id != b.id AND (s.created_at > b.created_at OR "
+                "(s.created_at = b.created_at AND s.id::text > b.id::text)))"
+            ),
+            {"pid": str(patient_id), "bid": str(baseline_id)},
+        )
+        .mappings()
+        .first()
+    )
+    if row is None:
+        return False
+    return bool(list(row.values())[0])
+
+
+def _baseline_changed_for(conn: Any, row: Any) -> bool:
+    try:
+        data = dict(row)
+        if data.get("kind") != "follow_up":
+            return False
+        baseline = data.get("baseline_encounter_id")
+        if not baseline:
+            return False
+        return _has_newer_signed(conn, str(data["patient_id"]), str(baseline))
+    except Exception:
+        return False
 
 
 def _get_encounter(conn: Any, encounter_id: UUID) -> Any:
@@ -94,7 +143,10 @@ def list_encounters(patient_id: UUID, request: Request) -> JSONResponse:
         return JSONResponse(
             {
                 "schema_version": 1,
-                "items": [_payload(r)["encounter"] for r in rows],
+                "items": [
+                    _payload(r, _baseline_changed_for(conn, r))["encounter"]
+                    for r in rows
+                ],
             },
             headers={"Cache-Control": "private, no-store"},
         )
@@ -107,7 +159,7 @@ def get_encounter(encounter_id: UUID, request: Request) -> JSONResponse:
         if denied is not None:
             return denied
         row = _get_encounter(conn, encounter_id)
-        payload = _payload(row)
+        payload = _payload(row, _baseline_changed_for(conn, row))
         return JSONResponse(
             payload,
             headers={
@@ -444,7 +496,7 @@ def patch_encounter(
             result_reference=str(updated["id"]),
             target_display=str(updated["patient_id"]),
         )
-        payload = _payload(updated)
+        payload = _payload(updated, _baseline_changed_for(conn, updated))
         return JSONResponse(
             payload,
             headers={
@@ -512,9 +564,156 @@ def discard_encounter(
             target_display=str(discarded["patient_id"]),
         )
         return JSONResponse(
-            _payload(discarded),
+            _payload(discarded, _baseline_changed_for(conn, discarded)),
             headers={
                 "ETag": f'"{discarded["revision"]}"',
                 "Cache-Control": "private, no-store",
             },
         )
+
+
+@router.post("/patients/{patient_id}/encounters")
+def create_followup(
+    patient_id: UUID, body: FollowupCreate, request: Request
+) -> JSONResponse:
+    with db.transaction() as conn:
+        denied, actor = _require_session(request, conn)
+        if denied is not None:
+            return denied
+        if actor["role"] != "physician":
+            raise HTTPException(403, "Physician access required.")
+        csrf_denied = _check_csrf(request, actor)
+        if csrf_denied is not None:
+            return csrf_denied
+        key = parse_idempotency_key(request.headers)
+        if key is None:
+            raise HTTPException(422, "A valid Idempotency-Key is required.")
+        patient = (
+            conn.execute(
+                text("SELECT * FROM patients WHERE id = :id FOR UPDATE"),
+                {"id": str(patient_id)},
+            )
+            .mappings()
+            .first()
+        )
+        if patient is None:
+            raise HTTPException(404, "Patient not found.")
+        baseline = (
+            conn.execute(
+                text("SELECT * FROM encounters WHERE id = :id"),
+                {"id": str(body.baseline_encounter_id)},
+            )
+            .mappings()
+            .first()
+        )
+        if baseline is None or str(baseline["patient_id"]) != str(patient_id):
+            raise HTTPException(404, "Baseline encounter not found.")
+        if patient["archived"]:
+            raise HTTPException(409, "Archived patient drafts are read-only.")
+        if baseline["state"] != "signed":
+            raise HTTPException(409, "Only signed baselines can start a follow-up.")
+        actor_id = str(actor["user_id"])
+        scope = {
+            "actor_id": actor_id,
+            "operation": "encounter.followup_create",
+            "idempotency_key": key,
+            "patient_id": str(patient_id),
+            "baseline_encounter_id": str(body.baseline_encounter_id),
+        }
+        conn.execute(
+            text("SELECT pg_advisory_xact_lock(hashtextextended(:scope, 0))"),
+            {"scope": canonical_json(scope).decode()},
+        )
+        fingerprint = canonical_json(
+            {
+                "patient_id": str(patient_id),
+                "baseline_encounter_id": str(body.baseline_encounter_id),
+            }
+        ).decode()
+        saved = (
+            conn.execute(
+                text(
+                    "SELECT request_hash, result_payload, result_status "
+                    "FROM audit_events "
+                    "WHERE actor_id = :actor_id AND operation = :operation "
+                    "AND idempotency_key = :idempotency_key"
+                ),
+                {
+                    "actor_id": actor_id,
+                    "operation": "encounter.followup_create",
+                    "idempotency_key": key,
+                },
+            )
+            .mappings()
+            .first()
+        )
+        if saved is not None:
+            if not verify_password(fingerprint, str(saved["request_hash"])):
+                raise HTTPException(
+                    409, "Idempotency key was used for another request."
+                )
+            return JSONResponse(
+                status_code=int(saved["result_status"] or 201),
+                content=saved["result_payload"],
+            )
+        baseline_draft = baseline["draft_data"]
+        if not isinstance(baseline_draft, dict):
+            baseline_draft = {}
+        new_draft: dict[str, Any] = {}
+        stored_history = baseline_draft.get("history")
+        if (
+            isinstance(stored_history, dict)
+            and isinstance(stored_history.get("definition_version"), str)
+            and isinstance(stored_history.get("values"), dict)
+        ):
+            new_draft["history"] = {
+                "definition_version": stored_history["definition_version"],
+                "values": stored_history["values"],
+                "provenance": {
+                    "actor_id": actor_id,
+                    "recorded_at": to_utc_z(utc_now()),
+                    "encounter_revision": 1,
+                },
+            }
+        stored_medications = baseline_draft.get("medications")
+        if isinstance(stored_medications, list):
+            new_draft["medications"] = [
+                dict(m) if isinstance(m, dict) else m for m in stored_medications
+            ]
+        new_draft["history_reconciliation"] = {
+            "status": "pending",
+            "baseline_encounter_id": str(body.baseline_encounter_id),
+        }
+        created = (
+            conn.execute(
+                text(
+                    "INSERT INTO encounters (patient_id, kind, author_id, "
+                    " state, baseline_encounter_id, draft_data) VALUES (:patient_id, "
+                    " 'follow_up', :author_id, 'draft', :baseline_id, "
+                    " CAST(:data AS jsonb)) "
+                    "RETURNING *"
+                ),
+                {
+                    "patient_id": str(patient_id),
+                    "author_id": actor_id,
+                    "baseline_id": str(body.baseline_encounter_id),
+                    "data": json.dumps(new_draft),
+                },
+            )
+            .mappings()
+            .one()
+        )
+        result = _payload(created, _baseline_changed_for(conn, created))
+        record_audit(
+            conn,
+            operation="encounter.followup_create",
+            actor_id=actor_id,
+            idempotency_key=key,
+            request_hash=hash_password(fingerprint),
+            result_reference=str(created["id"]),
+            request_id=_request_id(request),
+            target_display=str(patient_id),
+            result_payload=result,
+            result_status=201,
+        )
+        return JSONResponse(status_code=201, content=result)

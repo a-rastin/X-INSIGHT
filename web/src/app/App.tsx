@@ -3,6 +3,7 @@ import "../shared/theme.css";
 import {
   RESEARCH_NOTICE,
   changeOwnPassword,
+  createFollowup,
   createPhysician,
   createPatient,
   discardEncounter,
@@ -1605,9 +1606,127 @@ function Dashboard({ user }: { user: SessionUser }) {
   );
 }
 
+/**
+ * S14 patient chart: shared encounter list with per-encounter open and
+ * physician-only follow-up start. Read-only for non-authors (DraftEditor owns
+ * the author gate); the chart itself persists nothing.
+ */
+function PatientChart({
+  patient,
+  role,
+  onOpenEncounter,
+}: {
+  patient: Patient;
+  userId: string;
+  role: string;
+  onOpenEncounter: (encounterId: string) => void;
+}) {
+  const [items, setItems] = useState<Encounter[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [starting, setStarting] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setItems(null);
+    setError(null);
+    listEncounters(patient.id)
+      .then((all) => {
+        if (!cancelled) {
+          setItems(all);
+        }
+      })
+      .catch((failure: unknown) => {
+        if (!cancelled) {
+          setError(
+            failure instanceof Error ? failure.message : "Could not load the chart.",
+          );
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [patient.id]);
+
+  async function handleStartFollowup(baselineId: string): Promise<void> {
+    setStarting(baselineId);
+    setStartError(null);
+    try {
+      const created = await createFollowup(patient.id, baselineId);
+      setItems((prev) => (prev === null ? [created] : [...prev, created]));
+      onOpenEncounter(created.id);
+    } catch (failure: unknown) {
+      setStartError(
+        failure instanceof Error ? failure.message : "Could not start the follow-up.",
+      );
+    } finally {
+      setStarting(null);
+    }
+  }
+
+  const baselineChanged =
+    items !== null &&
+    items.some((item) => item.kind === "follow_up" && item.baseline_changed);
+
+  return (
+    <section data-testid="chart-section" aria-label="Chart">
+      <h3>Chart</h3>
+      <p>Patient {patient.patient_id}</p>
+      {error ? (
+        <p role="alert" className="x-error">
+          {error}
+        </p>
+      ) : items === null ? (
+        <p>Loading…</p>
+      ) : (
+        <>
+          {baselineChanged ? (
+            <p data-testid="chart-baseline-changed">
+              Baseline changed — reconcile against the newer signed record before signing.
+            </p>
+          ) : null}
+          <ul data-testid="chart-encounters">
+            {items.map((item) => (
+              <li key={item.id} data-testid={`chart-encounter-${item.id}`}>
+                <span data-testid={`chart-badge-${item.id}`}>
+                  {item.kind} · {item.state}
+                </span>{" "}
+                <button
+                  type="button"
+                  className="x-button"
+                  data-testid={`open-encounter-${item.id}`}
+                  onClick={() => onOpenEncounter(item.id)}
+                >
+                  Open encounter {item.kind}
+                </button>
+                {item.state === "signed" && role === "physician" ? (
+                  <button
+                    type="button"
+                    className="x-button"
+                    data-testid={`start-followup-${item.id}`}
+                    disabled={starting !== null}
+                    onClick={() => void handleStartFollowup(item.id)}
+                  >
+                    Start follow-up
+                  </button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+          {starting !== null ? <p role="status">Starting follow-up…</p> : null}
+          {startError ? (
+            <p role="alert" className="x-error">
+              {startError}
+            </p>
+          ) : null}
+        </>
+      )}
+    </section>
+  );
+}
+
 const PATIENT_NAME_RE = /^\p{L}+$/u;
 const PATIENT_ID_RE = /^[0-9]{10}$/;
-
 function PatientsSection({ role, userId }: { role: string; userId: string }) {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
@@ -1623,6 +1742,7 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
       return null;
     }
   });
+  const [selectedEncounterId, setSelectedEncounterId] = useState<string | null>(null);
 
   function openDraft(item: Patient): void {
     // Warn when switching drafts with pending local edits.
@@ -1632,6 +1752,7 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
     ) {
       return;
     }
+    setSelectedEncounterId(null);
     setOpenPatient(item);
     try {
       localStorage.setItem("xinsight.openPatient", JSON.stringify(item));
@@ -1641,6 +1762,7 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
   }
 
   function closeDraft(): void {
+    setSelectedEncounterId(null);
     setOpenPatient(null);
     try {
       localStorage.removeItem("xinsight.openPatient");
@@ -1749,33 +1871,96 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
         </table>
       )}
       {openPatient ? (
-        <DraftEditor
-          patient={openPatient}
-          userId={userId}
-          role={role}
-          onClose={closeDraft}
-        />
+        <>
+          <PatientChart
+            patient={openPatient}
+            userId={userId}
+            role={role}
+            onOpenEncounter={setSelectedEncounterId}
+          />
+          <DraftEditor
+            patient={openPatient}
+            userId={userId}
+            role={role}
+            onClose={closeDraft}
+            initialEncounterId={selectedEncounterId}
+          />
+        </>
       ) : null}
     </section>
   );
 }
 
 /**
- * Single autosave path for all draft pages (S07 handoff).
- * Revision ownership: the encounter revision is the only write precondition
- * (If-Match); every assessment page must reuse getEncounter/patchEncounter,
- * never a separate persistence mechanism.
+ * S14 follow-up extras: baseline-copy notice, historical prior scores, and
+ * the honest generation-status pin. Prior scores render as history only —
+ * the editor never prefills PANSS/C-SSRS answers from the baseline.
  */
+function FollowupExtras({
+  encounter,
+  baseline,
+}: {
+  encounter: Encounter;
+  baseline: Encounter | null;
+}) {
+  const baselineId =
+    typeof encounter.baseline_encounter_id === "string"
+      ? encounter.baseline_encounter_id
+      : "record";
+  let panssText =
+    "No prior PANSS score — prior: none (historical only; never scored as new answers).";
+  let cssrsText =
+    "No prior C-SSRS score — prior: none (historical only; never scored as new answers).";
+  if (baseline !== null) {
+    const stored = baseline.draft_data;
+    const parsedPanss = panssFromStored(stored.panss);
+    const panssPreview = previewPanss(parsedPanss.answers, parsedPanss.notAssessed);
+    if (panssPreview.total !== null) {
+      panssText =
+        `Prior PANSS total ${panssPreview.total} ` +
+        `(positive ${panssPreview.positive}, negative ${panssPreview.negative}, ` +
+        `general ${panssPreview.general}) (historical).`;
+    }
+    const parsedCssrs = cssrsFromStored(stored.cssrs);
+    const cssrsPreview = previewCssrs(parsedCssrs.levels, parsedCssrs.notAssessed);
+    if (cssrsPreview.severity !== null) {
+      cssrsText = `Prior C-SSRS severity ${cssrsPreview.severity} (historical).`;
+    }
+  }
+  return (
+    <>
+      <p data-testid="followup-baseline-note">
+        Copied from baseline {baselineId} — reconcile history and medications before
+        signing.
+      </p>
+      <section data-testid="prior-scores" aria-label="Prior scores">
+        <h4>Prior scores</h4>
+        <p>{panssText}</p>
+        <p>{cssrsText}</p>
+        {baseline !== null ? (
+          <p>
+            Baseline recorded {baseline.created_at} (historical).
+          </p>
+        ) : (
+          <p>Baseline scores pending — prior: none (historical only).</p>
+        )}
+      </section>
+      <p data-testid="generation-status">Proposal generation unavailable.</p>
+    </>
+  );
+}
 function DraftEditor({
   patient,
   userId,
   role,
   onClose,
+  initialEncounterId,
 }: {
   patient: Patient;
   userId: string;
   role: string;
   onClose: () => void;
+  initialEncounterId?: string | null;
 }) {
   const [encounter, setEncounter] = useState<Encounter | null>(null);
   const [note, setNote] = useState("");
@@ -1820,6 +2005,7 @@ function DraftEditor({
   const [phone, setPhone] = useState("");
   const [phoneState, setPhoneState] = useState("");
   const phoneRevisionRef = useRef(0);
+  const [baselineSnapshot, setBaselineSnapshot] = useState<Encounter | null>(null);
 
   function isDiagDirty(): boolean {
     return JSON.stringify(diagAnswersRef.current) !== savedDiagRef.current;
@@ -1869,7 +2055,12 @@ function DraftEditor({
     setLoadError(null);
     listEncounters(patient.id)
       .then((all) => {
-        const resumable = all.find((e) => e.state === "draft") ?? all[0];
+        const resumable =
+          (initialEncounterId
+            ? all.find((e) => e.id === initialEncounterId)
+            : undefined) ??
+          all.find((e) => e.state === "draft") ??
+          all[0];
         if (!resumable) {
           throw new Error("No resumable draft.");
         }
@@ -1976,7 +2167,37 @@ function DraftEditor({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [patient.id]);
+  }, [patient.id, initialEncounterId]);
+  // S14 follow-up baseline snapshot: historical scores only, never prefilled.
+  useEffect(() => {
+    const baselineId =
+      encounter !== null &&
+      encounter.kind === "follow_up" &&
+      typeof encounter.baseline_encounter_id === "string"
+        ? encounter.baseline_encounter_id
+        : null;
+    if (baselineId === null) {
+      setBaselineSnapshot(null);
+      return;
+    }
+    let cancelled = false;
+    setBaselineSnapshot(null);
+    getEncounter(baselineId)
+      .then((baseline) => {
+        if (!cancelled) {
+          setBaselineSnapshot(baseline);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBaselineSnapshot(null);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [encounter?.id, encounter?.kind, encounter?.baseline_encounter_id]);
+
 
   // S12 released history/effects definition, generic over its content.
   // 404 (draft unreleased) leaves definition null: sections stay visible
@@ -2591,8 +2812,12 @@ function DraftEditor({
           </div>
           <p role="status">Draft discarded.</p>
         </>
+
       ) : (
         <>
+          {encounter.kind === "follow_up" ? (
+            <FollowupExtras encounter={encounter} baseline={baselineSnapshot} />
+          ) : null}
           <div className="x-field">
             <label htmlFor={`draft-note-${encounter.id}`}>Draft note</label>
             <textarea
