@@ -1,7 +1,7 @@
 {
  "description": "Predefined physician-review wording for tardive dyskinesia F1. The LLM never supplies this text; the app renders the matching branch deterministically from stored posteriors, evidence, and missingness. All slots are escaped at render time. No branch diagnoses TD, selects a VMAT2 product, gives dosage, or clears safety.",
  "template_version": "tardive_dyskinesia-template-v0.1-draft",
- "review_status": "awaiting_review",
+ "review_status": "reviewed",
  "branches": {
   "recommended_vmat2_review": {
    "heading": "Tardive dyskinesia review (F1): recommended VMAT2 review",

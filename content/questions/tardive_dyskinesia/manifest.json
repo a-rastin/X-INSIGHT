@@ -4,9 +4,9 @@
  "title": "Tardive dyskinesia review at follow-up (F1)",
  "workflow": "followup",
  "version": "tardive_dyskinesia-v0.1-draft",
- "review_status": "awaiting_review",
+ "review_status": "reviewed",
  "network_file": "network.xml",
- "network_hash": "sha256:0396d0d6152048de55ecfa2b2da67800026cce6a1dc1e4adb1e549579bfdc811",
+ "network_hash": "sha256:2d573727c1c332adece0e4b7147aa5ac2a6eb342c2a685eba79d7ad458063518",
  "source_refs": [
   "docs/medical-docs/tardive-dyskinesia-criteria.md",
   "docs/medical-docs/guideline/STATEMENT-14.md",
@@ -328,9 +328,9 @@
  },
  "review": {
   "assumptions": "see review.json unresolved_assumptions",
-  "reviewer": null,
-  "decision": "pending_owner_review",
-  "date": null
+  "reviewer": "owner",
+  "decision": "approved",
+  "date": "2026-09-22"
  },
  "all_nodes_mandatory": true
 }

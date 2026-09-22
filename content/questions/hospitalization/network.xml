@@ -4,7 +4,7 @@
 <NAME>Hospitalization_R1_draft</NAME>
 <PROPERTY>label=hospitalization R1 draft network</PROPERTY>
 <PROPERTY>package=hospitalization v0.1-draft</PROPERTY>
-<PROPERTY>review_status=awaiting_review</PROPERTY>
+<PROPERTY>review_status=reviewed</PROPERTY>
 <PROPERTY>clinical_validity=none; reference tables are synthetic structural placeholders, not patient estimates</PROPERTY>
 <PROPERTY>ordering_contract=child state fastest, last declared parent next, first parent slowest</PROPERTY>
 <VARIABLE><NAME>SuicidalConcern</NAME><OUTCOME>absent_assessed</OUTCOME><OUTCOME>ideation_without_plan</OUTCOME><OUTCOME>plan_intent_or_recent_behavior</OUTCOME><OUTCOME>unknown_incomplete</OUTCOME><PROPERTY>label=Suicidal concern (current)</PROPERTY><PROPERTY>definition=Current suicidal ideation/behavior summary from reviewed C-SSRS meanings; unknown_incomplete is explicit, never negative</PROPERTY><PROPERTY>source=docs/medical-docs/CSSRS.md + content/assessments/cssrs.json cssrs-v1</PROPERTY><PROPERTY>status=proposed_mapping_for_review</PROPERTY></VARIABLE>

@@ -31,7 +31,7 @@
   "rule": "Rendered directly from saved inputs WITHOUT waiting for any LLM request, inference result, or template posterior. Shown alongside (never replaced by) the posterior branch."
  },
  "mapping_rule": "Render consideration_table for every successful run as a review distribution only; never render any single ingredient as selected, recommended, or ranked-first. Always append unknown_disclosure and ddi_pointer. Always evaluate deterministic_caution_pointer from saved inputs first.",
- "review_status": "awaiting_review",
+ "review_status": "reviewed",
  "slots": [
   "PriorTreatmentContext_source",
   "PriorTreatmentContext_state",

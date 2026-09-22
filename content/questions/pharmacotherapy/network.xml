@@ -4,7 +4,7 @@
 <NAME>Pharmacotherapy_R2_draft</NAME>
 <PROPERTY>label=pharmacotherapy R2 draft network</PROPERTY>
 <PROPERTY>package=pharmacotherapy v0.1-draft</PROPERTY>
-<PROPERTY>review_status=awaiting_review</PROPERTY>
+<PROPERTY>review_status=reviewed</PROPERTY>
 <PROPERTY>clinical_validity=none; reference tables are synthetic structural placeholders, not patient estimates</PROPERTY>
 <PROPERTY>ordering_contract=child state fastest, last declared parent next, first parent slowest</PROPERTY>
 <VARIABLE TYPE="nature">

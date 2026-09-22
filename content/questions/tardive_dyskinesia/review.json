@@ -3,9 +3,9 @@
  "question_key": "tardive_dyskinesia",
  "workflow": "followup",
  "order": "F1",
- "review_status": "awaiting_review",
- "reviewer": null,
- "review_date": null,
+ "review_status": "reviewed",
+ "reviewer": "owner",
+ "review_date": "2026-09-22", "decision": "approved",
  "clinical_activation_allowed": false,
  "review_notice": "Draft for owner review. Nothing in this package is clinically approved, establishes a diagnostic cutoff, or selects treatment. Do not activate.",
  "source_classification": {
@@ -222,8 +222,8 @@
   "numerical_fixture": "hand-worked by plain enumeration outside the implementation under test (see examples.json); expected literals recorded for harness replay"
  },
  "admission_measurements": {
-  "xml_bytes": 8657,
-  "xml_sha256": "0396d0d6152048de55ecfa2b2da67800026cce6a1dc1e4adb1e549579bfdc811",
+  "xml_bytes": 8650,
+  "xml_sha256": "2d573727c1c332adece0e4b7147aa5ac2a6eb342c2a685eba79d7ad458063518",
   "nodes": 9,
   "cpt_cells": 242,
   "child_rows": 59,

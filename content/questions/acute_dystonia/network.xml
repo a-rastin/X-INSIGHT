@@ -4,7 +4,7 @@
 <NAME>AcuteDystonia_F4_draft</NAME>
 <PROPERTY>label=acute dystonia F4 draft network</PROPERTY>
 <PROPERTY>package=acute_dystonia v0.1-draft</PROPERTY>
-<PROPERTY>review_status=awaiting_review</PROPERTY>
+<PROPERTY>review_status=reviewed</PROPERTY>
 <PROPERTY>clinical_validity=none; reference tables are synthetic structural placeholders, not patient estimates</PROPERTY>
 <PROPERTY>ordering_contract=child state fastest, last declared parent next, first parent slowest</PROPERTY>
 <PROPERTY>gate=encounter.kind == followup AND acute_dystonia effect status == present; absent yields not_applicable, not_assessed or missing yields needs_clarification</PROPERTY>

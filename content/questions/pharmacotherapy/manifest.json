@@ -88,7 +88,7 @@
  "impossible_evidence_policy": "fail with explicit error; never soften or approximate. All declared states (including unknown_incomplete) are possible, so impossibility arises only from schema violations.",
  "likelihood_evidence": "disabled",
  "network_file": "network.xml",
- "network_hash": "sha256:77dd8dd050720c7d517eb52a68ab2cf94ae48ccb54ea760d184560389fa0951d",
+ "network_hash": "sha256:e8491d5e225c56d03860642c6a9f34e7ab760414ae34d3f267fb9219f046f1d5",
  "numerical_tolerances": {
   "percentage_row_sum_absolute": 1e-06,
   "probability_sum_after_divide_by_100_absolute": 1e-08,
@@ -267,11 +267,11 @@
  "question_key": "pharmacotherapy",
  "review": {
   "assumptions": "see review.json unresolved_assumptions; reference tables synthetic; catalog binding provisional; both-usage rationale proposed",
-  "date": null,
-  "decision": "pending_owner_review",
-  "reviewer": null
+  "date": "2026-09-22",
+  "decision": "approved",
+  "reviewer": "owner"
  },
- "review_status": "awaiting_review",
+ "review_status": "reviewed",
  "reviewed_result_mapping": "posterior over 22 consideration states rendered as a review table only; the maximum posterior is not a treatment recommendation and no branch selects a drug; deterministic caution pointer from saved inputs shown first and never waits for LLM; DDI report pointer always appended; unknown_disclosure always appended; needs_clarification branch on required missing/conflict",
  "schema_version": "1.0-draft",
  "source_refs": [
