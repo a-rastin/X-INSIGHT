@@ -1,0 +1,79 @@
+{
+  "description": "Predefined physician-review wording for akathisia F2. The LLM never supplies this text; the app renders the matching branch deterministically from stored posteriors, evidence, and missingness. All slots are escaped at render time. No branch diagnoses akathisia, selects a drug or product, gives dosage, or clears safety. Statement 13 is a 2C suggestion and is not appropriate for electronic decision support or quality measurement.",
+  "template_version": "akathisia-template-v0.1-draft",
+  "review_status": "awaiting_review",
+  "branches": {
+    "review_regimen_and_adjunct": {
+      "heading": "Akathisia review (F2): regimen and adjunct options to discuss",
+      "body": "Recorded inputs: restlessness severity {RestlessnessSeverity_state} ({RestlessnessSeverity_source}); observed motor restlessness {MotorRestlessness_state} ({MotorRestlessness_source}); attribution {AttributionContext_state} ({AttributionContext_source}); regimen feasibility {RegimenFeasibility_state} ({RegimenFeasibility_source}); adjunct safety context {AdjunctSafetyContext_state} ({AdjunctSafetyContext_source}); urgent concern {UrgentConcern_state} ({UrgentConcern_source}). Network Akathisia_F2_draft ({network_version}) posteriors: regimen+adjunct {p_both}%, regimen {p_regimen}%, adjunct {p_adjunct}%, constrained {p_constrained}%, establish-indication {p_establish}% (CPT percentages and posteriors are shown separately; posteriors are not diagnostic probabilities and not treatment-effect estimates). Review prompt: antipsychotic-associated akathisia is recorded with regimen changes reviewable and no heightened adjunct safety flag. Discuss dose reduction and switch to a lower-akathisia-propensity agent alongside benzodiazepine and beta-blocker options with the patient, weighing reduced restlessness against psychotic-symptom recurrence with monitoring. The physician decides; this output never selects a drug, product, or dose. Safety: {urgent_text}. {unknown_disclosure} {context_note}",
+      "posterior_state": "review_regimen_and_adjunct"
+    },
+    "review_regimen_options": {
+      "heading": "Akathisia review (F2): regimen options to discuss",
+      "body": "Recorded inputs: restlessness severity {RestlessnessSeverity_state} ({RestlessnessSeverity_source}); observed motor restlessness {MotorRestlessness_state} ({MotorRestlessness_source}); attribution {AttributionContext_state} ({AttributionContext_source}); regimen feasibility {RegimenFeasibility_state} ({RegimenFeasibility_source}); adjunct safety context {AdjunctSafetyContext_state} ({AdjunctSafetyContext_source}); urgent concern {UrgentConcern_state} ({UrgentConcern_source}). Network Akathisia_F2_draft ({network_version}) posteriors: regimen+adjunct {p_both}%, regimen {p_regimen}%, adjunct {p_adjunct}%, constrained {p_constrained}%, establish-indication {p_establish}%. Review prompt: antipsychotic-associated akathisia is recorded with regimen changes reviewable, but adjunct discussion carries a heightened or still-unknown safety context ({AdjunctSafetyContext_state}). Discuss dose reduction and switch options with the patient with the usual psychosis-monitoring, and review adjunct safety ({adjunct_detail}) before any adjunct discussion. The physician decides; this output never selects a drug, product, or dose. Safety: {urgent_text}. {unknown_disclosure} {context_note}",
+      "posterior_state": "review_regimen_options"
+    },
+    "review_adjunct_options": {
+      "heading": "Akathisia review (F2): adjunct options to discuss",
+      "body": "Recorded inputs: restlessness severity {RestlessnessSeverity_state} ({RestlessnessSeverity_source}); observed motor restlessness {MotorRestlessness_state} ({MotorRestlessness_source}); attribution {AttributionContext_state} ({AttributionContext_source}); regimen feasibility {RegimenFeasibility_state} ({RegimenFeasibility_source}); adjunct safety context {AdjunctSafetyContext_state} ({AdjunctSafetyContext_source}); urgent concern {UrgentConcern_state} ({UrgentConcern_source}). Network Akathisia_F2_draft ({network_version}) posteriors: regimen+adjunct {p_both}%, regimen {p_regimen}%, adjunct {p_adjunct}%, constrained {p_constrained}%, establish-indication {p_establish}%. Review prompt: antipsychotic-associated akathisia is recorded, but regimen changes are constrained by psychosis tradeoff or still unknown, while adjunct safety review is routine. Discuss benzodiazepine and beta-blocker options with the patient alongside continued psychosis monitoring, eliciting the patient's concerns about each option's tradeoffs. The physician decides; this output never selects a drug, product, or dose. Safety: {urgent_text}. {unknown_disclosure} {context_note}",
+      "posterior_state": "review_adjunct_options"
+    },
+    "review_constrained_options": {
+      "heading": "Akathisia review (F2): constrained option discussion",
+      "body": "Recorded inputs: restlessness severity {RestlessnessSeverity_state} ({RestlessnessSeverity_source}); observed motor restlessness {MotorRestlessness_state} ({MotorRestlessness_source}); attribution {AttributionContext_state} ({AttributionContext_source}); regimen feasibility {RegimenFeasibility_state} ({RegimenFeasibility_source}); adjunct safety context {AdjunctSafetyContext_state} ({AdjunctSafetyContext_source}); urgent concern {UrgentConcern_state} ({UrgentConcern_source}). Network Akathisia_F2_draft ({network_version}) posteriors: regimen+adjunct {p_both}%, regimen {p_regimen}%, adjunct {p_adjunct}%, constrained {p_constrained}%, establish-indication {p_establish}%. Review prompt: antipsychotic-associated akathisia is recorded, but regimen changes are constrained or unknown AND adjunct safety needs heightened or still-unknown review. Discuss all four source options (dose reduction, switch, benzodiazepine, beta-blocker) with explicit benefit-harm balancing and the patient's preferences; akathisia often causes nonadherence, so assess adherence and distress directly. The physician decides; this output never selects a drug, product, or dose. Safety: {urgent_text}. {unknown_disclosure} {context_note}",
+      "posterior_state": "review_constrained_options"
+    },
+    "establish_indication_first": {
+      "heading": "Akathisia review (F2): establish indication first",
+      "body": "Recorded inputs: restlessness severity {RestlessnessSeverity_state} ({RestlessnessSeverity_source}); observed motor restlessness {MotorRestlessness_state} ({MotorRestlessness_source}); attribution {AttributionContext_state} ({AttributionContext_source}); regimen feasibility {RegimenFeasibility_state} ({RegimenFeasibility_source}); adjunct safety context {AdjunctSafetyContext_state} ({AdjunctSafetyContext_source}); urgent concern {UrgentConcern_state} ({UrgentConcern_source}). Network Akathisia_F2_draft ({network_version}) posteriors: regimen+adjunct {p_both}%, regimen {p_regimen}%, adjunct {p_adjunct}%, constrained {p_constrained}%, establish-indication {p_establish}%. Review prompt: the movement attribution is recorded as alternative-or-unresolved, still unknown, or without enough basis for a treatment discussion. Assess onset timing (usually within 4 weeks of initiation or dose escalation; occasionally after reduction of EPS treatment), review antiemetics and antidepressants as well as antipsychotics, and evaluate anxiety, psychotic or mood-related agitation, restless legs syndrome, intoxication or withdrawal, and neurological or medical explanations before any regimen or adjunct discussion; do not escalate antipsychotic dose for apparent agitation without reassessing akathisia. Characteristic movements without subjective restlessness are pseudoakathisia: reassess rather than treating as akathisia. No option prompt is made from this branch. Safety: {urgent_text}. {unknown_disclosure}",
+      "posterior_state": "establish_indication_first"
+    },
+    "needs_clarification": {
+      "heading": "Akathisia review (F2): clarification required",
+      "body": "No posterior is reported. Required input is missing, partial, or conflicting: {missing_fields}. Complete or reconcile {missing_fields} and start a new run; later questions are stopped until this is resolved. Any already-recorded urgent feature below remains visible and does not wait for a model run."
+    },
+    "not_applicable": {
+      "heading": "Akathisia review (F2): not applicable",
+      "body": "No posterior is reported. The follow-up akathisia effect status is recorded as absent ({effect_source}), so this question does not apply. No inference, no CPTs, and no negative akathisia posterior are produced. An absent recording is never evidence of another movement disorder."
+    },
+    "unknown_disclosure": "Inputs recorded as unknown/incomplete: {unknown_fields_or_none}. Unknown is not a negative finding; clarify as clinically indicated. BARS item scores, where recorded, are measurement support only and never establish medication causation.",
+    "context_note": "Source context (not a network output): akathisia tends not to respond to anticholinergic agents, and mirtazapine has only limited literature support; neither statement selects or prohibits treatment. Propranolol discussion includes blood-pressure monitoring with dose increases and interaction/food exposure review per local labeling; this package gives no dose. Patient preference on each option's tradeoffs was elicited as: {preference_summary}."
+  },
+  "deterministic_urgent_flag": {
+    "rule": "Rendered directly from saved inputs WITHOUT waiting for any LLM request, inference result, or template posterior. Shown alongside (never replaced by) the posterior branch.",
+    "conditions": [
+      {
+        "when": "UrgentConcern == present",
+        "text": "URGENT recorded finding: suicidality, dysphoria, or another urgent safety concern is recorded alongside akathisia. Seek immediate senior/emergency evaluation per local emergency protocol. Do not await model output."
+      }
+    ],
+    "otherwise": "No deterministic urgent flag fires; the posterior branch above still requires physician review."
+  },
+  "mapping_rule": "Render the branch matching the highest-posterior OptionReview state ONLY as a review prompt; the posterior maximum is not a validated recommendation rule and the physician may choose any course. Always render the stored IndicationReview and UrgentSafetyReview posteriors alongside. Always append unknown_disclosure and context_note. Always evaluate deterministic_urgent_flag from saved inputs first.",
+  "slots": [
+    "RestlessnessSeverity_state",
+    "RestlessnessSeverity_source",
+    "MotorRestlessness_state",
+    "MotorRestlessness_source",
+    "AttributionContext_state",
+    "AttributionContext_source",
+    "RegimenFeasibility_state",
+    "RegimenFeasibility_source",
+    "AdjunctSafetyContext_state",
+    "AdjunctSafetyContext_source",
+    "UrgentConcern_state",
+    "UrgentConcern_source",
+    "network_version",
+    "p_both",
+    "p_regimen",
+    "p_adjunct",
+    "p_constrained",
+    "p_establish",
+    "urgent_text",
+    "unknown_fields_or_none",
+    "missing_fields",
+    "effect_source",
+    "adjunct_detail",
+    "preference_summary"
+  ]
+}

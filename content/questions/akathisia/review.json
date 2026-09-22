@@ -1,0 +1,298 @@
+{
+  "package_version": "akathisia-v0.1-draft",
+  "question_key": "akathisia",
+  "workflow": "followup",
+  "order": "F2",
+  "review_status": "awaiting_review",
+  "reviewer": null,
+  "review_date": null,
+  "clinical_activation_allowed": false,
+  "review_notice": "Draft for owner review. Nothing in this package is clinically approved, establishes a diagnostic cutoff, or selects treatment. Do not activate.",
+  "source_classification": {
+    "source_derived": "Statements reproduced or conservatively constrained from the cited sources without adding a clinical threshold or converting evidence grades into probabilities.",
+    "proposed_for_review": "Agent-proposed graph, states, transforms, horizons, wording, and reference values; not source-derived clinical rules.",
+    "drafting_lead": "BN-13 is an incomplete, inference-disabled and deployment-disabled drafting lead, not an approved mapping. Its seven deterministic 0/1 review tables were replaced with soft argmax-preserving placeholders; no BN-13 activation metadata was copied."
+  },
+  "question_enumeration": {
+    "specific_question": "For an adult follow-up encounter whose akathisia effect status is recorded as present, given current restlessness severity, observed motor restlessness, diagnostic/attribution context, regimen-change feasibility and tradeoff, adjunct safety-review context, and urgent concern, what is the posterior distribution over option-discussion prompts (regimen review vs adjunct review vs both vs constrained discussion vs establish-indication-first), with parallel indication and urgent-safety review prompts, to structure physician review?",
+    "intended_setting": "Adult outpatient follow-up for schizophrenia; current dated encounter. Not the emergency department. Local setting confirmation requested.",
+    "proposed_time_horizon": "Current encounter (no outcome prediction horizon). The 4-week onset lookback and medication-change history are constituents of the proposed attribution field, not a timed prediction.",
+    "output_meanings": {
+      "established_current_association": "Review prompt: akathisia associated with antipsychotic exposure is recorded; option discussion may proceed. Not a diagnosis and not a prescription.",
+      "assess_differential_and_association": "Review prompt: attribution is alternative-or-unresolved or partly unknown; work up onset timing, medication review, and exclusions before any option discussion. No option prompt from this branch.",
+      "no_current_treatment_rule": "Review prompt: attribution and movement observation are both still unknown; there is no basis for even a differential workup prompt beyond routine assessment. Not a negative finding.",
+      "review_regimen_and_adjunct": "Review prompt: indication established, regimen changes reviewable, adjunct safety routine; discuss all four source options with tradeoff monitoring. Not a prescription, product choice, or dose.",
+      "review_regimen_options": "Review prompt: indication established with regimen reviewable but adjunct safety heightened or unknown; lead with dose-reduction/switch discussion and complete adjunct safety review first.",
+      "review_adjunct_options": "Review prompt: indication established with routine adjunct safety but constrained or unknown regimen feasibility; lead with benzodiazepine/beta-blocker discussion with patient-preference elicitation and continued psychosis monitoring.",
+      "review_constrained_options": "Review prompt: indication established but both pathways carry constraints or unknown safety; discuss all options with explicit benefit-harm balancing, adherence assessment, and preference elicitation.",
+      "establish_indication_first": "Review prompt: attribution unresolved; establish indication before any option discussion.",
+      "urgent_clinician_assessment": "Parallel prompt plus deterministic flag: recorded suicidality, dysphoria, or other urgent concern takes priority regardless of diagnostic status."
+    },
+    "applicability": "Follow-up encounters only (encounter.kind == followup) with akathisia effect status present. Absent yields not_applicable with reason; not_assessed/missing/conflicting yields needs_clarification stopping later questions."
+  },
+  "sources": [
+    {
+      "path": "docs/medical-docs/akathisia-criteria.md",
+      "bytes": 7184,
+      "sha256": "93ae8c76a2b26b2af79ea3a9e20271089eac683a0ce29d9579caffac1e626a47",
+      "locators": [
+        "Diagnostic features (subjective plus observed restlessness; 4-week onset; EPS-treatment-reduction trigger)",
+        "Clinical assessment and exclusions (urge/distress/relief questioning; seated and standing observation; anxiety, psychotic/mood agitation, RLS, intoxication/withdrawal, neuro/medical exclusions; pseudoakathisia reassessment rule)",
+        "BARS items 1-4 (objective /3, awareness /3, distress /3, global /5) with scoring and interpretation (component total descriptive only; global >= 2 present; 0-5 range correction)"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "docs/medical-docs/guideline/STATEMENT-13.md",
+      "bytes": 7393,
+      "sha256": "59a0502ee13b5a971a7f4338b683533b561cb781aef3e21a2f7adb9dfa1392ff",
+      "locators": [
+        "STATEMENT 13 suggestion (2C): lower dose, switch, benzodiazepine, beta-blocker",
+        "Implementation (DSM-5 definition; agitation confusion cycle; distress/nonadherence; dysphoria/suicidal behaviors; dose reduction and switch with psychosis tradeoff and monitoring; benzodiazepine harms; propranolol monitoring/interactions; mirtazapine limited literature; anticholinergic nonresponse)",
+        "Balancing Benefits/Harms and Patient Preferences",
+        "Quality Measurement Considerations (not appropriate for electronic decision support or quality measure)"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "content/history/history-effects-v0.1-draft.json",
+      "bytes": 27249,
+      "sha256": "3a3c29d89b31e48a01606130f7980ee3e78094117b7c0041a68260243009a34e",
+      "locators": [
+        "adverse_effect_contract (present/absent/not_assessed; present requires severity; status change clears severity)",
+        "akathisia severity enum mild/moderate/marked/severe (source_derived_labels_proposed_as_v1_enum from BARS global 2-5)",
+        "mapping_gaps.unresolved_is_not_not_assessed, effect_specific_inputs_not_in_minimum_record"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "BNs/BN-13.xml",
+      "bytes": 32022,
+      "sha256": "cc8ca010a794e6cc9f2300d6206b159fd8e89b7f6f51c8bd4828d6a02aaa9b82",
+      "locators": [
+        "AkathisiaAssessment / AkathisiaAntipsychoticAssociation / DoseReductionFeasible / LowerAkathisiaRiskSwitchFeasible / PsychoticWorseningConcern / AkathisiaTreatmentPreferenceConcern / UrgentSafetyConcern / DistressOrAdherenceConcern / BenzodiazepineRespiratoryConcern / BenzodiazepineFallsCognitiveConcern / BenzodiazepineMisuseConcern / PropranololBloodPressureConcern / PropranololExposureConcern (drafting leads; all missing priors)",
+        "AkathisiaIndicationReview + AkathisiaAntipsychoticRegimenReview + AdjunctDiscussion + UrgentSafetyReview + BurdenReview + BenzodiazepineSafetyReview + PropranololSafetyReview (seven proposed deterministic 0/1 tables; replaced, not copied)",
+        "guideline_cdss_restriction + clinical_limit + display_contract properties"
+      ],
+      "classification": "drafting_lead"
+    },
+    {
+      "path": "BNs/schema.xml",
+      "bytes": 12875,
+      "sha256": "7b8ae840dd81f64f61aa388d7ab1db7430045ed0bae5f7a3ca5ec65e370ba8c1",
+      "locators": [
+        "XSD authoring profile v1 (structure only)"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "docs/dev/user-requirements.md",
+      "bytes": 7150,
+      "sha256": "d50724f604ac3f61d6a54211f9310912e6ff60dd429c98c7a6df320d2cfaab29",
+      "locators": [
+        "FR-20",
+        "FR-21",
+        "FR-30",
+        "FR-31",
+        "FR-32",
+        "FR-33",
+        "FR-34",
+        "FR-35"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "docs/dev/plan.md",
+      "bytes": 66198,
+      "sha256": "9f006a3b07720b16589d057760f575238abf0a17ef6e1902968ceeaa0e4448fe",
+      "locators": [
+        "Section 2.2 follow-up (effect present/absent/not-assessed; severity required when present; no new mandatory scale)",
+        "Section 5 adverse effects (BARS/SAS discussion is supporting material, not permission for invented bands or mandatory scales)",
+        "Section 7.1 F2 row",
+        "Section 7.2 package shape",
+        "Section 7.3 registry validation",
+        "Section 7.4 CPT contract"
+      ],
+      "classification": "source_derived"
+    }
+  ],
+  "source_comparison": {
+    "bn13_scope_vs_f2": "BN-13 is a 20-node review-workflow draft (13 clinician inputs with missing priors + 7 deterministic 0/1 review outputs) with inference_allowed=false and deployment_allowed=false. F2 keeps its input vocabulary (severity, observed movements, association, dose/switch feasibility, psychosis tradeoff, preference, urgent/distress-adherence, benzo and propranolol safety) and its parallel-review structure (indication, options, urgent) but restructures them into a 9-node executable network: 6 roots + 3 outputs with 3 GIVEN edges. Dose and switch feasibility plus psychosis tradeoff are assessed together in one RegimenFeasibility field; the five adjunct safety concerns are assessed per-class in one field aggregated to a 3-state AdjunctSafetyContext node; preference and distress/adherence detail remain template-rendered discussion items rather than nodes in v0.1. All seven BN-13 deterministic 0/1 tables were replaced with soft argmax-preserving synthetic placeholders; no BN-13 TABLE bytes, priors, or inference/deployment flags were copied.",
+    "bars_use_and_non_rule": "The BARS global anchors 2-5 supply the four severity labels; the objective/awareness/distress items supply the observation and interview constituents of the proposed motor and attribution fields. The 0-9 component total is explicitly excluded from every mapping (recorded as descriptive only per the source), and no BARS item score is a network state. Recording the severity labels does not require administering every BARS item and does not establish medication causation.",
+    "severity_reuse": "The mild/moderate/marked/severe enum follows the history-effects draft proposal (itself reproducing BARS global labels), which remains awaiting_review and therefore unapproved; F2 treats it as a candidate mapping and flags the approval dependency in Q1. Observed motor restlessness is kept distinct from subjective severity per the criteria source (global 2 assignable with fidgeting only; pseudoakathisia rule).",
+    "guideline_gives_no_decision_rule": "STATEMENT-13 states a 2C suggestion of four options with explicit benefit-harm balancing and per-patient preferences, no dose selection, no product ranking, and an explicit electronic-decision-support restriction. The 5-state OptionReview preserves those options as discussion prompts only; the posterior maximum is never a prescription rule, and the CDSS restriction is resolved by review-prompts-only framing plus a deterministic urgent flag that does not decide treatment.",
+    "history_reuse": "FR-21 status/severity mechanics are reused as the gate plus RestlessnessSeverity mapping; the history draft's mapping gaps (unresolved-vs-not_assessed, effect-specific inputs) are resolved here by separate proposed AttributionContext/MotorRestlessness/RegimenFeasibility/AdjunctSafetyContext/UrgentConcern fields, each unknown-permitting except the two required inputs."
+  },
+  "graph_decision": {
+    "nodes": [
+      "RestlessnessSeverity (4 states, required)",
+      "MotorRestlessness (3)",
+      "AttributionContext (3)",
+      "RegimenFeasibility (3)",
+      "AdjunctSafetyContext (3)",
+      "UrgentConcern (2, required)",
+      "IndicationReview (3 states; parents in order AttributionContext, MotorRestlessness)",
+      "OptionReview (5 states; parents in order IndicationReview, RegimenFeasibility, AdjunctSafetyContext)",
+      "UrgentSafetyReview (2 states; parent UrgentConcern)"
+    ],
+    "edges": [
+      [
+        "AttributionContext",
+        "IndicationReview"
+      ],
+      [
+        "MotorRestlessness",
+        "IndicationReview"
+      ],
+      [
+        "IndicationReview",
+        "OptionReview"
+      ],
+      [
+        "RegimenFeasibility",
+        "OptionReview"
+      ],
+      [
+        "AdjunctSafetyContext",
+        "OptionReview"
+      ],
+      [
+        "UrgentConcern",
+        "UrgentSafetyReview"
+      ]
+    ],
+    "why_this_shape": "One indication review node over the two diagnostic inputs plus one option-discussion node over indication, regimen feasibility, and adjunct safety, plus one parallel urgent node, mirroring BN-13's parallel-output structure at an executable size (184 cells). Dose/product selection, propranolol/benzodiazepine dosing, and candidate-specific safety screening stay outside the network as physician label review; they remain visible as template context wording and owner questions. All discrete nature nodes for the v1 execution profile; no latent nodes, no posterior chaining into other questions.",
+    "double_counting_rationale_for_review": "Each assessed input is proposed as usage=both (CPT-estimation context + hard observation). Rationale for review: conditioning once in Bayes rule is a single update, not double counting; the LLM conditions table estimates on the patient's context while inference instantiates the same observed states as evidence. Optional missing inputs use estimation context only (the gap is noted in the conditioning context) with no hard evidence, so no update occurs on an unobserved node. Owner to accept or restrict any mapping to observation-only."
+  },
+  "missing_structured_fields_proposed": [
+    {
+      "id": "motor_restlessness",
+      "proposed_values": [
+        "present",
+        "absent_assessed",
+        "unknown_incomplete"
+      ],
+      "period": "current_encounter",
+      "basis": "Criteria seated+standing observation of characteristic movements; distinct from subjective severity per global-2 and pseudoakathisia rules"
+    },
+    {
+      "id": "attribution_context",
+      "proposed_values": [
+        "antipsychotic_associated_assessed",
+        "alternative_or_unresolved",
+        "unknown_incomplete"
+      ],
+      "period": "current_encounter assessment with 4-week onset lookback and medication-change history where recorded",
+      "basis": "Criteria diagnostic features + exclusions; STATEMENT-13 Implementation; never inferred from severity, medication presence, or BARS scores"
+    },
+    {
+      "id": "regimen_feasibility",
+      "proposed_values": [
+        "review_feasible",
+        "constrained_psychosis_tradeoff",
+        "unknown_incomplete"
+      ],
+      "period": "current_encounter",
+      "basis": "STATEMENT-13 dose-reduction/switch/tradeoff/monitoring paragraphs; BN-13 DoseReductionFeasible + LowerAkathisiaRiskSwitchFeasible + PsychoticWorseningConcern leads; no regimen detail recorded"
+    },
+    {
+      "id": "adjunct_safety_context",
+      "proposed_values": [
+        "routine_review",
+        "heightened_review",
+        "unknown_incomplete"
+      ],
+      "period": "current_encounter",
+      "basis": "STATEMENT-13 benzodiazepine harms and propranolol monitoring paragraphs; BN-13 five adjunct safety leads recorded per-class, aggregated to the node"
+    },
+    {
+      "id": "urgent_concern",
+      "proposed_values": [
+        "present",
+        "absent_assessed"
+      ],
+      "period": "current_encounter",
+      "basis": "STATEMENT-13 dysphoria/suicidal-behaviors paragraph; required input with deterministic flag"
+    },
+    {
+      "id": "preference_concern",
+      "proposed_values": [
+        "recorded_summary",
+        "not_elicited"
+      ],
+      "period": "current_encounter",
+      "basis": "STATEMENT-13 Patient Preferences; BN-13 AkathisiaTreatmentPreferenceConcern lead. Template-only discussion item in v0.1 (preference_summary slot), not a network node; owner to decide on promotion to a node in Q5."
+    }
+  ],
+  "reference_table_provenance": {
+    "status": "synthetic structural placeholder only; zero clinical validity",
+    "rule": "Root references illustrative (RestlessnessSeverity [0.45,0.30,0.15,0.10]; MotorRestlessness [0.70,0.20,0.10]; AttributionContext [0.55,0.25,0.20]; RegimenFeasibility [0.40,0.35,0.25]; AdjunctSafetyContext [0.55,0.25,0.20]; UrgentConcern [0.08,0.92]). Indication rows from the documented mapping: associated -> established [0.82,0.09,0.09] (3 rows); alternative -> assess [0.09,0.82,0.09] (3 rows); unknown with observed present/absent -> assess (2 rows); unknown with unknown movements -> no_rule [0.09,0.09,0.82] (1 row). Option rows: non-established indication -> establish [0.045 x4, 0.82] (18 rows); established + feasible + routine -> both [0.82, 0.045 x4] (1 row); established + feasible + heightened/unknown -> regimen_options (2 rows); established + constrained/unknown + routine -> adjunct_options (2 rows); established + constrained/unknown + heightened/unknown -> constrained_options (4 rows). Urgent: present [0.90,0.10], absent [0.10,0.90]. Lookup exists only to give the validator/inference harness complete, normalized, correctly ordered tables. Never present these as patient estimates.",
+    "forbidden": "No empirical probabilities were manufactured; no guideline evidence rating (2C) or BARS score was converted into a probability."
+  },
+  "independent_examples_provenance": {
+    "clinical_cases": "synthetic author-created illustrations for wording/missingness review; not a clinical oracle",
+    "numerical_fixture": "hand-worked by plain enumeration outside the implementation under test (see examples.json); expected literals recorded for harness replay"
+  },
+  "admission_measurements": {
+    "xml_bytes": 9988,
+    "xml_sha256": "d9fcca83591d07d57837af19c053fcf7a5a2125c89c657d35a5647133cc92c31",
+    "nodes": 9,
+    "cpt_cells": 184,
+    "child_rows": 38,
+    "prompt_bytes": 6838,
+    "xsd_valid": true,
+    "semantic_executable_structurally": true,
+    "clinical_activation_allowed": false,
+    "note": "Structural executability is not clinical validity and not activation. S25 package validator pending (no content/questions schema exists yet); S23 inference-harness replay pending. T5 XSD+semantics checked with pinned repo validators; numerical fixture recomputed independently from file bytes with stdlib only."
+  },
+  "owner_questions": [
+    {
+      "id": "Q1",
+      "question": "Approve the mild/moderate/marked/severe severity enum (BARS global 2-5 labels) and its binding to the FR-21 effect severity (still awaiting_review in the history package), with the 0-9 component total explicitly excluded from every mapping?",
+      "proposal": "Keep the 4-state RestlessnessSeverity mapping with present-requires-severity and no summed-severity rule as drafted."
+    },
+    {
+      "id": "Q2",
+      "question": "Approve the six proposed akathisia_assessment fields (motor_restlessness, attribution_context with onset/medication/exclusion constituents, regimen_feasibility, adjunct_safety_context with per-class constituents, urgent_concern, template-only preference_concern) and their collection instruments?",
+      "proposal": "Field ids/values/periods as stated; absent optional fields map to unknown_incomplete with disclosure (required inputs block instead)."
+    },
+    {
+      "id": "Q3",
+      "question": "Confirm the gate mapping: effect absent yields not_applicable (never a negative posterior) while not_assessed/missing/conflicting yields needs_clarification stopping later questions?",
+      "proposal": "Gate rule as drafted; present-without-severity and missing urgent concern block as required-missing."
+    },
+    {
+      "id": "Q4",
+      "question": "Approve the indication mapping, especially: movements without subjective restlessness (pseudoakathisia) map to alternative_or_unresolved with reassessment rather than severity; subjective-only restlessness keeps its severity with absent movements; doubly-unknown yields no_current_treatment_rule rather than a workup prompt?",
+      "proposal": "9-row mapping as documented; motor restlessness stays an explicit input to keep the differential visible."
+    },
+    {
+      "id": "Q5",
+      "question": "Approve the 5-state option mapping (both/regimen/adjunct/constrained/establish), the constrained bucket for combined regimen+safety flags, and keeping patient preference as a template-rendered discussion item rather than a network node in v0.1?",
+      "proposal": "27-row mapping as documented; posterior maximum is review wording only, never a prescription rule."
+    },
+    {
+      "id": "Q6",
+      "question": "Confirm template wording, the parallel indication/urgent rendering, the deterministic urgent flag never waiting for LLM output, and the review-prompts-only resolution of the Statement 13 electronic-decision-support restriction?",
+      "proposal": "Wording as in template.json; urgent suicidality/dysphoria flag fires from saved inputs even when the run fails or is queued."
+    },
+    {
+      "id": "Q7",
+      "question": "Confirm that BARS item scores and the 0-9 component total remain recording support only and are never mapped to network states, with no new mandatory scale required beyond the approved FR-21 severity?",
+      "proposal": "Keep the BARS exclusion as drafted; no BARS-derived threshold is added without a new reviewed field."
+    },
+    {
+      "id": "Q8",
+      "question": "Confirm the informational wording only: anticholinergic nonresponse tendency and limited mirtazapine literature (neither selecting nor prohibiting), propranolol/benzodiazepine safety review without any dose, and the current-encounter horizon with the 4-week onset lookback as a field constituent?",
+      "proposal": "Keep context_note wording and horizon as drafted; add dated persistence/onset windows only as reviewed field refinements."
+    }
+  ],
+  "unresolved_assumptions": [
+    "The severity enum and all six akathisia_assessment fields are proposals; the history-effects package itself is still awaiting_review, so no severity definition used here is approved.",
+    "The 4-week onset window, EPS-treatment-reduction trigger, and antiemetic/antidepressant review scope are constituents of the attribution field, not encoded gates or probabilities.",
+    "Propranolol dosing, benzodiazepine product choice, mirtazapine use, and candidate-specific safety screening are physician-side review items in v0.1, not network nodes.",
+    "The adjunct aggregate node preserves per-class detail only in the field and template disclosure; per-class estimation separation needs review.",
+    "Both-usage (context+observation) rationale needs review.",
+    "Reference tables are synthetic placeholders with zero clinical validity."
+  ]
+}

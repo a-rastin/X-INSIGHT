@@ -1,0 +1,420 @@
+{
+  "note": "Clinical vignettes are synthetic author-created illustrations for owner review of wording and missingness behavior. They are NOT empirical probabilities, NOT guideline cutoffs, and NOT an independent clinical oracle. The numerical fixture is an independently hand-worked mathematical check of table ordering and inference plumbing, computed by plain enumeration outside the implementation under test.",
+  "package_version": "akathisia-v0.1-draft",
+  "clinical_cases": [
+    {
+      "name": "effect present, moderate associated akathisia with reviewable regimen and routine adjunct context",
+      "kind": "ordinary",
+      "effect_gate": "present (synthetic follow-up effect status)",
+      "inputs": {
+        "RestlessnessSeverity": {
+          "state": "moderate",
+          "source": "effect present + severity moderate (synthetic; BARS global 3 label)"
+        },
+        "MotorRestlessness": {
+          "state": "present",
+          "source": "proposed motor field: pacing and inability to remain still observed seated and standing (synthetic)"
+        },
+        "AttributionContext": {
+          "state": "antipsychotic_associated_assessed",
+          "source": "proposed attribution field: onset within 4 weeks of dose escalation, antiemetics/antidepressants reviewed, alternatives excluded (synthetic)"
+        },
+        "RegimenFeasibility": {
+          "state": "review_feasible",
+          "source": "proposed regimen field: dose reduction and switch reviewable (synthetic)"
+        },
+        "AdjunctSafetyContext": {
+          "state": "routine_review",
+          "source": "proposed adjunct field: no heightened benzo or propranolol concern (synthetic)"
+        },
+        "UrgentConcern": {
+          "state": "absent_assessed",
+          "source": "proposed urgent field absent (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "OptionReview",
+        "parent_states": [
+          "established_current_association",
+          "review_feasible",
+          "routine_review"
+        ],
+        "synthetic_reference_percentages": [
+          82.0,
+          4.5,
+          4.5,
+          4.5,
+          4.5
+        ]
+      },
+      "proposed_template_branch": "review_regimen_and_adjunct",
+      "proposed_clinical_expectation_for_review": "Review prompt discussing dose reduction, switch, benzodiazepine, and beta-blocker options with tradeoff monitoring; physician decides. Expectation is proposed, not approved.",
+      "deterministic_urgent_flag": "does not fire"
+    },
+    {
+      "name": "effect present, mild associated akathisia with heightened adjunct safety context",
+      "kind": "ordinary",
+      "effect_gate": "present (synthetic)",
+      "inputs": {
+        "RestlessnessSeverity": {
+          "state": "mild",
+          "source": "effect present + severity mild (synthetic; BARS global 2 label; fidgeting only)"
+        },
+        "MotorRestlessness": {
+          "state": "absent_assessed",
+          "source": "proposed motor field: no characteristic movements beyond fidgeting (synthetic)"
+        },
+        "AttributionContext": {
+          "state": "antipsychotic_associated_assessed",
+          "source": "proposed attribution field assessed (synthetic)"
+        },
+        "RegimenFeasibility": {
+          "state": "review_feasible",
+          "source": "proposed regimen field feasible (synthetic)"
+        },
+        "AdjunctSafetyContext": {
+          "state": "heightened_review",
+          "source": "proposed adjunct field: benzodiazepine misuse concern with alcohol use history (synthetic)"
+        },
+        "UrgentConcern": {
+          "state": "absent_assessed",
+          "source": "proposed urgent field absent (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "OptionReview",
+        "parent_states": [
+          "established_current_association",
+          "review_feasible",
+          "heightened_review"
+        ],
+        "synthetic_reference_percentages": [
+          4.5,
+          82.0,
+          4.5,
+          4.5,
+          4.5
+        ]
+      },
+      "proposed_template_branch": "review_regimen_options PLUS adjunct_detail naming the misuse concern",
+      "proposed_clinical_expectation_for_review": "Regimen discussion proceeds while adjunct discussion waits on safety review. Proposed; owner to confirm.",
+      "deterministic_urgent_flag": "does not fire"
+    },
+    {
+      "name": "effect present, differential unresolved (restless legs under workup)",
+      "kind": "differential",
+      "effect_gate": "present (synthetic)",
+      "inputs": {
+        "RestlessnessSeverity": {
+          "state": "moderate",
+          "source": "effect present + severity moderate (synthetic)"
+        },
+        "MotorRestlessness": {
+          "state": "present",
+          "source": "proposed motor field: leg movements observed (synthetic)"
+        },
+        "AttributionContext": {
+          "state": "alternative_or_unresolved",
+          "source": "proposed attribution field: restless legs syndrome under workup; motor restlessness alone not attributed to medication (synthetic)"
+        },
+        "RegimenFeasibility": {
+          "state": "unknown_incomplete",
+          "source": "proposed regimen field not yet assessed (synthetic)"
+        },
+        "AdjunctSafetyContext": {
+          "state": "unknown_incomplete",
+          "source": "proposed adjunct field not yet assessed (synthetic)"
+        },
+        "UrgentConcern": {
+          "state": "absent_assessed",
+          "source": "proposed urgent field absent (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "IndicationReview",
+        "parent_states": [
+          "alternative_or_unresolved",
+          "present"
+        ],
+        "synthetic_reference_percentages": [
+          9.0,
+          82.0,
+          9.0
+        ]
+      },
+      "proposed_template_branch": "establish_indication_first PLUS unknown_disclosure listing RegimenFeasibility and AdjunctSafetyContext",
+      "proposed_clinical_expectation_for_review": "No regimen or adjunct prompt from this branch; differential workup governs, including no antipsychotic escalation for apparent agitation without reassessment. Proposed, not approved.",
+      "deterministic_urgent_flag": "does not fire"
+    },
+    {
+      "name": "effect present, severe associated akathisia with constrained regimen, heightened adjunct context, and urgent concern",
+      "kind": "urgent",
+      "effect_gate": "present (synthetic)",
+      "inputs": {
+        "RestlessnessSeverity": {
+          "state": "severe",
+          "source": "effect present + severity severe (synthetic; BARS global 5 label)"
+        },
+        "MotorRestlessness": {
+          "state": "present",
+          "source": "proposed motor field present with constant pacing (synthetic)"
+        },
+        "AttributionContext": {
+          "state": "antipsychotic_associated_assessed",
+          "source": "proposed attribution field assessed (synthetic)"
+        },
+        "RegimenFeasibility": {
+          "state": "constrained_psychosis_tradeoff",
+          "source": "proposed regimen field: recent psychotic worsening, changes constrained (synthetic)"
+        },
+        "AdjunctSafetyContext": {
+          "state": "heightened_review",
+          "source": "proposed adjunct field: propranolol blood-pressure concern (synthetic)"
+        },
+        "UrgentConcern": {
+          "state": "present",
+          "source": "proposed urgent field present: dysphoria with suicidal statements (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "OptionReview",
+        "parent_states": [
+          "established_current_association",
+          "constrained_psychosis_tradeoff",
+          "heightened_review"
+        ],
+        "synthetic_reference_percentages": [
+          4.5,
+          4.5,
+          4.5,
+          82.0,
+          4.5
+        ]
+      },
+      "proposed_template_branch": "review_constrained_options PLUS deterministic urgent flag; urgent posterior urgent_clinician_assessment",
+      "proposed_clinical_expectation_for_review": "Constrained discussion of all four source options with explicit benefit-harm balancing; urgent care takes priority. Proposed, not approved.",
+      "deterministic_urgent_flag": "FIRES: 'suicidality, dysphoria, or another urgent safety concern is recorded alongside akathisia. Seek immediate senior/emergency evaluation per local emergency protocol. Do not await model output.' Displayed even if the run fails or is still queued."
+    },
+    {
+      "name": "effect present, marked severity with unknown movement and attribution context",
+      "kind": "ordinary_with_unknown",
+      "effect_gate": "present (synthetic)",
+      "inputs": {
+        "RestlessnessSeverity": {
+          "state": "marked",
+          "source": "effect present + severity marked (synthetic; BARS global 4 label)"
+        },
+        "MotorRestlessness": {
+          "state": "unknown_incomplete",
+          "source": "proposed motor field not yet observed in both positions (synthetic)"
+        },
+        "AttributionContext": {
+          "state": "unknown_incomplete",
+          "source": "proposed attribution field: timing review pending (synthetic)"
+        },
+        "RegimenFeasibility": {
+          "state": "unknown_incomplete",
+          "source": "proposed regimen field not yet assessed (synthetic)"
+        },
+        "AdjunctSafetyContext": {
+          "state": "unknown_incomplete",
+          "source": "proposed adjunct field not yet assessed (synthetic)"
+        },
+        "UrgentConcern": {
+          "state": "absent_assessed",
+          "source": "proposed urgent field absent (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "IndicationReview",
+        "parent_states": [
+          "unknown_incomplete",
+          "unknown_incomplete"
+        ],
+        "synthetic_reference_percentages": [
+          9.0,
+          9.0,
+          82.0
+        ]
+      },
+      "proposed_template_branch": "establish_indication_first PLUS unknown_disclosure listing four inputs",
+      "proposed_clinical_expectation_for_review": "Unknown attribution with no movement observation yields no treatment rule, not a negative finding. Proposed; owner to confirm."
+    },
+    {
+      "name": "gate absent: effect recorded absent",
+      "kind": "gate_absent",
+      "effect_gate": "absent (synthetic follow-up effect status)",
+      "inputs": {
+        "akathisia_effect": {
+          "state": "absent",
+          "source": "FR-21 effect status absent (synthetic)"
+        },
+        "severity": "null (required when absent)"
+      },
+      "expected_behavior": "not_applicable with reason: no inference, no CPTs, no posterior; absent is never converted into a negative option posterior or evidence of another movement disorder.",
+      "proposed_clinical_expectation_for_review": "Gate-absent handling is proposed; owner to confirm absent yields not_applicable rather than needs_clarification."
+    },
+    {
+      "name": "gate unknown: effect recorded not_assessed",
+      "kind": "required_missing",
+      "effect_gate": "not_assessed (synthetic)",
+      "inputs": {
+        "akathisia_effect": {
+          "state": "not_assessed",
+          "source": "FR-21 effect status not_assessed (synthetic)"
+        }
+      },
+      "expected_behavior": "needs_clarification: no posterior reported, later questions stopped, template needs_clarification branch rendered naming the akathisia effect assessment. Saving corrected input creates a new run. Distinct from gate-absent (not_applicable).",
+      "proposed_clinical_expectation_for_review": "Blocking on not_assessed is proposed; owner to confirm."
+    },
+    {
+      "name": "required-missing: effect present without severity",
+      "kind": "required_missing",
+      "effect_gate": "present without severity (synthetic)",
+      "inputs": {
+        "RestlessnessSeverity": {
+          "state": "MISSING (present requires mild, moderate, marked, or severe)",
+          "source": "FR-21 severity missing (synthetic)"
+        }
+      },
+      "expected_behavior": "needs_clarification: no posterior reported, later questions stopped, template needs_clarification branch rendered naming RestlessnessSeverity. Present-without-severity is invalid per the adverse-effect contract and never mapped to mild; no BARS component total is computed as a substitute.",
+      "proposed_clinical_expectation_for_review": "Required-severity blocking is proposed; owner to confirm."
+    },
+    {
+      "name": "required-missing: urgent concern not assessed",
+      "kind": "required_missing",
+      "effect_gate": "present (synthetic)",
+      "inputs": {
+        "RestlessnessSeverity": {
+          "state": "moderate",
+          "source": "effect present + severity moderate (synthetic)"
+        },
+        "UrgentConcern": {
+          "state": "MISSING (required non-gate input)",
+          "source": "proposed urgent field not yet recorded (synthetic)"
+        }
+      },
+      "expected_behavior": "needs_clarification: no posterior reported, later questions stopped, template needs_clarification branch rendered naming UrgentConcern. The deterministic urgent flag cannot be evaluated until the field is recorded.",
+      "proposed_clinical_expectation_for_review": "Required-urgent blocking is proposed; owner to confirm."
+    }
+  ],
+  "numerical_fixture": {
+    "provenance": "Independently hand-worked by plain enumeration over the synthetic reference tables in network.xml; not produced by the implementation under test; checks ordering/transpose plumbing, not clinical correctness.",
+    "ordering_contract": "child state fastest; last declared parent (MotorRestlessness for IndicationReview; AdjunctSafetyContext for OptionReview) next; first declared parent slowest",
+    "checks": [
+      {
+        "name": "single-row lookup is the posterior under complete evidence",
+        "table": "OptionReview",
+        "evidence": {
+          "IndicationReview": "established_current_association",
+          "RegimenFeasibility": "review_feasible",
+          "AdjunctSafetyContext": "routine_review"
+        },
+        "expected_posterior_percentages": [
+          82.0,
+          4.5,
+          4.5,
+          4.5,
+          4.5
+        ],
+        "work": "option row 0 (established,review_feasible,routine_review) is [0.82, 0.045, 0.045, 0.045, 0.045] by the documented synthetic rule; with all three parents observed there is exactly one active row"
+      },
+      {
+        "name": "constrained row is unique among established rows with both flags set",
+        "table": "OptionReview",
+        "evidence": {
+          "IndicationReview": "established_current_association",
+          "RegimenFeasibility": "constrained_psychosis_tradeoff",
+          "AdjunctSafetyContext": "heightened_review"
+        },
+        "expected_posterior_percentages": [
+          4.5,
+          4.5,
+          4.5,
+          82.0,
+          4.5
+        ],
+        "work": "option row 4 is the constrained row; rows 1-2 are regimen_options and rows 3/6 are adjunct_options among the 9 established rows"
+      },
+      {
+        "name": "transpose detector: swapping first/last parent changes the row",
+        "row_a": {
+          "table": "OptionReview",
+          "parent_states": [
+            "established_current_association",
+            "review_feasible",
+            "heightened_review"
+          ],
+          "expected": [
+            4.5,
+            82.0,
+            4.5,
+            4.5,
+            4.5
+          ]
+        },
+        "row_b": {
+          "table": "OptionReview",
+          "parent_states": [
+            "assess_differential_and_association",
+            "review_feasible",
+            "routine_review"
+          ],
+          "expected": [
+            4.5,
+            4.5,
+            4.5,
+            4.5,
+            82.0
+          ]
+        },
+        "work": "rows differ in first parent (IndicationReview) and last parent (AdjunctSafetyContext); an implementation that transposes parent order returns the wrong row"
+      },
+      {
+        "name": "asymmetry detector: urgent present vs absent",
+        "row_c": {
+          "table": "UrgentSafetyReview",
+          "parent_states": [
+            "present"
+          ],
+          "expected": [
+            90.0,
+            10.0
+          ]
+        },
+        "row_d": {
+          "table": "UrgentSafetyReview",
+          "parent_states": [
+            "absent_assessed"
+          ],
+          "expected": [
+            10.0,
+            90.0
+          ]
+        },
+        "work": "swapping UrgentConcern present/absent swaps the argmax"
+      },
+      {
+        "name": "prior-marginal over synthetic root references (indication)",
+        "table": "IndicationReview",
+        "work": "sum over all 9 parent configurations weighted by root references AttributionContext [0.55,0.25,0.20] and MotorRestlessness [0.70,0.20,0.10]: P(established basis)=0.55, P(assess basis)=0.25+0.20*0.90=0.43, P(no_rule basis)=0.20*0.10=0.02; mixed with dominant 0.82 and off 0.09",
+        "expected_posterior_probabilities": [
+          0.4915,
+          0.4039,
+          0.1046
+        ],
+        "tolerance": 1e-09
+      },
+      {
+        "name": "prior-marginal over synthetic root reference (urgent)",
+        "table": "UrgentSafetyReview",
+        "work": "0.08*0.90+0.92*0.10=0.164",
+        "expected_posterior_probabilities": [
+          0.164,
+          0.836
+        ],
+        "tolerance": 1e-09
+      }
+    ]
+  }
+}

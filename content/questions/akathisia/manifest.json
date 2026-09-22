@@ -1,0 +1,340 @@
+{
+  "schema_version": "1.0-draft",
+  "question_key": "akathisia",
+  "title": "Akathisia review at follow-up (F2)",
+  "workflow": "followup",
+  "version": "akathisia-v0.1-draft",
+  "review_status": "awaiting_review",
+  "network_file": "network.xml",
+  "network_hash": "sha256:d9fcca83591d07d57837af19c053fcf7a5a2125c89c657d35a5647133cc92c31",
+  "source_refs": [
+    "docs/medical-docs/akathisia-criteria.md",
+    "docs/medical-docs/guideline/STATEMENT-13.md",
+    "content/history/history-effects-v0.1-draft.json",
+    "BNs/BN-13.xml",
+    "BNs/schema.xml",
+    "docs/dev/user-requirements.md",
+    "docs/dev/plan.md"
+  ],
+  "declared_node_order": [
+    "RestlessnessSeverity",
+    "MotorRestlessness",
+    "AttributionContext",
+    "RegimenFeasibility",
+    "AdjunctSafetyContext",
+    "UrgentConcern",
+    "IndicationReview",
+    "OptionReview",
+    "UrgentSafetyReview"
+  ],
+  "variables": [
+    {
+      "node_id": "RestlessnessSeverity",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "mild",
+        "moderate",
+        "marked",
+        "severe"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "MotorRestlessness",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "present",
+        "absent_assessed",
+        "unknown_incomplete"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "AttributionContext",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "antipsychotic_associated_assessed",
+        "alternative_or_unresolved",
+        "unknown_incomplete"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "RegimenFeasibility",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "review_feasible",
+        "constrained_psychosis_tradeoff",
+        "unknown_incomplete"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "AdjunctSafetyContext",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "routine_review",
+        "heightened_review",
+        "unknown_incomplete"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "UrgentConcern",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "present",
+        "absent_assessed"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "IndicationReview",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "established_current_association",
+        "assess_differential_and_association",
+        "no_current_treatment_rule"
+      ],
+      "ordered_parents": [
+        "AttributionContext",
+        "MotorRestlessness"
+      ]
+    },
+    {
+      "node_id": "OptionReview",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "review_regimen_and_adjunct",
+        "review_regimen_options",
+        "review_adjunct_options",
+        "review_constrained_options",
+        "establish_indication_first"
+      ],
+      "ordered_parents": [
+        "IndicationReview",
+        "RegimenFeasibility",
+        "AdjunctSafetyContext"
+      ]
+    },
+    {
+      "node_id": "UrgentSafetyReview",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "urgent_clinician_assessment",
+        "routine_safety_assessment"
+      ],
+      "ordered_parents": [
+        "UrgentConcern"
+      ]
+    }
+  ],
+  "patient_mappings": [
+    {
+      "node_id": "RestlessnessSeverity",
+      "allowed_source_paths": [
+        "encounters.draft_data.effects.akathisia.status",
+        "encounters.draft_data.effects.akathisia.severity",
+        "content/history/history-effects-v0.1-draft.json#adverse_effect_contract.effects.akathisia"
+      ],
+      "typed_transform": "mild/moderate/marked/severe iff effect status present AND that severity recorded (BARS global 2/3/4/5 labels). Present-without-severity is required-missing (needs_clarification), never defaulted to mild. The BARS 0-9 component total is never computed or mapped.",
+      "time_window": "current_encounter; clinician rating recorded with actor and timestamp per the runtime value envelope",
+      "usage": "both",
+      "missing_policy": "effect absent is handled at the gate (not_applicable), not here. Effect present with missing severity, or missing effect record, yields needs_clarification (blocks)."
+    },
+    {
+      "node_id": "MotorRestlessness",
+      "allowed_source_paths": [
+        "encounters.draft_data.akathisia_assessment.motor_restlessness (PROPOSED, not collected)"
+      ],
+      "typed_transform": "present iff characteristic motor restlessness (pacing, leg/foot movements, inability to remain still beyond nonspecific fidgeting) observed seated and standing; absent_assessed iff clinician records none; else unknown_incomplete. Subjective-only restlessness maps to absent_assessed here without changing severity; movements without subjective restlessness are not severity and are flagged under attribution.",
+      "time_window": "current_encounter",
+      "usage": "both",
+      "missing_policy": "field absent yields unknown_incomplete with disclosure until the field is reviewed and collected (permits inference)."
+    },
+    {
+      "node_id": "AttributionContext",
+      "allowed_source_paths": [
+        "encounters.draft_data.akathisia_assessment.attribution_context (PROPOSED, not collected: onset_timing, medication_review, exclusion_review)"
+      ],
+      "typed_transform": "antipsychotic_associated_assessed iff clinician records akathisia associated with antipsychotic exposure after onset-timing review, medication review including antiemetics and antidepressants, and exclusion review; alternative_or_unresolved iff an alternative explanation is recorded, the differential is unresolved, or movements lack subjective restlessness (pseudoakathisia); else unknown_incomplete. Never inferred from severity, medication presence, or any BARS item score.",
+      "time_window": "current_encounter for the assessment; 4-week onset lookback and medication-change history where recorded",
+      "usage": "both",
+      "missing_policy": "field absent yields unknown_incomplete with disclosure until reviewed and collected (permits inference; renders establish_indication_first only when combined with unknown movements)."
+    },
+    {
+      "node_id": "RegimenFeasibility",
+      "allowed_source_paths": [
+        "encounters.draft_data.akathisia_assessment.regimen_feasibility (PROPOSED, not collected)"
+      ],
+      "typed_transform": "review_feasible iff clinician records dose reduction or switch to a lower-akathisia-propensity agent as reviewable; constrained_psychosis_tradeoff iff constrained by psychotic-worsening tradeoff needing monitoring; else unknown_incomplete. No dose, product, threshold, or regimen detail is recorded.",
+      "time_window": "current_encounter",
+      "usage": "both",
+      "missing_policy": "field absent yields unknown_incomplete with disclosure until reviewed and collected (permits inference)."
+    },
+    {
+      "node_id": "AdjunctSafetyContext",
+      "allowed_source_paths": [
+        "encounters.draft_data.akathisia_assessment.adjunct_safety_context (PROPOSED, not collected: per-class benzo/propranolol constituents)"
+      ],
+      "typed_transform": "routine_review iff clinician records no heightened adjunct safety flag; heightened_review iff any constituent concern is recorded (benzodiazepine respiratory, falls/cognitive, or misuse; propranolol blood-pressure or exposure); else unknown_incomplete. Per-class detail is preserved in the field and disclosed in the template; the node is an aggregate.",
+      "time_window": "current_encounter",
+      "usage": "both",
+      "missing_policy": "field absent yields unknown_incomplete with disclosure until reviewed and collected (permits inference)."
+    },
+    {
+      "node_id": "UrgentConcern",
+      "allowed_source_paths": [
+        "encounters.draft_data.akathisia_assessment.urgent_concern (PROPOSED, not collected)"
+      ],
+      "typed_transform": "present iff clinician records current suicidality, dysphoria, or another urgent safety concern alongside akathisia; absent_assessed iff clinician records none. Deterministic urgent flag fires from this saved value without waiting for any model output.",
+      "time_window": "current_encounter",
+      "usage": "both",
+      "missing_policy": "field absent yields needs_clarification (required input blocks) until reviewed and collected."
+    }
+  ],
+  "applicability": {
+    "expression": "encounter.kind == 'followup' AND AkathisiaEffect == 'present'",
+    "expression_language": "allowlisted conjunction of == comparisons on encounter.kind and the FR-21 effect status only; no arithmetic, no function calls, no note access (proposed for owner review; the S25 allowlist parser is authoritative)",
+    "required_fields": [
+      "encounter.kind",
+      "akathisia effect status (gate)",
+      "RestlessnessSeverity severity when present (required)",
+      "UrgentConcern assessment (required non-gate)",
+      "absence of conflicting values for mapped nodes"
+    ],
+    "unknown_policy": "effect absent yields not_applicable with reason (no inference, no CPTs, no posterior; a false gate is never a negative posterior). Effect not_assessed, missing, or conflicting yields needs_clarification and stops later questions; saving corrected input creates a new run. Missing required non-gate input (severity when present, urgent concern) yields needs_clarification. Missing optional input (motor restlessness, attribution, regimen feasibility, adjunct safety) leaves that node as unknown_incomplete; inference proceeds and the template renders an unknown disclosure."
+  },
+  "cpt_contract": {
+    "units": "percentages [0,100]",
+    "all_nodes_mandatory": true,
+    "row_order": "child state fastest; last declared parent next; first parent slowest",
+    "rows": [
+      {
+        "node_id": "RestlessnessSeverity",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "MotorRestlessness",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "AttributionContext",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "RegimenFeasibility",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "AdjunctSafetyContext",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "UrgentConcern",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "IndicationReview",
+        "parent_ids": [
+          "AttributionContext",
+          "MotorRestlessness"
+        ],
+        "row_count": 9
+      },
+      {
+        "node_id": "OptionReview",
+        "parent_ids": [
+          "IndicationReview",
+          "RegimenFeasibility",
+          "AdjunctSafetyContext"
+        ],
+        "row_count": 27
+      },
+      {
+        "node_id": "UrgentSafetyReview",
+        "parent_ids": [
+          "UrgentConcern"
+        ],
+        "row_count": 2
+      }
+    ],
+    "validation": "one table per node in declared order; exact node/parent/state identity and order; no extra fields; finite numbers in [0,100]; each row sums to 100 within 1e-6; reject missing/duplicate/extra rows, strings/booleans/null, nonfinite, out-of-range, wrong sums; never normalize/clip/repair"
+  },
+  "query_nodes": [
+    "IndicationReview",
+    "OptionReview",
+    "UrgentSafetyReview"
+  ],
+  "evidence_mappings": [
+    {
+      "node_id": "RestlessnessSeverity",
+      "evidence": "mapped mild/moderate/marked/severe state as hard evidence when effect present; missing blocks before inference"
+    },
+    {
+      "node_id": "MotorRestlessness",
+      "evidence": "mapped state, including unknown_incomplete as an observed state"
+    },
+    {
+      "node_id": "AttributionContext",
+      "evidence": "mapped state, including unknown_incomplete as an observed state"
+    },
+    {
+      "node_id": "RegimenFeasibility",
+      "evidence": "mapped state, including unknown_incomplete as an observed state"
+    },
+    {
+      "node_id": "AdjunctSafetyContext",
+      "evidence": "mapped state, including unknown_incomplete as an observed state"
+    },
+    {
+      "node_id": "UrgentConcern",
+      "evidence": "mapped present/absent_assessed state as hard evidence when assessed; missing blocks before inference"
+    }
+  ],
+  "impossible_evidence_policy": "fail with explicit error; never soften or approximate. All declared states (including unknown_incomplete where declared) are possible, so impossibility arises only from schema violations (undeclared node/state, conflicting evidence on one node).",
+  "likelihood_evidence": "disabled",
+  "prompt_version": "akathisia-prompt-v0.1-draft (prompt.txt)",
+  "template_version": "akathisia-template-v0.1-draft (template.json)",
+  "reviewed_result_mapping": "posterior branch rendered as review prompt only; maximum posterior is not a recommendation rule; deterministic urgent flag from saved inputs shown first and never waits for LLM; indication and urgent posteriors always rendered alongside the option branch; unknown_disclosure and context_note always appended; needs_clarification branch on required missing/conflict; not_applicable branch on gate-absent",
+  "numerical_tolerances": {
+    "percentage_row_sum_absolute": 1e-06,
+    "probability_sum_after_divide_by_100_absolute": 1e-08,
+    "replay_posterior_absolute": 1e-09
+  },
+  "context_output_resource_limits": {
+    "xml_bytes": 9988,
+    "cpt_cells": 184,
+    "prompt_bytes_proposed_max": 8192,
+    "response_bytes_proposed_max": 16384,
+    "note": "Limits are proposed engineering ceilings for review; final values set after measuring admitted models per plan 8.3. Full-CPT payload must fit or admission is rejected; no silent truncation."
+  },
+  "engine_configuration": {
+    "inference": "deterministic exact",
+    "dtype": "float64",
+    "elimination_order": "deterministic pinned order with deterministic tie-breaking",
+    "note": "Pinned engine/runtime recorded at admission in S39; replay reads stored effective CPTs/evidence/query without provider calls."
+  },
+  "review": {
+    "assumptions": "see review.json unresolved_assumptions",
+    "reviewer": null,
+    "decision": "pending_owner_review",
+    "date": null
+  },
+  "all_nodes_mandatory": true
+}
