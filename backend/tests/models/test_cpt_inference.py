@@ -441,17 +441,13 @@ def _xy_cpt_response(network_hash: str) -> dict[str, Any]:
 
 def _xy_validated_and_artifact() -> tuple[dict[str, Any], dict[str, Any]]:
     validated = validate_xmlbif(_XY_XMLBIF)
-    accepted = validate_cpt_response(
-        _xy_cpt_response(validated["source_sha256"])
-    )
+    accepted = validate_cpt_response(_xy_cpt_response(validated["source_sha256"]))
     return validated, build_effective_artifact(validated, accepted)
 
 
 def test_asymmetric_two_parent_posteriors() -> None:
     validated = validate_xmlbif(_XY_XMLBIF)
-    accepted = validate_cpt_response(
-        _xy_cpt_response(validated["source_sha256"])
-    )
+    accepted = validate_cpt_response(_xy_cpt_response(validated["source_sha256"]))
     artifact = build_effective_artifact(validated, accepted)
     # Direct asymmetric conditionals: transposing X/Y would swap these.
     assert infer(artifact, "C", "yes", {"X": "no", "Y": "yes"}) == pytest.approx(
@@ -461,9 +457,7 @@ def test_asymmetric_two_parent_posteriors() -> None:
         0.60, abs=POSTERIOR_TOL
     )
     # Marginal and single-parent conditional from the hand arithmetic above.
-    assert infer(artifact, "C", "yes", {}) == pytest.approx(
-        0.333, abs=POSTERIOR_TOL
-    )
+    assert infer(artifact, "C", "yes", {}) == pytest.approx(0.333, abs=POSTERIOR_TOL)
     assert infer(artifact, "C", "yes", {"X": "yes"}) == pytest.approx(
         0.69, abs=POSTERIOR_TOL
     )
@@ -490,9 +484,9 @@ def test_effective_xml_preserves_registered() -> None:
     effective_xml = artifact["effective_xml"]
     assert isinstance(effective_xml, (bytes, bytearray))
     assert bytes(effective_xml) != source_before
-    assert artifact["effective_hash"] == _hashlib.sha256(
-        bytes(effective_xml)
-    ).hexdigest()
+    assert (
+        artifact["effective_hash"] == _hashlib.sha256(bytes(effective_xml)).hexdigest()
+    )
     # Effective XML parses and keeps nodes/order/edges of the registered XML.
     eff = validate_xmlbif(bytes(effective_xml))
     assert eff["xsd_report"]["valid"] is True
@@ -536,9 +530,7 @@ def test_row_order_transpose_rejected_or_detected() -> None:
     import copy as _copy
 
     validated = validate_xmlbif(_XY_XMLBIF)
-    accepted = validate_cpt_response(
-        _xy_cpt_response(validated["source_sha256"])
-    )
+    accepted = validate_cpt_response(_xy_cpt_response(validated["source_sha256"]))
     swapped = _copy.deepcopy(accepted)
     for t in swapped["tables"]:
         if t["node_id"] == "C":
@@ -606,9 +598,7 @@ def _zero_cpt_response(network_hash: str) -> dict[str, Any]:
 
 def _zero_artifact() -> dict[str, Any]:
     validated = validate_xmlbif(_XMLBIF)
-    accepted = validate_cpt_response(
-        _zero_cpt_response(validated["source_sha256"])
-    )
+    accepted = validate_cpt_response(_zero_cpt_response(validated["source_sha256"]))
     return build_effective_artifact(validated, accepted)
 
 
@@ -624,6 +614,7 @@ def test_replay_matches_within_tolerance_provider_unavailable(
 
     # Replay takes only the stored artifact plus query; no provider arg.
     assert "provider" not in _inspect.signature(replay).parameters
+
     # Forbid network use during replay: any socket attempt fails the test.
     def _forbidden(*args: Any, **kwargs: Any) -> Any:
         raise AssertionError("replay must not use the network/provider")
