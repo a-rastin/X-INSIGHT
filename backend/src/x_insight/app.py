@@ -17,6 +17,7 @@ from x_insight.cases.patients import router as patients_router
 from x_insight.contracts import MAX_BODY_BYTES, error_body, new_request_id
 from x_insight.identity.accounts import router as accounts_router
 from x_insight.identity.routes import router as identity_router
+from x_insight.reasoning.routes import router as provider_config_router
 
 app = FastAPI()
 
@@ -177,6 +178,7 @@ app.include_router(notes_router, prefix="/api/v1")
 app.include_router(encounters_router, prefix="/api/v1")
 app.include_router(history_content_router, prefix="/api/v1")
 app.include_router(assessments_content_router, prefix="/api/v1")
+app.include_router(provider_config_router, prefix="/api/v1")
 
 
 @app.get("/api/v1/health")

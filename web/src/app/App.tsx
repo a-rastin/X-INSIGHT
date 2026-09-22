@@ -11,25 +11,30 @@ import {
   addNote,
   getEncounter,
   getHistoryContent,
+  getProviderSettings,
   listNotes,
   listEncounters,
   listPhysicians,
+  listProviderVersions,
   login,
   logout,
   listPatients,
   patchEncounter,
   patchPatientPhone,
+  saveProviderSettings,
+  testProviderSettings,
   updateTheme,
   type Encounter,
   type HistoryContent,
   type PageNote,
   type Patient,
   type PhysicianAccount,
+  type ProviderSettings,
   type SessionUser,
   type ThemeName,
 } from "./api";
 
-type Route = "/" | "/register" | "/physicians";
+type Route = "/" | "/register" | "/physicians" | "/provider-settings";
 
 /** S09 diagnosis preview (mirrors backend evaluate_diagnosis, no I/O). */
 type DiagAnswers = {
@@ -1449,6 +1454,9 @@ function currentRoute(): Route {
   if (window.location.pathname === "/physicians") {
     return "/physicians";
   }
+  if (window.location.pathname === "/provider-settings") {
+    return "/provider-settings";
+  }
   return "/";
 }
 
@@ -1535,6 +1543,11 @@ export function App() {
             Physicians
           </NavLink>
         ) : null}
+        {user?.role === "admin" ? (
+          <NavLink route="/provider-settings" current={route}>
+            Provider settings
+          </NavLink>
+        ) : null}
         {!user ? (
           <NavLink route="/register" current={route}>
             Register
@@ -1554,6 +1567,8 @@ export function App() {
         <Register />
       ) : route === "/physicians" ? (
         <PhysiciansGate user={user} />
+      ) : route === "/provider-settings" ? (
+        <ProviderSettingsGate user={user} />
       ) : user ? (
         <Dashboard user={user} />
       ) : (
@@ -3090,6 +3105,338 @@ function PhysiciansGate({ user }: { user: SessionUser | null }) {
     return <p role="alert">Access denied.</p>;
   }
   return <PhysiciansPage />;
+}
+
+/**
+ * S42 provider settings (T9): masked admin form. The key value is never
+ * rendered from the server — only Configured/Missing plus an explicit
+ * replace/clear flow. The redacted placeholder "****" is display-only and
+ * is never sent back as a key. Test status shows Untested/Verified/Failed.
+ */
+function ProviderSettingsGate({ user }: { user: SessionUser | null }) {
+  if (!user) {
+    return <LoginHint />;
+  }
+  if (user.role !== "admin") {
+    return <p role="alert">Access denied.</p>;
+  }
+  return <ProviderSettingsSection />;
+}
+
+const PROVIDER_KEY_PLACEHOLDER = "****";
+
+function ProviderSettingsSection() {
+  const [baseUrl, setBaseUrl] = useState("");
+  const [model, setModel] = useState("");
+  const [revision, setRevision] = useState<string | null>(null);
+  const [keyConfigured, setKeyConfigured] = useState(false);
+  const [testStatus, setTestStatus] = useState<string | null>(null);
+  const [keyValue, setKeyValue] = useState("");
+  const [editingKey, setEditingKey] = useState(true);
+  const [clearArmed, setClearArmed] = useState(false);
+  const [versions, setVersions] = useState<ProviderSettings[] | null>(null);
+  const [diagnostic, setDiagnostic] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+
+  function applyLoaded(settings: ProviderSettings, etag: string): void {
+    setBaseUrl(settings.base_url);
+    setModel(settings.model);
+    setRevision(etag || String(settings.revision));
+    setKeyConfigured(settings.key_configured);
+    setTestStatus(settings.test_status);
+    setKeyValue("");
+    // A configured key stays hidden until Replace is chosen explicitly.
+    setEditingKey(!settings.key_configured);
+    setClearArmed(false);
+  }
+
+  async function reload(showLoading: boolean): Promise<void> {
+    if (showLoading) {
+      setLoading(true);
+      setError(null);
+    }
+    try {
+      const { settings, etag } = await getProviderSettings();
+      applyLoaded(settings, etag);
+      try {
+        setVersions(await listProviderVersions());
+      } catch {
+        setVersions(null);
+      }
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      if (status === 404) {
+        // Unconfigured: blank form, key entry visible, honest status.
+        setRevision(null);
+        setKeyConfigured(false);
+        setTestStatus(null);
+        setKeyValue("");
+        setEditingKey(true);
+        setVersions([]);
+      } else if (status === 403) {
+        setError("Access denied.");
+      } else {
+        setError("Could not load provider settings.");
+      }
+    } finally {
+      if (showLoading) {
+        setLoading(false);
+      }
+    }
+  }
+
+  useEffect(() => {
+    void reload(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleSave(): Promise<void> {
+    setError(null);
+    setNotice(null);
+    if (editingKey) {
+      if (!keyValue || keyValue === PROVIDER_KEY_PLACEHOLDER) {
+        setError("Replacing the key requires sending a real API key.");
+        return;
+      }
+    }
+    setSaving(true);
+    try {
+      const { settings, etag } = await saveProviderSettings(
+        {
+          base_url: baseUrl,
+          model,
+          key_action: editingKey ? "replace" : "unchanged",
+          ...(editingKey ? { api_key: keyValue } : {}),
+        },
+        revision ?? undefined,
+      );
+      applyLoaded(settings, etag);
+      try {
+        setVersions(await listProviderVersions());
+      } catch {
+        /* versions line is informational only */
+      }
+      setNotice(`Saved (rev ${settings.revision}).`);
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      if (status === 412) {
+        // Reload first (silent refresh keeps the message), then report the
+        // conflict so the message survives the refresh.
+        await reload(false);
+        setError("Provider settings changed. Reload and reconcile.");
+      } else if (status === 403) {
+        setError("Access denied.");
+      } else if (failure instanceof Error && failure.message) {
+        setError(failure.message);
+      } else {
+        setError("Could not save provider settings.");
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleClear(): Promise<void> {
+    if (!clearArmed) {
+      // Explicit two-step confirm; the key is never cleared by accident.
+      setClearArmed(true);
+      return;
+    }
+    setError(null);
+    setNotice(null);
+    setSaving(true);
+    try {
+      const { settings, etag } = await saveProviderSettings(
+        { key_action: "clear" },
+        revision ?? undefined,
+      );
+      applyLoaded(settings, etag);
+      try {
+        setVersions(await listProviderVersions());
+      } catch {
+        /* versions line is informational only */
+      }
+      setNotice("Key cleared.");
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      if (status === 412) {
+        await reload(false);
+        setError("Provider settings changed. Reload and reconcile.");
+      } else if (status === 403) {
+        setError("Access denied.");
+      } else if (failure instanceof Error && failure.message) {
+        setError(failure.message);
+      } else {
+        setError("Could not clear the key.");
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleTest(): Promise<void> {
+    setError(null);
+    setNotice(null);
+    setDiagnostic(null);
+    setTesting(true);
+    try {
+      const result = await testProviderSettings();
+      const passed =
+        result.credential_ok && result.model_ok && result.tool_ok && result.json_ok;
+      setTestStatus(passed ? "verified" : "failed");
+      setDiagnostic(result.diagnostic);
+      // Refresh the persisted status line; the probe never echoes the key.
+      try {
+        const { settings, etag } = await getProviderSettings();
+        applyLoaded(settings, etag);
+        setTestStatus(passed ? "verified" : "failed");
+        setDiagnostic(result.diagnostic);
+      } catch {
+        /* keep the probe-derived status when the refresh races a save */
+      }
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      if (status === 403) {
+        setError("Access denied.");
+      } else if (failure instanceof Error && failure.message) {
+        setError(failure.message);
+      } else {
+        setError("Provider test failed.");
+      }
+    } finally {
+      setTesting(false);
+    }
+  }
+
+  const statusLabel =
+    testStatus === null
+      ? "Not configured"
+      : testStatus === "verified"
+        ? "Verified"
+        : testStatus === "failed"
+          ? "Failed"
+          : "Untested";
+
+  if (loading) {
+    return (
+      <section data-testid="provider-settings-section" aria-label="Provider settings">
+        <h1>Provider settings</h1>
+        <p>Loading…</p>
+      </section>
+    );
+  }
+
+  return (
+    <section data-testid="provider-settings-section" aria-label="Provider settings">
+      <h1>Provider settings</h1>
+      <p>Admin only. The API key is stored encrypted and never shown.</p>
+      <div className="x-field">
+        <label htmlFor="provider-base-url">Base URL</label>
+        <input
+          id="provider-base-url"
+          data-testid="provider-base-url"
+          autoComplete="off"
+          value={baseUrl}
+          onChange={(event) => setBaseUrl(event.target.value)}
+        />
+      </div>
+      <div className="x-field">
+        <label htmlFor="provider-model">Model</label>
+        <input
+          id="provider-model"
+          data-testid="provider-model"
+          autoComplete="off"
+          value={model}
+          onChange={(event) => setModel(event.target.value)}
+        />
+      </div>
+      <p>
+        Key:{" "}
+        <span data-testid="provider-key-status">
+          {keyConfigured ? "Configured" : "Missing"}
+        </span>
+      </p>
+      <p>
+        Status: <span data-testid="provider-status">{statusLabel}</span>
+      </p>
+      {revision !== null ? <p>Revision {revision}.</p> : null}
+      {versions !== null ? (
+        <p data-testid="provider-versions">{versions.length} revision(s) retained.</p>
+      ) : null}
+      {editingKey ? (
+        <div className="x-field">
+          <label htmlFor="provider-key">API key</label>
+          <input
+            id="provider-key"
+            data-testid="provider-key"
+            type="password"
+            autoComplete="off"
+            placeholder={PROVIDER_KEY_PLACEHOLDER}
+            value={keyValue}
+            onChange={(event) => setKeyValue(event.target.value)}
+          />
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="x-button"
+          data-testid="provider-replace"
+          onClick={() => {
+            setEditingKey(true);
+            setKeyValue("");
+          }}
+        >
+          Replace key
+        </button>
+      )}{" "}
+      <button
+        type="button"
+        className="x-button"
+        data-testid="provider-save"
+        disabled={saving}
+        onClick={() => void handleSave()}
+      >
+        {saving ? "Saving…" : "Save provider settings"}
+      </button>{" "}
+      <button
+        type="button"
+        className="x-button"
+        data-testid="provider-test"
+        disabled={testing}
+        onClick={() => void handleTest()}
+      >
+        {testing ? "Testing…" : "Test connection"}
+      </button>{" "}
+      <button
+        type="button"
+        className="x-button"
+        data-testid="provider-clear"
+        disabled={saving}
+        onClick={() => void handleClear()}
+      >
+        {clearArmed ? "Confirm clear" : "Clear key"}
+      </button>
+      {diagnostic ? (
+        <p role="status" data-testid="provider-diagnostic">
+          {diagnostic}
+        </p>
+      ) : null}
+      {notice ? (
+        <p role="status" data-testid="provider-notice">
+          {notice}
+        </p>
+      ) : null}
+      {error ? (
+        <p role="alert" className="x-error" data-testid="provider-error">
+          {error}
+        </p>
+      ) : null}
+    </section>
+  );
 }
 
 function LoginHint() {

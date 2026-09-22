@@ -476,6 +476,150 @@ export async function updateTheme(theme: ThemeName): Promise<SessionUser> {
   return (await response.json()) as SessionUser;
 }
 
+export interface ProviderSettings {
+  schema_version: 1;
+  base_url: string;
+  model: string;
+  revision: number;
+  key_configured: boolean;
+  test_status: string;
+  last_test: string | null;
+}
+
+export interface ProviderCapabilityResult {
+  schema_version: 1;
+  credential_ok: boolean;
+  model_ok: boolean;
+  tool_ok: boolean;
+  json_ok: boolean;
+  diagnostic: string;
+}
+
+function csrfHeaders(extra?: Record<string, string>): Record<string, string> {
+  const csrf = csrfToken();
+  return {
+    "Content-Type": "application/json",
+    ...(csrf ? { "X-CSRF-Token": csrf } : {}),
+    ...(extra ?? {}),
+  };
+}
+
+function statusError(message: string, status: number): Error {
+  return Object.assign(new Error(message), { status });
+}
+
+/** S42 masked provider settings (T9). Never carries a key; 404 = unconfigured. */
+export async function getProviderSettings(): Promise<{
+  settings: ProviderSettings;
+  etag: string;
+}> {
+  const response = await fetch("/api/v1/api-settings", {
+    credentials: "include",
+  });
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (response.status === 404) {
+    throw statusError("Provider settings are not configured.", 404);
+  }
+  if (!response.ok) {
+    throw statusError("Could not load provider settings.", response.status);
+  }
+  const settings = (await response.json()) as ProviderSettings;
+  const etag = (response.headers.get("etag") ?? "").replace(/"/g, "");
+  return { settings, etag: etag || String(settings.revision) };
+}
+
+export async function saveProviderSettings(
+  body: {
+    base_url?: string;
+    model?: string;
+    key_action: "replace" | "unchanged" | "clear";
+    api_key?: string;
+  },
+  ifMatch?: string,
+): Promise<{ settings: ProviderSettings; etag: string }> {
+  const response = await fetch("/api/v1/api-settings", {
+    method: "PUT",
+    credentials: "include",
+    headers: csrfHeaders(ifMatch ? { "If-Match": ifMatch } : undefined),
+    body: JSON.stringify(body),
+  });
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (response.status === 412) {
+    throw statusError(
+      "Provider settings changed. Reload and reconcile.",
+      412,
+    );
+  }
+  if (response.status === 422) {
+    let detail = "Invalid provider settings.";
+    try {
+      const payload = (await response.clone().json()) as { detail?: unknown };
+      if (typeof payload.detail === "string" && payload.detail) {
+        detail = payload.detail;
+      }
+    } catch {
+      /* keep generic message */
+    }
+    throw statusError(detail, 422);
+  }
+  if (!response.ok) {
+    throw statusError("Could not save provider settings.", response.status);
+  }
+  const settings = (await response.json()) as ProviderSettings;
+  const etag = (response.headers.get("etag") ?? "").replace(/"/g, "");
+  return { settings, etag: etag || String(settings.revision) };
+}
+
+/** S42 explicit capability probe (T9): one synthetic exchange, no secret echo. */
+export async function testProviderSettings(): Promise<ProviderCapabilityResult> {
+  const response = await fetch("/api/v1/api-settings/test", {
+    method: "POST",
+    credentials: "include",
+    headers: csrfHeaders(),
+    body: JSON.stringify({}),
+  });
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (response.status === 404) {
+    throw statusError("Provider settings are not configured.", 404);
+  }
+  if (response.status === 422) {
+    let detail = "Provider destination is not allowed.";
+    try {
+      const payload = (await response.clone().json()) as { detail?: unknown };
+      if (typeof payload.detail === "string" && payload.detail) {
+        detail = payload.detail;
+      }
+    } catch {
+      /* keep generic message */
+    }
+    throw statusError(detail, 422);
+  }
+  if (!response.ok) {
+    throw statusError("Provider test failed.", response.status);
+  }
+  return (await response.json()) as ProviderCapabilityResult;
+}
+
+/** S42 revision retention list (masked, key never present). */
+export async function listProviderVersions(): Promise<ProviderSettings[]> {
+  const response = await fetch("/api/v1/api-settings/versions", {
+    credentials: "include",
+  });
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (!response.ok) {
+    throw statusError("Could not load provider revisions.", response.status);
+  }
+  const payload = (await response.json()) as { items: ProviderSettings[] };
+  return payload.items ?? [];
+}
 export async function login(
   username: string,
   password: string,

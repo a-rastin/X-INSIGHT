@@ -24,6 +24,10 @@ export default defineConfig({
       env: {
         DATABASE_URL: TEST_DATABASE_URL,
         X_INSIGHT_HISTORY_CONTENT_DIR: "../tests/fixtures/content/history",
+        // S42 e2e-only: allow saving/testing unroutable loopback endpoints
+        // (e.g. http://127.0.0.1:9 fails safely with Failed status, no live
+        // provider). Production default is unchanged (loopback blocked).
+        X_INSIGHT_PROVIDER_ALLOW_LOCAL: "true",
       },
       port: 8000,
       reuseExistingServer: true,
