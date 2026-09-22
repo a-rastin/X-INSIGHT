@@ -1,0 +1,486 @@
+{
+  "note": "Clinical vignettes are synthetic author-created illustrations for owner review of wording and missingness behavior. They are NOT empirical probabilities, NOT guideline cutoffs, and NOT an independent clinical oracle. The numerical fixture is an independently hand-worked mathematical check of table ordering and inference plumbing, computed by plain enumeration outside the implementation under test.",
+  "package_version": "continue_or_adjust-v0.1-draft",
+  "clinical_cases": [
+    {
+      "name": "linked baseline, improved and stable with no tolerability burden and agent available (continuation context)",
+      "kind": "ordinary",
+      "gate": "followup with linked_current baseline (synthetic)",
+      "inputs": {
+        "ImprovementStatus": {
+          "state": "improved_stable",
+          "source": "proposed improvement field improved_stable with domains, scale name and version, baseline reference (synthetic)"
+        },
+        "CourseContext": {
+          "state": "non_chronic",
+          "source": "proposed course field non_chronic (synthetic)"
+        },
+        "TolerabilityContext": {
+          "state": "none_assessed",
+          "source": "four effects absent with null severities, significant side effects absent, metabolic No (synthetic)"
+        },
+        "PreferenceBarrier": {
+          "state": "absent",
+          "source": "proposed preference field absent; same-agent preference ContinueSame recorded in field detail (synthetic)"
+        },
+        "AdherenceContext": {
+          "state": "absent_assessed",
+          "source": "proposed adherence field absent (synthetic)"
+        },
+        "ExposureChangeContext": {
+          "state": "absent_assessed",
+          "source": "proposed exposure field absent (synthetic)"
+        },
+        "PracticalAvailability": {
+          "state": "available",
+          "source": "proposed availability field available (synthetic)"
+        },
+        "UrgentSafetyConcern": {
+          "state": "absent_assessed",
+          "source": "proposed urgent field absent (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E3 follow-up 2026-06-10 signed, reconciled and confirmed, baseline_changed false (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "ContinuationDiscussion",
+        "parent_states": [
+          "improved_stable",
+          "none_assessed",
+          "available"
+        ],
+        "synthetic_reference_percentages": [
+          6.0,
+          82.0,
+          12.0
+        ]
+      },
+      "proposed_template_branch": "continuation_discussion with parallel NotTriggered adherence and tolerability-exposure reviews plus routine urgent review",
+      "proposed_clinical_expectation_for_review": "Continuation discussion with shared decision-making, surveillance, and supports review; no dose, taper, or stability certification. Expectation is proposed, not approved.",
+      "deterministic_urgent_flag": "does not fire"
+    },
+    {
+      "name": "linked baseline, residual burden with other tolerability concern (adjustment context)",
+      "kind": "ordinary",
+      "gate": "followup with linked_current baseline (synthetic)",
+      "inputs": {
+        "ImprovementStatus": {
+          "state": "residual_burden",
+          "source": "proposed improvement field residual_burden with domains and scale (synthetic)"
+        },
+        "CourseContext": {
+          "state": "non_chronic",
+          "source": "proposed course field non_chronic (synthetic)"
+        },
+        "TolerabilityContext": {
+          "state": "other_concern",
+          "source": "akathisia present with severity moderate; other effects absent; metabolic No (synthetic)"
+        },
+        "PreferenceBarrier": {
+          "state": "absent",
+          "source": "proposed preference field absent (synthetic)"
+        },
+        "AdherenceContext": {
+          "state": "absent_assessed",
+          "source": "proposed adherence field absent (synthetic)"
+        },
+        "ExposureChangeContext": {
+          "state": "absent_assessed",
+          "source": "proposed exposure field absent (synthetic)"
+        },
+        "PracticalAvailability": {
+          "state": "available",
+          "source": "proposed availability field available (synthetic)"
+        },
+        "UrgentSafetyConcern": {
+          "state": "absent_assessed",
+          "source": "proposed urgent field absent (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E3 linked and reconciled (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "ContinuationDiscussion",
+        "parent_states": [
+          "residual_burden",
+          "other_concern",
+          "available"
+        ],
+        "synthetic_reference_percentages": [
+          6.0,
+          12.0,
+          82.0
+        ]
+      },
+      "proposed_template_branch": "individualized_change_review PLUS Triggered tolerability-exposure review",
+      "proposed_clinical_expectation_for_review": "Individualized review of alternatives with benefit-harm balancing; akathisia detail remains governed by its own follow-up question with no posterior carried over. Proposed, not approved.",
+      "deterministic_urgent_flag": "does not fire"
+    },
+    {
+      "name": "linked baseline, improved course with combined metabolic concern, access barrier, and chronic course (adjustment context)",
+      "kind": "ordinary",
+      "gate": "followup with linked_current baseline (synthetic)",
+      "inputs": {
+        "ImprovementStatus": {
+          "state": "improved_stable",
+          "source": "proposed improvement field improved_stable (synthetic)"
+        },
+        "CourseContext": {
+          "state": "chronic_recurrent",
+          "source": "proposed course field chronic_recurrent with repeated relapses (synthetic)"
+        },
+        "TolerabilityContext": {
+          "state": "combined_concern",
+          "source": "metabolic Yes plus parkinsonism present with severity (synthetic)"
+        },
+        "PreferenceBarrier": {
+          "state": "present",
+          "source": "proposed preference field present; same-agent preference DiscussChange in field detail (synthetic)"
+        },
+        "AdherenceContext": {
+          "state": "present",
+          "source": "proposed adherence field present (synthetic)"
+        },
+        "ExposureChangeContext": {
+          "state": "absent_assessed",
+          "source": "proposed exposure field absent (synthetic)"
+        },
+        "PracticalAvailability": {
+          "state": "access_barrier",
+          "source": "proposed availability field access_barrier with formulary detail (synthetic)"
+        },
+        "UrgentSafetyConcern": {
+          "state": "absent_assessed",
+          "source": "proposed urgent field absent (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E3 linked and reconciled (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "ContinuationDiscussion",
+        "parent_states": [
+          "improved_stable",
+          "combined_concern",
+          "access_barrier"
+        ],
+        "synthetic_reference_percentages": [
+          6.0,
+          12.0,
+          82.0
+        ]
+      },
+      "proposed_template_branch": "individualized_change_review PLUS Triggered adherence and tolerability-exposure reviews with chronic-course context note",
+      "proposed_clinical_expectation_for_review": "Change review weighs metabolic and movement concerns against chronic-course destabilization risk with gradual-change wording; no switch, dose, taper, or product is ordered. Proposed, not approved.",
+      "deterministic_urgent_flag": "does not fire"
+    },
+    {
+      "name": "linked baseline, continuation course with urgent concern present",
+      "kind": "urgent",
+      "gate": "followup with linked_current baseline (synthetic)",
+      "inputs": {
+        "ImprovementStatus": {
+          "state": "improved_stable",
+          "source": "proposed improvement field improved_stable (synthetic)"
+        },
+        "TolerabilityContext": {
+          "state": "none_assessed",
+          "source": "four effects absent, significant side effects absent, metabolic No (synthetic)"
+        },
+        "PracticalAvailability": {
+          "state": "available",
+          "source": "proposed availability field available (synthetic)"
+        },
+        "UrgentSafetyConcern": {
+          "state": "present",
+          "source": "proposed urgent field present with suspected NMS features (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E3 linked and reconciled (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "UrgentSafetyReview",
+        "parent_states": [
+          "present"
+        ],
+        "synthetic_reference_percentages": [
+          10.0,
+          90.0
+        ]
+      },
+      "proposed_template_branch": "continuation_discussion posterior PLUS deterministic urgent flag and urgent_clinician_assessment posterior",
+      "proposed_clinical_expectation_for_review": "Urgent assessment takes priority over the continuation discussion; the discussion posterior does not override or delay urgent care. Proposed, not approved.",
+      "deterministic_urgent_flag": "FIRES: 'URGENT recorded finding: an urgent safety concern is recorded (for example suspected NMS, cardiac toxicity, severe constipation, infection or neutropenia, seizure, or acute psychiatric danger). Seek immediate senior or emergency evaluation per local emergency protocol. Do not await model output.' Displayed even if the run fails or is still queued."
+    },
+    {
+      "name": "linked baseline, residual burden with unknown practical, adherence, exposure, preference, and course context",
+      "kind": "ordinary_with_unknown",
+      "gate": "followup with linked_current baseline (synthetic)",
+      "inputs": {
+        "ImprovementStatus": {
+          "state": "residual_burden",
+          "source": "proposed improvement field residual_burden (synthetic)"
+        },
+        "CourseContext": {
+          "state": "unknown_incomplete",
+          "source": "proposed course field not yet assessed (synthetic)"
+        },
+        "TolerabilityContext": {
+          "state": "other_concern",
+          "source": "tardive dyskinesia present with severity; metabolic No (synthetic)"
+        },
+        "PreferenceBarrier": {
+          "state": "unknown_incomplete",
+          "source": "proposed preference field not yet elicited (synthetic)"
+        },
+        "AdherenceContext": {
+          "state": "unknown_incomplete",
+          "source": "proposed adherence field not yet assessed (synthetic)"
+        },
+        "ExposureChangeContext": {
+          "state": "unknown_incomplete",
+          "source": "proposed exposure field not yet assessed (synthetic)"
+        },
+        "PracticalAvailability": {
+          "state": "unknown_incomplete",
+          "source": "proposed availability field not yet assessed (synthetic)"
+        },
+        "UrgentSafetyConcern": {
+          "state": "absent_assessed",
+          "source": "proposed urgent field absent (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E3 linked and reconciled (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "ContinuationDiscussion",
+        "parent_states": [
+          "residual_burden",
+          "other_concern",
+          "unknown_incomplete"
+        ],
+        "synthetic_reference_percentages": [
+          6.0,
+          12.0,
+          82.0
+        ]
+      },
+      "proposed_template_branch": "individualized_change_review PLUS unknown_disclosure listing CourseContext, PreferenceBarrier, AdherenceContext, ExposureChangeContext, PracticalAvailability",
+      "proposed_clinical_expectation_for_review": "Unknown optional inputs permit inference with disclosure and are never reported as continuation, change, or negative findings. Proposed; owner to confirm optional status.",
+      "deterministic_urgent_flag": "does not fire"
+    },
+    {
+      "name": "gate absent: registration encounter never satisfies the follow-up gate",
+      "kind": "gate_absent",
+      "gate": "not_applicable (synthetic registration encounter)",
+      "inputs": {
+        "encounter_kind": "registration (synthetic)",
+        "ImprovementStatus": {
+          "state": "improved_stable",
+          "source": "status recorded but encounter kind is registration (synthetic)"
+        }
+      },
+      "expected_behavior": "not_applicable with reason: F6 is follow-up only; registration treatment selection belongs to its own questions. No inference, no CPTs, no posterior.",
+      "proposed_clinical_expectation_for_review": "Registration exclusion is proposed to keep registration and follow-up identities separate; owner to confirm."
+    },
+    {
+      "name": "required-missing: outdated baseline with newer signed record pending reconciliation (baseline E4)",
+      "kind": "required_missing",
+      "gate": "needs_clarification (synthetic outdated baseline)",
+      "inputs": {
+        "ImprovementStatus": {
+          "state": "improved_stable",
+          "source": "proposed improvement field improved_stable (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "outdated_unreconciled (baseline E4: follow-up still points to superseded follow-up E3 while a newer signed follow-up E4 exists; baseline_changed true; reconciliation pending)",
+          "source": "baseline_encounter_id E3 with baseline_changed true and history_reconciliation pending (synthetic)"
+        },
+        "TolerabilityContext": {
+          "state": "none_assessed (recorded against the superseded baseline context; not substituted)",
+          "source": "effects recorded but baseline linkage outdated (synthetic)"
+        }
+      },
+      "expected_behavior": "needs_clarification: no posterior reported, later questions stopped, template needs_clarification branch rendered naming baseline linkage and reconciliation. Saving reconciled input against the current baseline creates a new run. Outdated baselines are never silently skipped and never reported as continuation or as change review.",
+      "proposed_clinical_expectation_for_review": "Outdated-baseline blocking is proposed; owner to confirm no recency cutoff is imposed and any future cutoff needs review."
+    },
+    {
+      "name": "required-missing: tolerability constituent not_assessed (akathisia skipped)",
+      "kind": "required_missing",
+      "gate": "needs_clarification (synthetic not_assessed constituent)",
+      "inputs": {
+        "ImprovementStatus": {
+          "state": "improved_stable",
+          "source": "proposed improvement field improved_stable (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E3 linked and reconciled (synthetic)"
+        },
+        "TolerabilityContext": {
+          "state": "MISSING (akathisia effect skipped not_assessed; three other effects absent; metabolic No recorded)",
+          "source": "akathisia status not_assessed per the adverse-effect contract (synthetic)"
+        }
+      },
+      "expected_behavior": "needs_clarification: no posterior reported, later questions stopped, template needs_clarification branch rendered naming the akathisia assessment within TolerabilityContext. The three absent effects and the recorded metabolic No are not aggregated into none_assessed; unknown is never a negative finding.",
+      "proposed_clinical_expectation_for_review": "Constituent-required blocking is proposed; owner to confirm a skipped effect blocks F6 rather than permitting a partial aggregate."
+    },
+    {
+      "name": "required-missing: improvement judgment not yet recorded",
+      "kind": "required_missing",
+      "gate": "needs_clarification (synthetic missing judgment)",
+      "inputs": {
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E3 linked and reconciled (synthetic)"
+        },
+        "TolerabilityContext": {
+          "state": "none_assessed",
+          "source": "four effects absent, significant side effects absent, metabolic No (synthetic)"
+        },
+        "ImprovementStatus": {
+          "state": "MISSING (course judgment not yet recorded)",
+          "source": "proposed improvement field unanswered (synthetic)"
+        }
+      },
+      "expected_behavior": "needs_clarification: no posterior reported, later questions stopped, template needs_clarification branch rendered naming ImprovementStatus. The recorded none_assessed tolerability alone does not produce a continuation posterior, and no PANSS total is substituted as the judgment.",
+      "proposed_clinical_expectation_for_review": "Improvement-required blocking is proposed; owner to confirm a missing course judgment never defaults to improved_stable."
+    },
+    {
+      "name": "differing baseline: same follow-up measures against baseline E3 linked versus baseline E2 outdated",
+      "kind": "differing_baseline",
+      "gate": "one executes, one blocks (synthetic pair)",
+      "inputs": {
+        "variant_A_linked": {
+          "BaselineCurrency": "linked_current with baseline E3 (follow-up 2026-07-02 points to signed follow-up baseline E3 2026-06-10, reconciled, baseline_changed false)",
+          "TolerabilityContext": "none_assessed (current effects all absent)",
+          "expected_behavior": "executes: ContinuationDiscussion posterior reported with the E3 linkage as context"
+        },
+        "variant_B_outdated": {
+          "BaselineCurrency": "outdated_unreconciled with baseline E2 (same follow-up still points to superseded registration E2 2026-03-01 while E3 is signed; baseline_changed true)",
+          "TolerabilityContext": "same current effects available but not the reconciled baseline context",
+          "expected_behavior": "needs_clarification: no posterior reported; current effects are displayed as recorded but never substituted as the baseline context"
+        }
+      },
+      "proposed_clinical_expectation_for_review": "Baseline identity determines applicability, not just measure availability; differing baselines must not be silently substituted. Proposed; owner to confirm baseline-identity rule and no recency cutoff."
+    }
+  ],
+  "numerical_fixture": {
+    "provenance": "Independently hand-worked by plain enumeration over the synthetic reference tables in network.xml; not produced by the implementation under test; checks ordering/transpose plumbing, not clinical correctness.",
+    "ordering_contract": "child state fastest; last declared parent fastest among parents; first declared parent slowest",
+    "checks": [
+      {
+        "name": "single-row lookup is the posterior under complete evidence (continuation)",
+        "evidence": {
+          "ImprovementStatus": "improved_stable",
+          "TolerabilityContext": "none_assessed",
+          "PracticalAvailability": "available"
+        },
+        "expected_posterior_percentages": [
+          6.0,
+          82.0,
+          12.0
+        ],
+        "work": "continuation row 0 (improved_stable,none_assessed,available) is [0.06, 0.82, 0.12] by the documented synthetic rule; with all three parents observed there is exactly one active row"
+      },
+      {
+        "name": "change row is unique among rows with any change driver",
+        "evidence": {
+          "ImprovementStatus": "residual_burden",
+          "TolerabilityContext": "other_concern",
+          "PracticalAvailability": "available"
+        },
+        "expected_posterior_percentages": [
+          6.0,
+          12.0,
+          82.0
+        ],
+        "work": "continuation row (residual_burden,other_concern,available) is [0.06, 0.12, 0.82]; the 2 continuation-dominant rows are exactly (improved_stable,none_assessed,available) and (improved_stable,none_assessed,unknown_incomplete); the other 22 rows are change-dominant"
+      },
+      {
+        "name": "transpose detector: swapping first parent changes the row",
+        "row_a": {
+          "table": "ContinuationDiscussion",
+          "parent_states": [
+            "improved_stable",
+            "none_assessed",
+            "available"
+          ],
+          "expected": [
+            6.0,
+            82.0,
+            12.0
+          ]
+        },
+        "row_b": {
+          "table": "ContinuationDiscussion",
+          "parent_states": [
+            "residual_burden",
+            "none_assessed",
+            "available"
+          ],
+          "expected": [
+            6.0,
+            12.0,
+            82.0
+          ]
+        },
+        "work": "rows differ only in first parent (ImprovementStatus); an implementation that transposes parent order returns the wrong row. Last-parent swap is likewise detected: (improved_stable,none_assessed,available) [6.0,82.0,12.0] vs (improved_stable,none_assessed,access_barrier) [6.0,12.0,82.0]"
+      },
+      {
+        "name": "asymmetry detector: urgent present vs absent swaps the argmax",
+        "row_c": {
+          "table": "UrgentSafetyReview",
+          "parent_states": [
+            "present"
+          ],
+          "expected": [
+            10.0,
+            90.0
+          ]
+        },
+        "row_d": {
+          "table": "UrgentSafetyReview",
+          "parent_states": [
+            "absent_assessed"
+          ],
+          "expected": [
+            90.0,
+            10.0
+          ]
+        },
+        "work": "swapping UrgentSafetyConcern present/absent_assessed swaps the argmax from urgent_clinician_assessment to routine_safety_assessment"
+      },
+      {
+        "name": "prior-marginal over synthetic root references (continuation)",
+        "table": "ContinuationDiscussion",
+        "work": "sum over all 24 parent configurations weighted by root references ImprovementStatus [0.55,0.45], TolerabilityContext [0.45,0.15,0.25,0.15], PracticalAvailability [0.70,0.15,0.15]. Change basis = 1 - 0.55*0.45*0.85 = 0.789625. P(ContinuationDiscussion) = 0.210375*0.82 + 0.789625*0.12 = 0.1725075 + 0.094755 = 0.2672625; P(IndividualizedChangeReview) = 0.210375*0.12 + 0.789625*0.82 = 0.025245 + 0.6474925 = 0.6727375; OutsideScope = 0.06",
+        "expected_posterior_probabilities": [
+          0.06,
+          0.2672625,
+          0.6727375
+        ],
+        "tolerance": 1e-09
+      },
+      {
+        "name": "prior-marginal over synthetic root reference (urgent)",
+        "table": "UrgentSafetyReview",
+        "work": "0.92*0.90+0.08*0.10=0.828+0.008=0.836",
+        "expected_posterior_probabilities": [
+          0.836,
+          0.164
+        ],
+        "tolerance": 1e-09
+      }
+    ]
+  }
+}

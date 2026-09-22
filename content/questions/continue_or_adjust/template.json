@@ -1,0 +1,66 @@
+{
+  "description": "Predefined physician-review wording for continue-or-adjust F6. The LLM never supplies this text; the app renders the matching branch deterministically from stored posteriors, evidence, and missingness. All slots are escaped at render time. No branch diagnoses schizophrenia, certifies improvement, predicts relapse or hospitalization, estimates a treatment effect, selects a product, gives dosage, taper, or levels, or clears safety. Statement 6 is a 2B suggestion and is not appropriate for electronic decision support or quality measurement; nothing here is a decision rule or a quality-measure output.",
+  "template_version": "continue_or_adjust-template-v0.1-draft",
+  "review_status": "awaiting_review",
+  "branches": {
+    "continuation_discussion": {
+      "heading": "Follow-up review (F6): continuation discussion",
+      "body": "Recorded gate (follow-up continue-or-adjust review): follow-up encounter with linked current baseline ({baseline_source}); improvement course: {improvement_state} ({improvement_source}); tolerability: {tolerability_state} ({tolerability_source}); practical availability: {practical_state} ({practical_source}). Network ContinueOrAdjust_F6_draft ({network_version}) posteriors: continuation-discussion ContinuationDiscussion {p_continue}% (full distribution: outside {p_outside}%, continuation {p_continue}%, change review {p_change}%; CPT percentages and posteriors are shown separately; no posterior authorizes continuation or certifies stability). Review prompt: the current treatment approach is recorded as improved and stable with no assessed tolerability burden and the current agent available. Discuss ongoing treatment with the patient in shared decision-making, reviewing benefits, side-effect surveillance, adherence supports, and recovery goals; unless a medication requires emergent discontinuation, any future dose change would be gradual with close monitoring for recurrent symptoms. The physician decides next steps; this output never prescribes, doses, tapers, or clears treatment. Adherence: {adherence_text}. Tolerability and exposure: {tolerability_text}. Safety: {urgent_text}. {unknown_disclosure} {context_note}",
+      "posterior_state": "ContinuationDiscussion"
+    },
+    "individualized_change_review": {
+      "heading": "Follow-up review (F6): individualized change review",
+      "body": "Recorded gate (follow-up continue-or-adjust review): follow-up encounter with linked current baseline ({baseline_source}); improvement course: {improvement_state} ({improvement_source}); tolerability: {tolerability_state} ({tolerability_source}); practical availability: {practical_state} ({practical_source}). Network ContinueOrAdjust_F6_draft ({network_version}) posteriors: continuation-discussion IndividualizedChangeReview {p_change}% (full distribution: outside {p_outside}%, continuation {p_continue}%, change review {p_change}%). Review prompt: residual burden, a tolerability concern, or a practical availability barrier is recorded. Review alternatives with the patient in shared decision-making: the reasons for a possible change (residual symptoms or functioning difficulties, side-effect profile including metabolic review, availability, LAI formulation interest recorded as {lai_context}), the patient's recovery goals and preferences ({preference_summary}), the longitudinal course and certainty of the diagnosis, and the potential harms of change (destabilization, early discontinuation, symptom increase). Unless a medication requires emergent discontinuation, gradual reductions with close relapse monitoring are preferable; this output does not order any change, dose, taper, or product. The physician decides next steps. Adherence: {adherence_text}. Tolerability and exposure: {tolerability_text}. Safety: {urgent_text}. {unknown_disclosure} {context_note}",
+      "posterior_state": "IndividualizedChangeReview"
+    },
+    "outside_scope": {
+      "heading": "Follow-up review (F6): outside current-treatment scope",
+      "body": "Network ContinueOrAdjust_F6_draft ({network_version}) posteriors: continuation-discussion OutsideScope {p_outside}% (full distribution: outside {p_outside}%, continuation {p_continue}%, change review {p_change}%). Review prompt: this continuation review applies only to a follow-up encounter with a linked current baseline. Assess registration or other follow-up questions for indication; do not read this branch as improvement, as a change order, or as a stability finding. This branch is estimated for contract completeness and is not reached when the gate holds (a registration encounter or a non-linked baseline yields not_applicable or needs_clarification without inference). {unknown_disclosure}",
+      "posterior_state": "OutsideScope"
+    },
+    "needs_clarification": {
+      "heading": "Follow-up review (F6): clarification required",
+      "body": "No posterior is reported. Required input is missing, partial, not_assessed, outdated, unreconciled, or conflicting: {missing_fields}. Complete or reconcile {missing_fields} and start a new run; later questions are stopped until this is resolved. A missing improvement judgment, an unassessed tolerability constituent, a present-without-severity effect, or an outdated baseline is never reported as continuation and never reported as a change review. Any already-recorded urgent feature below remains visible and does not wait for a model run."
+    },
+    "not_applicable": {
+      "heading": "Follow-up review (F6): not applicable",
+      "body": "No posterior is reported. This follow-up continuation review does not apply: {not_applicable_reason}. No inference, no CPTs, and no negative or positive continuation posterior are produced. A registration encounter never receives a continuation posterior from this question."
+    },
+    "unknown_disclosure": "Inputs recorded as unknown or without hard evidence: {unknown_fields_or_none}. Unknown is not a negative finding; clarify as clinically indicated. Course context, preference detail, adherence, exposure change, and practical availability, where unknown, are discussion gaps only and never default to continuation or to change. PANSS totals, where recorded, are supporting context only with recorded instrument versions and dates; no total, band, or percent change establishes improvement or residual burden.",
+    "context_note": "Source context (not a network output): longitudinal course recorded as {course_state} ({course_source}); same-agent continuation preference elicited as {preference_summary}. Routine effectiveness and adverse-effect monitoring continues even when no parallel review is triggered. LAI formulation interest, where recorded, is a discussion item only; LAI product choice is outside this question. This package gives no dose, taper schedule, level, or product selection."
+  },
+  "deterministic_urgent_flag": {
+    "rule": "Rendered directly from saved inputs WITHOUT waiting for any LLM request, inference result, or template posterior. Shown alongside (never replaced by) the posterior branch.",
+    "conditions": [
+      {
+        "when": "UrgentSafetyConcern == present",
+        "text": "URGENT recorded finding: an urgent safety concern is recorded (for example suspected NMS, cardiac toxicity, severe constipation, infection or neutropenia, seizure, or acute psychiatric danger). Seek immediate senior or emergency evaluation per local emergency protocol. Do not await model output."
+      }
+    ],
+    "otherwise": "No deterministic urgent flag fires; the posterior branch above still requires physician review. Absent never certifies safety."
+  },
+  "mapping_rule": "Render the branch matching the highest-posterior ContinuationDiscussion state ONLY as a review prompt; the posterior maximum is not a validated recommendation rule and the physician may choose any course. Always render the stored AdherenceSupportReview, TolerabilityExposureReview, and UrgentSafetyReview posteriors alongside. Always append unknown_disclosure and context_note. Always evaluate deterministic_urgent_flag from saved inputs first.",
+  "slots": [
+    "baseline_source",
+    "improvement_state",
+    "improvement_source",
+    "tolerability_state",
+    "tolerability_source",
+    "practical_state",
+    "practical_source",
+    "network_version",
+    "p_outside",
+    "p_continue",
+    "p_change",
+    "adherence_text",
+    "tolerability_text",
+    "urgent_text",
+    "unknown_fields_or_none",
+    "missing_fields",
+    "not_applicable_reason",
+    "course_state",
+    "course_source",
+    "preference_summary",
+    "lai_context"
+  ]
+}

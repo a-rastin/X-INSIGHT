@@ -1,0 +1,449 @@
+{
+  "schema_version": "1.0-draft",
+  "question_key": "continue_or_adjust",
+  "title": "Continue-or-adjust review at follow-up (F6)",
+  "workflow": "followup",
+  "version": "continue_or_adjust-v0.1-draft",
+  "review_status": "awaiting_review",
+  "network_file": "network.xml",
+  "network_hash": "sha256:fd63351c33e7767501a07309d3600da3ded6b75b6cb32d4b2c12106ccfa90b17",
+  "source_refs": [
+    "docs/medical-docs/guideline/STATEMENT-04.md",
+    "docs/medical-docs/guideline/STATEMENT-05.md",
+    "docs/medical-docs/guideline/STATEMENT-06.md",
+    "docs/medical-docs/PANSS.md",
+    "content/assessments/panss.json",
+    "content/history/history-effects-v0.1-draft.json",
+    "BNs/BN-04.xml",
+    "BNs/BN-05.xml",
+    "BNs/BN-06.xml",
+    "BNs/schema.xml",
+    "docs/dev/user-requirements.md",
+    "docs/dev/plan.md"
+  ],
+  "declared_node_order": [
+    "ImprovementStatus",
+    "CourseContext",
+    "TolerabilityContext",
+    "PreferenceBarrier",
+    "AdherenceContext",
+    "ExposureChangeContext",
+    "PracticalAvailability",
+    "UrgentSafetyConcern",
+    "ContinuationDiscussion",
+    "AdherenceSupportReview",
+    "TolerabilityExposureReview",
+    "UrgentSafetyReview"
+  ],
+  "variables": [
+    {
+      "node_id": "ImprovementStatus",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "improved_stable",
+        "residual_burden"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "CourseContext",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "chronic_recurrent",
+        "non_chronic",
+        "unknown_incomplete"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "TolerabilityContext",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "none_assessed",
+        "metabolic_concern",
+        "other_concern",
+        "combined_concern"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "PreferenceBarrier",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "absent",
+        "present",
+        "unknown_incomplete"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "AdherenceContext",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "absent_assessed",
+        "present",
+        "unknown_incomplete"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "ExposureChangeContext",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "absent_assessed",
+        "present",
+        "unknown_incomplete"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "PracticalAvailability",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "available",
+        "access_barrier",
+        "unknown_incomplete"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "UrgentSafetyConcern",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "absent_assessed",
+        "present"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "ContinuationDiscussion",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "OutsideScope",
+        "ContinuationDiscussion",
+        "IndividualizedChangeReview"
+      ],
+      "ordered_parents": [
+        "ImprovementStatus",
+        "TolerabilityContext",
+        "PracticalAvailability"
+      ]
+    },
+    {
+      "node_id": "AdherenceSupportReview",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "NotTriggered",
+        "Triggered"
+      ],
+      "ordered_parents": [
+        "AdherenceContext",
+        "PreferenceBarrier"
+      ]
+    },
+    {
+      "node_id": "TolerabilityExposureReview",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "NotTriggered",
+        "Triggered"
+      ],
+      "ordered_parents": [
+        "TolerabilityContext",
+        "ExposureChangeContext"
+      ]
+    },
+    {
+      "node_id": "UrgentSafetyReview",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "routine_safety_assessment",
+        "urgent_clinician_assessment"
+      ],
+      "ordered_parents": [
+        "UrgentSafetyConcern"
+      ]
+    }
+  ],
+  "patient_mappings": [
+    {
+      "node_id": "BaselineCurrency (applicability input, not a network node)",
+      "allowed_source_paths": [
+        "encounters.baseline_encounter_id (follow-up linkage to the chosen signed baseline)",
+        "encounters.draft_data.history_reconciliation (must be confirmed, not pending)",
+        "encounters.baseline_changed (must be false; a newer signed record without reconciliation makes the baseline outdated)",
+        "encounters.draft_data.continue_review.baseline_linkage (PROPOSED, not collected: linked_current vs outdated_unreconciled vs unknown_incomplete with recorded baseline encounter id and reconciliation date)"
+      ],
+      "typed_transform": "linked_current iff the follow-up records the chosen signed baseline encounter id, history and medications are reconciled and confirmed, and no newer signed record is pending reconciliation. outdated_unreconciled iff any of those fails. unknown_incomplete iff linkage not recorded. No maximum recency interval is imposed in v0.1; the interval between baseline and current dates is recorded and displayed for physician interpretation.",
+      "time_window": "baseline encounter timestamp (frozen signed snapshot) through current follow-up encounter timestamp; reconciliation recorded with actor and timestamp per the runtime value envelope",
+      "usage": "cpt_context",
+      "missing_policy": "outdated_unreconciled, unknown_incomplete, missing, or conflicting linkage yields needs_clarification and stops later questions (never not_applicable, never a posterior). Saving corrected and reconciled input creates a new run."
+    },
+    {
+      "node_id": "ImprovementStatus",
+      "allowed_source_paths": [
+        "encounters.draft_data.continue_review.improvement_status (PROPOSED structured field, not collected: improved_stable vs residual_burden with recorded symptom domains, validated scale name and version, and baseline reference)",
+        "content/assessments/panss.json#panss-v1 (supporting scale only, never a gate or state determinant)"
+      ],
+      "typed_transform": "improved_stable iff the clinician records the course as improved and stable on the current treatment with supporting domains, scale name and version, and baseline reference. residual_burden iff the clinician records significant residual symptoms or functional difficulties despite some response. Never inferred from a PANSS total, band, or percent change; no percent-change value is computed and no cutoff is applied.",
+      "time_window": "current_encounter judgment with baseline reference; supporting scale in its documented previous-7-days window with recorded instrument name and version",
+      "usage": "both",
+      "missing_policy": "missing, not_assessed, or conflicting judgment yields needs_clarification (required input blocks)."
+    },
+    {
+      "node_id": "CourseContext",
+      "allowed_source_paths": [
+        "encounters.draft_data.continue_review.course_context (PROPOSED structured field, not collected: chronic_recurrent vs non_chronic with recorded relapse history)"
+      ],
+      "typed_transform": "chronic_recurrent iff the clinician documents chronic symptoms or repeated prior relapses. non_chronic iff the clinician records neither. else unknown_incomplete. This proposed composite requires operational criteria; the state is recorded as assessed, never derived from a count cutoff.",
+      "time_window": "longitudinal history at the current encounter",
+      "usage": "both when assessed; estimation-context-only when unknown_incomplete",
+      "missing_policy": "missing leaves the assessed state as unknown_incomplete; inference proceeds and the template renders an unknown disclosure (optional input). Course information is rendered as a discussion item; in v0.1 it conditions no child output."
+    },
+    {
+      "node_id": "TolerabilityContext",
+      "allowed_source_paths": [
+        "encounters.draft_data.effects.tardive_dyskinesia.status",
+        "encounters.draft_data.effects.tardive_dyskinesia.severity",
+        "encounters.draft_data.effects.akathisia.status",
+        "encounters.draft_data.effects.akathisia.severity",
+        "encounters.draft_data.effects.parkinsonism.status",
+        "encounters.draft_data.effects.parkinsonism.severity",
+        "encounters.draft_data.effects.acute_dystonia.status",
+        "encounters.draft_data.effects.acute_dystonia.severity",
+        "encounters.draft_data.continue_review.significant_side_effects (PROPOSED structured field, not collected: present vs absent_assessed)",
+        "encounters.draft_data.continue_review.metabolic_concern (PROPOSED structured field, not collected: Yes vs No for clinically significant weight gain, diabetes, or metabolic syndrome without numeric thresholds)",
+        "content/history/history-effects-v0.1-draft.json#adverse_effect_contract.effects (present/absent/not_assessed; present requires severity)"
+      ],
+      "typed_transform": "none_assessed iff all four FR-21 effects are recorded absent with null severities AND significant side effects are recorded absent AND metabolic concern is recorded No. metabolic_concern iff metabolic Yes without any other concern. other_concern iff any effect is recorded present with severity or significant side effects are recorded present, without metabolic Yes. combined_concern iff metabolic Yes with any other concern. Effect-specific detail (F1-F4) is assessed in its own follow-up question; only the aggregated constituents reach this node and no posterior is carried between questions.",
+      "time_window": "current_encounter; clinician ratings recorded with actor and timestamp per the runtime value envelope",
+      "usage": "both",
+      "missing_policy": "any constituent not_assessed, missing, or conflicting, or any effect present without severity, yields needs_clarification (required input blocks). Unknown is never mapped to none_assessed."
+    },
+    {
+      "node_id": "PreferenceBarrier",
+      "allowed_source_paths": [
+        "encounters.draft_data.continue_review.preference_barrier (PROPOSED structured field, not collected: absent vs present with recorded same-agent continuation preference detail: ContinueSame vs DiscussChange vs NoExpressedPreference vs not_elicited)"
+      ],
+      "typed_transform": "absent iff the clinician records no reluctance or barrier to ongoing medication. present iff the clinician records reluctance or a barrier, with the same-agent preference detail preserved in the field and rendered in the template. else unknown_incomplete. NoExpressedPreference is an assessed response preserved in the field detail, not mapped to missing.",
+      "time_window": "current_encounter shared decision-making discussion",
+      "usage": "both when assessed; estimation-context-only when unknown_incomplete",
+      "missing_policy": "missing leaves the assessed state as unknown_incomplete; inference proceeds and the template renders an unknown disclosure (optional input)."
+    },
+    {
+      "node_id": "AdherenceContext",
+      "allowed_source_paths": [
+        "encounters.draft_data.continue_review.adherence_context (PROPOSED structured field, not collected: absent_assessed vs present with recorded evidence)"
+      ],
+      "typed_transform": "present iff the clinician assesses difficulty maintaining prescribed treatment during the exposure interval. absent_assessed iff the clinician assesses no such difficulty. Dispensing records alone never establish ingestion. else unknown_incomplete.",
+      "time_window": "current treatment interval at the current encounter",
+      "usage": "both when assessed; estimation-context-only when unknown_incomplete",
+      "missing_policy": "missing leaves the assessed state as unknown_incomplete; inference proceeds and the template renders an unknown disclosure (optional input)."
+    },
+    {
+      "node_id": "ExposureChangeContext",
+      "allowed_source_paths": [
+        "encounters.draft_data.continue_review.exposure_change_context (PROPOSED structured field, not collected: absent_assessed vs present with recorded interacting medicines, smoking, body-mass, renal or hepatic, or absorption change)"
+      ],
+      "typed_transform": "present iff the clinician identifies a relevant pharmacokinetic or exposure change. absent_assessed iff the clinician assesses none. Direction is never inferred. else unknown_incomplete.",
+      "time_window": "current treatment interval at the current encounter",
+      "usage": "both when assessed; estimation-context-only when unknown_incomplete",
+      "missing_policy": "missing leaves the assessed state as unknown_incomplete; inference proceeds and the template renders an unknown disclosure (optional input)."
+    },
+    {
+      "node_id": "PracticalAvailability",
+      "allowed_source_paths": [
+        "encounters.draft_data.continue_review.practical_availability (PROPOSED structured field, not collected: available vs access_barrier with recorded access or formulary detail and LAI formulation-mismatch note)"
+      ],
+      "typed_transform": "available iff the same active antipsychotic remains accessible. access_barrier iff an access or formulary barrier is recorded. LAI formulation mismatch is recorded in the field detail and rendered as template context only; LAI product choice is outside this question. else unknown_incomplete.",
+      "time_window": "current_encounter",
+      "usage": "both when assessed; estimation-context-only when unknown_incomplete",
+      "missing_policy": "missing leaves the assessed state as unknown_incomplete; inference proceeds and the template renders an unknown disclosure (optional input)."
+    },
+    {
+      "node_id": "UrgentSafetyConcern",
+      "allowed_source_paths": [
+        "encounters.draft_data.continue_review.urgent_assessment (PROPOSED structured field, not collected)"
+      ],
+      "typed_transform": "present iff the clinician records suspected NMS, cardiac toxicity, severe constipation, infection or neutropenia, seizure, or acute psychiatric danger requiring a separate assessment pathway. absent_assessed iff the clinician assesses no urgent concern. Absent does not certify safety.",
+      "time_window": "current_encounter",
+      "usage": "both",
+      "missing_policy": "missing urgent assessment yields needs_clarification (required input blocks). Present fires the deterministic urgent flag without waiting for any model output."
+    }
+  ],
+  "applicability": {
+    "expression": "encounter.kind == 'followup' AND BaselineCurrency == 'linked_current'",
+    "expression_language": "allowlisted conjunction of == comparisons on encounter.kind and baseline linkage only; no arithmetic, no function calls, no note access (proposed for owner review; the S25 allowlist parser is authoritative)",
+    "required_fields": [
+      "encounter.kind",
+      "BaselineCurrency linkage with reconciliation (gate constituent)",
+      "ImprovementStatus judgment (required)",
+      "TolerabilityContext with all constituents assessed (required)",
+      "UrgentSafetyConcern assessment (required)",
+      "absence of conflicting values for mapped nodes"
+    ],
+    "unknown_policy": "registration encounters yield not_applicable with reason (F6 is follow-up only; never a posterior). Outdated, unreconciled, unknown, missing, or conflicting baseline linkage yields needs_clarification and stops later questions; saving corrected and reconciled input creates a new run. Missing required input (improvement judgment, any tolerability constituent including present-without-severity, urgent concern) yields needs_clarification. Missing optional input (course, preference, adherence, exposure change, practical availability) leaves that node as unknown_incomplete; inference proceeds and the template renders an unknown disclosure."
+  },
+  "cpt_contract": {
+    "units": "percentages [0,100]",
+    "all_nodes_mandatory": true,
+    "row_order": "child state fastest; last declared parent next; first parent slowest",
+    "rows": [
+      {
+        "node_id": "ImprovementStatus",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "CourseContext",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "TolerabilityContext",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "PreferenceBarrier",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "AdherenceContext",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "ExposureChangeContext",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "PracticalAvailability",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "UrgentSafetyConcern",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "ContinuationDiscussion",
+        "parent_ids": [
+          "ImprovementStatus",
+          "TolerabilityContext",
+          "PracticalAvailability"
+        ],
+        "row_count": 24
+      },
+      {
+        "node_id": "AdherenceSupportReview",
+        "parent_ids": [
+          "AdherenceContext",
+          "PreferenceBarrier"
+        ],
+        "row_count": 9
+      },
+      {
+        "node_id": "TolerabilityExposureReview",
+        "parent_ids": [
+          "TolerabilityContext",
+          "ExposureChangeContext"
+        ],
+        "row_count": 12
+      },
+      {
+        "node_id": "UrgentSafetyReview",
+        "parent_ids": [
+          "UrgentSafetyConcern"
+        ],
+        "row_count": 2
+      }
+    ],
+    "validation": "one table per node in declared order; exact node/parent/state identity and order; no extra fields; finite numbers in [0,100]; each row sums to 100 within 1e-6; reject missing/duplicate/extra rows, strings/booleans/null, nonfinite, out-of-range, wrong sums; never normalize/clip/repair"
+  },
+  "query_nodes": [
+    "ContinuationDiscussion",
+    "AdherenceSupportReview",
+    "TolerabilityExposureReview",
+    "UrgentSafetyReview"
+  ],
+  "evidence_mappings": [
+    {
+      "node_id": "ImprovementStatus",
+      "evidence": "mapped improved_stable/residual_burden state as hard evidence when assessed; missing blocks before inference"
+    },
+    {
+      "node_id": "CourseContext",
+      "evidence": "mapped state, including unknown_incomplete as an observed state; missing field maps to unknown_incomplete with disclosure"
+    },
+    {
+      "node_id": "TolerabilityContext",
+      "evidence": "mapped aggregate state as hard evidence when all constituents assessed; any missing constituent blocks before inference"
+    },
+    {
+      "node_id": "PreferenceBarrier",
+      "evidence": "mapped state, including unknown_incomplete as an observed state"
+    },
+    {
+      "node_id": "AdherenceContext",
+      "evidence": "mapped state, including unknown_incomplete as an observed state"
+    },
+    {
+      "node_id": "ExposureChangeContext",
+      "evidence": "mapped state, including unknown_incomplete as an observed state"
+    },
+    {
+      "node_id": "PracticalAvailability",
+      "evidence": "mapped state, including unknown_incomplete as an observed state"
+    },
+    {
+      "node_id": "UrgentSafetyConcern",
+      "evidence": "mapped absent_assessed/present state as hard evidence when assessed; missing blocks before inference; present also fires the deterministic flag"
+    }
+  ],
+  "impossible_evidence_policy": "fail with explicit error; never soften or approximate. All declared states (including unknown_incomplete where declared) are possible, so impossibility arises only from schema violations (undeclared node/state, conflicting evidence on one node).",
+  "likelihood_evidence": "disabled",
+  "prompt_version": "continue_or_adjust-prompt-v0.1-draft (prompt.txt)",
+  "template_version": "continue_or_adjust-template-v0.1-draft (template.json)",
+  "reviewed_result_mapping": "posterior branch rendered as review prompt only; maximum posterior is not a recommendation rule; deterministic urgent flag from saved inputs shown first and never waits for LLM; adherence, tolerability-exposure, and urgent posteriors always rendered alongside the continuation branch; unknown_disclosure and context_note always appended; needs_clarification branch on required missing/outdated/conflict; not_applicable branch on registration encounters",
+  "numerical_tolerances": {
+    "percentage_row_sum_absolute": 1e-06,
+    "probability_sum_after_divide_by_100_absolute": 1e-08,
+    "replay_posterior_absolute": 1e-09
+  },
+  "context_output_resource_limits": {
+    "xml_bytes": 12615,
+    "cpt_cells": 141,
+    "prompt_bytes_proposed_max": 16384,
+    "response_bytes_proposed_max": 32768,
+    "note": "Limits are proposed engineering ceilings for review; final values set after measuring admitted models per plan 8.3. The 12-node F6 prompt and response exceed the smaller F1-F5 ceilings, so higher proposed maxima are recorded here. Full-CPT payload must fit or admission is rejected; no silent truncation."
+  },
+  "engine_configuration": {
+    "inference": "deterministic exact",
+    "dtype": "float64",
+    "elimination_order": "deterministic pinned order with deterministic tie-breaking",
+    "note": "Pinned engine/runtime recorded at admission in S39; replay reads stored effective CPTs/evidence/query without provider calls."
+  },
+  "review": {
+    "assumptions": "see review.json unresolved_assumptions",
+    "reviewer": null,
+    "decision": "pending_owner_review",
+    "date": null
+  },
+  "all_nodes_mandatory": true
+}
