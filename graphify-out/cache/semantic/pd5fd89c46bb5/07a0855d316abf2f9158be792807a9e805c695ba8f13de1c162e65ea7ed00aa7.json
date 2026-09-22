@@ -1,0 +1,1 @@
+{"nodes": [{"author": null, "captured_at": null, "contributor": null, "file_type": "document", "id": "$graphify-root$__agents_skills_commit_agents_openai_commit_iface", "label": "Commit OpenAI agent interface", "source_file": ".agents/skills/commit/agents/openai.yaml", "source_location": null, "source_url": null}], "edges": [], "hyperedges": []}
