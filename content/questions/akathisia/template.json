@@ -1,7 +1,7 @@
 {
   "description": "Predefined physician-review wording for akathisia F2. The LLM never supplies this text; the app renders the matching branch deterministically from stored posteriors, evidence, and missingness. All slots are escaped at render time. No branch diagnoses akathisia, selects a drug or product, gives dosage, or clears safety. Statement 13 is a 2C suggestion and is not appropriate for electronic decision support or quality measurement.",
   "template_version": "akathisia-template-v0.1-draft",
-  "review_status": "awaiting_review",
+  "review_status": "reviewed",
   "branches": {
     "review_regimen_and_adjunct": {
       "heading": "Akathisia review (F2): regimen and adjunct options to discuss",

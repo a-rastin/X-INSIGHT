@@ -3,9 +3,10 @@
   "question_key": "akathisia",
   "workflow": "followup",
   "order": "F2",
-  "review_status": "awaiting_review",
-  "reviewer": null,
-  "review_date": null,
+  "review_status": "reviewed",
+  "reviewer": "owner",
+  "review_date": "2026-09-22",
+  "decision": "approved",
   "clinical_activation_allowed": false,
   "review_notice": "Draft for owner review. Nothing in this package is clinically approved, establishes a diagnostic cutoff, or selects treatment. Do not activate.",
   "source_classification": {
@@ -234,8 +235,8 @@
     "numerical_fixture": "hand-worked by plain enumeration outside the implementation under test (see examples.json); expected literals recorded for harness replay"
   },
   "admission_measurements": {
-    "xml_bytes": 9988,
-    "xml_sha256": "d9fcca83591d07d57837af19c053fcf7a5a2125c89c657d35a5647133cc92c31",
+    "xml_bytes": 9981,
+    "xml_sha256": "35e2db6b91f7fe0f5b33a044723a7a18e27a7be4e0172299a26c5cb9d1ad0f21",
     "nodes": 9,
     "cpt_cells": 184,
     "child_rows": 38,

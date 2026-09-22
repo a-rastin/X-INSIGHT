@@ -4,9 +4,9 @@
   "title": "Akathisia review at follow-up (F2)",
   "workflow": "followup",
   "version": "akathisia-v0.1-draft",
-  "review_status": "awaiting_review",
+  "review_status": "reviewed",
   "network_file": "network.xml",
-  "network_hash": "sha256:d9fcca83591d07d57837af19c053fcf7a5a2125c89c657d35a5647133cc92c31",
+  "network_hash": "sha256:35e2db6b91f7fe0f5b33a044723a7a18e27a7be4e0172299a26c5cb9d1ad0f21",
   "source_refs": [
     "docs/medical-docs/akathisia-criteria.md",
     "docs/medical-docs/guideline/STATEMENT-13.md",
@@ -318,7 +318,7 @@
     "replay_posterior_absolute": 1e-09
   },
   "context_output_resource_limits": {
-    "xml_bytes": 9988,
+    "xml_bytes": 9981,
     "cpt_cells": 184,
     "prompt_bytes_proposed_max": 8192,
     "response_bytes_proposed_max": 16384,
@@ -332,9 +332,9 @@
   },
   "review": {
     "assumptions": "see review.json unresolved_assumptions",
-    "reviewer": null,
-    "decision": "pending_owner_review",
-    "date": null
+    "reviewer": "owner",
+    "decision": "approved",
+    "date": "2026-09-22"
   },
   "all_nodes_mandatory": true
 }
