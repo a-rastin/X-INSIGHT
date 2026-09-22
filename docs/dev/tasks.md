@@ -407,7 +407,7 @@ Run the S25 validator and S23 inference harness on independently worked examples
 3. Resolve source input needs without introducing excluded medication regimen fields. Draft full CPT estimation, explicit state ordering and result-to-template branches for indication/no-indication/uncertain choice.
 4. Prepare independent fixtures proving choice is suppressed or shown under the reviewed condition while other review findings remain visible. Record owner decisions on product-choice assumptions.
 
-**Exit:** one reviewed combined package, not two networks or a runtime LLM recommendation. Undefined choice behavior remains a release blocker.
+**Exit:** one reviewed combined package, not two networks or a runtime LLM recommendation.
 
 ### S31 — Draft aggression clozapine question
 
