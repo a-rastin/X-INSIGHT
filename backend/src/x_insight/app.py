@@ -20,6 +20,7 @@ from x_insight.identity.accounts import router as accounts_router
 from x_insight.identity.routes import router as identity_router
 from x_insight.models.routes import router as networks_router
 from x_insight.reasoning.routes import router as provider_config_router
+from x_insight.reasoning.runs import router as runs_router
 
 app = FastAPI()
 
@@ -181,6 +182,7 @@ app.include_router(encounters_router, prefix="/api/v1")
 app.include_router(history_content_router, prefix="/api/v1")
 app.include_router(assessments_content_router, prefix="/api/v1")
 app.include_router(provider_config_router, prefix="/api/v1")
+app.include_router(runs_router, prefix="/api/v1")
 app.include_router(ddi_router, prefix="/api/v1")
 app.include_router(networks_router, prefix="/api/v1")
 
