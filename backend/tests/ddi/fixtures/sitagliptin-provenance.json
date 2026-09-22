@@ -1,0 +1,196 @@
+{
+  "record": "S15 fixture provenance (contract section 1)",
+  "verified_on": "2026-09-22",
+  "verification_method": "every literal re-verified against the original file with sha256sum / wc / grep -n / sed -n / byte inspection; the file is ground truth",
+  "original": {
+    "path": "docs/medical-docs/DDI-text/Antidiabetic Agents/Sitagliptin.txt",
+    "read_only": true,
+    "sha256": "e7c9bc45ed5b3f829dfe8e29b015ee727645db2f3ed6cad8de99fea2dcd4022f",
+    "byte_count": 44041,
+    "line_count": 1265,
+    "newline_count": 1264,
+    "line_count_note": "1-based content-line numbering (grep -n / str.splitlines): 1265 lines. The final line 1265 (url_footer chrome '... 22/22') has NO trailing LF, so wc -l reports 1264. All spans in this record use the 1265-line numbering, consistent with the contract's 1-based ORIGINAL line numbers. CORRECTION: contract inspection-time '1264 lines' -> 1265 (1264 LF bytes).",
+    "encoding": {
+      "type": "UTF-8 with BOM",
+      "bom": "bytes EF BB BF at offset 0",
+      "note": "The BOM prefixes line 1's timestamp_title text in the raw bytes. Decode with utf-8-sig (or strip the BOM explicitly). The literal U+FEFF must never survive into any parsed text field. Removing the BOM yields a derived copy that must record derived_from sha256 plus the transformation."
+    },
+    "line_endings": "LF only (0 CR bytes in the file)"
+  },
+  "category_headings": [
+    {"text": "Contraindicated (0)", "category": "contraindicated", "declared_count": 0, "span": {"start_line": 97, "end_line": 97}},
+    {"text": "Serious (4)", "category": "serious", "declared_count": 4, "span": {"start_line": 99, "end_line": 99}},
+    {"text": "Monitor Closely (92)", "category": "monitor_closely", "declared_count": 92, "span": {"start_line": 122, "end_line": 122}},
+    {"text": "Minor (70)", "category": "minor", "declared_count": 70, "span": {"start_line": 658, "end_line": 658}}
+  ],
+  "category_headings_note": "the only entries carrying declared counts; expected counts come from these headings and plan.md section 6.2, never from parser output",
+  "declared_counts": {"contraindicated": 0, "serious": 4, "monitor_closely": 92, "minor": 70, "total_entries": 166},
+  "navigation_headings_ignored": [
+    {"text": "Interactions", "span": {"start_line": 74, "end_line": 74}},
+    {"text": "Interaction Checker", "span": {"start_line": 76, "end_line": 76}},
+    {"text": "Contraindicated", "span": {"start_line": 81, "end_line": 81}, "note": "bare heading, no declared count"},
+    {"text": "Serious", "span": {"start_line": 83, "end_line": 83}, "note": "bare heading, no declared count"},
+    {"text": "Significant - Monitor Closely", "span": {"start_line": 85, "end_line": 85}},
+    {"text": "Minor", "span": {"start_line": 87, "end_line": 87}, "note": "bare heading, no declared count"},
+    {"text": "All Interactions Sort By: Severity", "span": {"start_line": 89, "end_line": 89}}
+  ],
+  "navigation_headings_ignored_note": "summary/nav block above the interaction section; must NOT be treated as categories or as the section start",
+  "section_end_markers": [
+    {"text": "Adverse Effects", "span": {"start_line": 1005, "end_line": 1005}},
+    {"text": "Warnings", "span": {"start_line": 1076, "end_line": 1076}}
+  ],
+  "section_end_markers_note": "parsing stops before both; interaction_section.end_line must be < 1005. Last entry before the first end marker: vanadium, entry span 1001-1003 (description lines 1002-1003).",
+  "page_chrome": [
+    {
+      "kind": "timestamp_title",
+      "exact_line_text": "6/22/26, 5:17 PM Januvia, Zituvio (sitagliptin) dosing, indications, interactions, adverse effects, and more",
+      "occurrences": 22,
+      "lines": [1, 49, 95, 153, 213, 271, 330, 389, 448, 507, 567, 626, 684, 744, 803, 863, 922, 981, 1039, 1101, 1159, 1221],
+      "note": "line 1's raw bytes begin with the UTF-8 BOM (EF BB BF) before this text"
+    },
+    {
+      "kind": "url_footer",
+      "pattern": "^https://reference\\.medscape\\.com/drug/januvia-zituvio-sitagliptin-342730 \\d+/22$",
+      "occurrences": 22,
+      "lines": [45, 91, 149, 209, 267, 326, 385, 444, 503, 563, 622, 680, 740, 799, 859, 918, 977, 1035, 1097, 1155, 1217, 1265],
+      "note": "page numbers run 1/22 .. 22/22; line 1265 is the unterminated final line of the file"
+    }
+  ],
+  "page_chrome_note": "both kinds are repeated page chrome, dropped by preprocessing at line level; they may fall INSIDE an entry's original span and are excluded from paragraph text",
+  "representative_spans": [
+    {
+      "name_text": "erdafitinib",
+      "category": "serious",
+      "category_index": 0,
+      "entry_span": {"start_line": 101, "end_line": 105},
+      "page_chrome_inside_span": [],
+      "paragraphs": [
+        {
+          "span": {"start_line": 102, "end_line": 105},
+          "lines": [
+            "erdafitinib will increase the level or effect of sitagliptin by P-glycoprotein (MDR1)",
+            "efflux transporter. Avoid or Use Alternate Drug. If coadministration unavoidable,",
+            "separate administration by at least 6 hr before or after administration of P-gp",
+            "substrates with narrow therapeutic index."
+          ],
+          "text": "erdafitinib will increase the level or effect of sitagliptin by P-glycoprotein (MDR1) efflux transporter. Avoid or Use Alternate Drug. If coadministration unavoidable, separate administration by at least 6 hr before or after administration of P-gp substrates with narrow therapeutic index."
+        }
+      ],
+      "note": "serious[0]; the serious-entry block deleted in the tampered-copy slice S15-C2"
+    },
+    {
+      "name_text": "captopril",
+      "category": "monitor_closely",
+      "entry_span": {"start_line": 205, "end_line": 215},
+      "page_chrome_inside_span": [
+        {"line": 209, "kind": "url_footer", "text": "https://reference.medscape.com/drug/januvia-zituvio-sitagliptin-342730 4/22"},
+        {"line": 213, "kind": "timestamp_title"}
+      ],
+      "paragraphs": [
+        {
+          "span": {"start_line": 206, "end_line": 207},
+          "lines": [
+            "sitagliptin, captopril. Either increases effects of the other by Mechanism: unspecified",
+            "interaction mechanism. Use Caution/Monitor. Increased risk of adverse/toxic effects,"
+          ],
+          "text": "sitagliptin, captopril. Either increases effects of the other by Mechanism: unspecified interaction mechanism. Use Caution/Monitor. Increased risk of adverse/toxic effects,"
+        },
+        {
+          "span": {"start_line": 215, "end_line": 215},
+          "lines": ["specifically increased risk of angioedema."],
+          "text": "specifically increased risk of angioedema."
+        }
+      ],
+      "note": "description split across a page break: paragraph 206-207 and continuation fragment 215 (chrome 209/213 + blank lines lie inside the entry span 205-215). The fragment contains '.', so it stays a description line of captopril."
+    },
+    {
+      "name_text": "oxandrolone",
+      "category": "minor",
+      "entry_span": {"start_line": 916, "end_line": 925},
+      "page_chrome_inside_span": [
+        {"line": 918, "kind": "url_footer", "text": "https://reference.medscape.com/drug/januvia-zituvio-sitagliptin-342730 16/22"},
+        {"line": 922, "kind": "timestamp_title"}
+      ],
+      "paragraphs": [
+        {
+          "span": {"start_line": 924, "end_line": 925},
+          "lines": [
+            "oxandrolone increases effects of sitagliptin by pharmacodynamic synergism.",
+            "Minor/Significance Unknown."
+          ],
+          "text": "oxandrolone increases effects of sitagliptin by pharmacodynamic synergism. Minor/Significance Unknown."
+        }
+      ],
+      "note": "CORRECTION to contract inspection note '(chrome at 918)': page chrome lies inside the span at BOTH 918 (url_footer) and 922 (timestamp_title)."
+    },
+    {
+      "name_text": "clonidine",
+      "category": "minor",
+      "entry_span": {"start_line": 708, "end_line": 714},
+      "page_chrome_inside_span": [],
+      "paragraphs": [
+        {
+          "span": {"start_line": 709, "end_line": 710},
+          "lines": [
+            "clonidine decreases effects of sitagliptin by pharmacodynamic antagonism.",
+            "Minor/Significance Unknown. Diminished symptoms of hypoglycemia."
+          ],
+          "text": "clonidine decreases effects of sitagliptin by pharmacodynamic antagonism. Minor/Significance Unknown. Diminished symptoms of hypoglycemia."
+        },
+        {
+          "span": {"start_line": 712, "end_line": 714},
+          "lines": [
+            "clonidine, sitagliptin. Other (see comment). Minor/Significance Unknown. Comment:",
+            "Decreased symptoms of hypoglycemia. Mechanism: decreased hypoglycemia",
+            "induced catecholamine production."
+          ],
+          "text": "clonidine, sitagliptin. Other (see comment). Minor/Significance Unknown. Comment: Decreased symptoms of hypoglycemia. Mechanism: decreased hypoglycemia induced catecholamine production."
+        }
+      ],
+      "note": "two paragraphs (blank line 711 separates them); second paragraph starts 'clonidine, sitagliptin. Other (see comment)...'"
+    },
+    {
+      "name_text": "ofloxacin",
+      "category": "monitor_closely",
+      "entry_span": {"start_line": 525, "end_line": 529},
+      "page_chrome_inside_span": [],
+      "paragraphs": [
+        {
+          "span": {"start_line": 526, "end_line": 529},
+          "lines": [
+            "ofloxacin increases effects of sitagliptin by pharmacodynamic synergism. Use",
+            "Caution/Monitor. Quinolone antibiotic administration may result in hyper- or",
+            "hypoglycemia. Gatifloxacin is most likely to produce dysglycemia; moxifloxacin is",
+            "least likely."
+          ],
+          "text": "ofloxacin increases effects of sitagliptin by pharmacodynamic synergism. Use Caution/Monitor. Quinolone antibiotic administration may result in hyper- or hypoglycemia. Gatifloxacin is most likely to produce dysglycemia; moxifloxacin is least likely."
+        }
+      ],
+      "note": "ofloxacin appears in BOTH monitor_closely (here) and minor (below); both assertions are kept"
+    },
+    {
+      "name_text": "ofloxacin",
+      "category": "minor",
+      "entry_span": {"start_line": 912, "end_line": 914},
+      "page_chrome_inside_span": [],
+      "paragraphs": [
+        {
+          "span": {"start_line": 913, "end_line": 914},
+          "lines": [
+            "ofloxacin, sitagliptin. Mechanism: unspecified interaction mechanism.",
+            "Minor/Significance Unknown. Potential dysglycemia."
+          ],
+          "text": "ofloxacin, sitagliptin. Mechanism: unspecified interaction mechanism. Minor/Significance Unknown. Potential dysglycemia."
+        }
+      ],
+      "note": "second ofloxacin occurrence (minor); immediately followed by the oxandrolone entry"
+    }
+  ],
+  "representative_spans_note": "paragraph 'lines' are verbatim source lines (checked free of trailing whitespace); 'text' is the contract unwrap (lines joined with a single space). name_text lines are the bare header lines 101/205/916/708/525/912.",
+  "expected_text_caution": {
+    "captopril_fragment": {"text": "specifically increased risk of angioedema.", "line": 215},
+    "benazepril_contrast": {"text": "specifically, increased risk of angioedema.", "line": 176, "entry_span": {"start_line": 173, "end_line": 176}},
+    "note": "captopril's continuation fragment has NO comma after 'specifically'; benazepril's has a comma. Pin exact strings read from the file, never from parser output."
+  },
+  "fixture_copy_rule": "tests build over a temp sources/ dir containing a byte-identical copy at 'Antidiabetic Agents/Sitagliptin.txt' of the original; the copy's sha256 is asserted equal to original.sha256 above. Any transformed copy (entry removed, BOM stripped) records derived_from sha256 plus the transformation applied. Clearly-labeled synthetic fixtures live only under backend/tests/ddi/fixtures/."
+}

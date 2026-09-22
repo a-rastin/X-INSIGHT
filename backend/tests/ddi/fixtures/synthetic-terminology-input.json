@@ -1,0 +1,5 @@
+{
+  "_synthetic_fixture": true,
+  "_notice": "SYNTHETIC placeholder bytes for the S15-D CLI parity test. This is NOT real terminology data and NOT a terminology schema. S15 records only this file's path and sha256 as input provenance (contract section 2); concept resolution is S17. Never parse these contents.",
+  "placeholder": "synthetic-terminology-input"
+}
