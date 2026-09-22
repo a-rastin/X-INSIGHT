@@ -1,4 +1,4 @@
-"""CLI for the S15 DDI ingestion seam: `python -m x_insight.ddi build ...`."""
+"""CLI for the DDI seams: ``python -m x_insight.ddi build|report|publish ...``."""
 
 from __future__ import annotations
 
@@ -8,6 +8,67 @@ import sys
 from pathlib import Path
 
 from x_insight.ddi import build
+
+
+def _write_publish_anomaly(manifest_path: Path, reason: str) -> None:
+    """Write a ``*anomal*`` rejection report next to the manifest (S18 slice 4).
+
+    Never raises: a failed anomaly write must not mask the rejection exit.
+    No patient data enters this file; only the gate reason, manifest path,
+    and dataset hash when computable (None when gates fail before hashing).
+    """
+    payload = {
+        "ok": False,
+        "reason": reason,
+        "manifest": str(manifest_path),
+        "dataset_hash": None,
+    }
+    try:
+        manifest_path.with_name(f"{manifest_path.stem}.anomaly.json").write_text(
+            json.dumps(payload, indent=2), encoding="utf-8"
+        )
+    except OSError:
+        try:
+            (Path.cwd() / "ddi-publish-anomaly.json").write_text(
+                json.dumps(payload, indent=2), encoding="utf-8"
+            )
+        except OSError:
+            pass
+
+
+def _run_publish(args: argparse.Namespace) -> int:
+    from x_insight.ddi.publish import PublishRejectedError, publish_release
+
+    manifest_path: Path = args.manifest
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        reason = f"publish rejected: unreadable manifest {manifest_path}: {exc}"
+        print(reason, file=sys.stderr)
+        _write_publish_anomaly(manifest_path, reason)
+        return 1
+    if not isinstance(manifest, dict):
+        reason = f"publish rejected: manifest must be a JSON object: {manifest_path}"
+        print(reason, file=sys.stderr)
+        _write_publish_anomaly(manifest_path, reason)
+        return 1
+    try:
+        record = publish_release(manifest, database_url=args.database_url)
+    except PublishRejectedError as exc:
+        reason = f"publish rejected: {exc}"
+        print(reason, file=sys.stderr)
+        _write_publish_anomaly(manifest_path, reason)
+        return 1
+    print(
+        json.dumps(
+            {
+                "id": record["id"],
+                "version": record["version"],
+                "dataset_hash": record["dataset_hash"],
+            }
+        )
+    )
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -23,7 +84,13 @@ def main(argv: list[str] | None = None) -> int:
     report_parser.add_argument("--terminology", type=Path)
     report_parser.add_argument("--review-manifest", type=Path)
     report_parser.add_argument("--output", required=True, type=Path)
+    publish_parser = subparsers.add_parser("publish")
+    publish_parser.add_argument("--manifest", required=True, type=Path)
+    publish_parser.add_argument("--database-url", default=None)
     args = parser.parse_args(argv)
+
+    if args.command == "publish":
+        return _run_publish(args)
 
     result = build(
         args.sources,
