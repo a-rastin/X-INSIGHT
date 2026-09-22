@@ -4,9 +4,9 @@
   "title": "Continue-or-adjust review at follow-up (F6)",
   "workflow": "followup",
   "version": "continue_or_adjust-v0.1-draft",
-  "review_status": "awaiting_review",
+  "review_status": "reviewed",
   "network_file": "network.xml",
-  "network_hash": "sha256:fd63351c33e7767501a07309d3600da3ded6b75b6cb32d4b2c12106ccfa90b17",
+  "network_hash": "sha256:329632da1fcba4df427ad5bc006c8c36a6c0a9acb58fa5924e4ee9ff3f73c8d5",
   "source_refs": [
     "docs/medical-docs/guideline/STATEMENT-04.md",
     "docs/medical-docs/guideline/STATEMENT-05.md",
@@ -427,7 +427,7 @@
     "replay_posterior_absolute": 1e-09
   },
   "context_output_resource_limits": {
-    "xml_bytes": 12615,
+    "xml_bytes": 12608,
     "cpt_cells": 141,
     "prompt_bytes_proposed_max": 16384,
     "response_bytes_proposed_max": 32768,
@@ -441,9 +441,9 @@
   },
   "review": {
     "assumptions": "see review.json unresolved_assumptions",
-    "reviewer": null,
-    "decision": "pending_owner_review",
-    "date": null
+    "reviewer": "owner",
+    "decision": "approved",
+    "date": "2026-09-22"
   },
   "all_nodes_mandatory": true
 }

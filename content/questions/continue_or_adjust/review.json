@@ -3,9 +3,10 @@
   "question_key": "continue_or_adjust",
   "workflow": "followup",
   "order": "F6",
-  "review_status": "awaiting_review",
-  "reviewer": null,
-  "review_date": null,
+  "review_status": "reviewed",
+  "reviewer": "owner",
+  "review_date": "2026-09-22",
+  "decision": "approved",
   "clinical_activation_allowed": false,
   "review_notice": "Draft for owner review. Nothing in this package is clinically approved, authorizes continuation or change of treatment, predicts relapse or hospitalization, or selects a product, dose, or taper. Do not activate.",
   "source_classification": {
@@ -346,8 +347,8 @@
     "numerical_fixture": "hand-worked by plain enumeration outside the implementation under test (see examples.json); expected literals recorded for harness replay"
   },
   "admission_measurements": {
-    "xml_bytes": 12615,
-    "xml_sha256": "fd63351c33e7767501a07309d3600da3ded6b75b6cb32d4b2c12106ccfa90b17",
+    "xml_bytes": 12608,
+    "xml_sha256": "329632da1fcba4df427ad5bc006c8c36a6c0a9acb58fa5924e4ee9ff3f73c8d5",
     "nodes": 12,
     "cpt_cells": 141,
     "child_rows": 47,

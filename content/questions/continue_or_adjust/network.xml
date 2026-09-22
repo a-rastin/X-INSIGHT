@@ -4,7 +4,7 @@
 <NAME>ContinueOrAdjust_F6_draft</NAME>
 <PROPERTY>label=continue-or-adjust F6 draft network</PROPERTY>
 <PROPERTY>package=continue_or_adjust v0.1-draft</PROPERTY>
-<PROPERTY>review_status=awaiting_review</PROPERTY>
+<PROPERTY>review_status=reviewed</PROPERTY>
 <PROPERTY>clinical_validity=none; reference tables are synthetic structural placeholders, not patient estimates</PROPERTY>
 <PROPERTY>ordering_contract=child state fastest, last declared parent next, first parent slowest</PROPERTY>
 <PROPERTY>gate=encounter.kind == followup AND BaselineCurrency == linked_current; registration yields not_applicable; outdated, unreconciled, unknown, missing, or conflicting baseline linkage yields needs_clarification</PROPERTY>

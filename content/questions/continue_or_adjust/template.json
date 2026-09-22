@@ -1,7 +1,7 @@
 {
   "description": "Predefined physician-review wording for continue-or-adjust F6. The LLM never supplies this text; the app renders the matching branch deterministically from stored posteriors, evidence, and missingness. All slots are escaped at render time. No branch diagnoses schizophrenia, certifies improvement, predicts relapse or hospitalization, estimates a treatment effect, selects a product, gives dosage, taper, or levels, or clears safety. Statement 6 is a 2B suggestion and is not appropriate for electronic decision support or quality measurement; nothing here is a decision rule or a quality-measure output.",
   "template_version": "continue_or_adjust-template-v0.1-draft",
-  "review_status": "awaiting_review",
+  "review_status": "reviewed",
   "branches": {
     "continuation_discussion": {
       "heading": "Follow-up review (F6): continuation discussion",
