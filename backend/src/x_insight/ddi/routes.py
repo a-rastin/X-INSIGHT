@@ -56,6 +56,38 @@ def post_ddi_check(body: CheckRequest, request: Request) -> JSONResponse:
     return JSONResponse(report, headers={"Cache-Control": "private, no-store"})
 
 
+@router.get("/ddi/current")
+def get_ddi_current(request: Request) -> JSONResponse:
+    with db.transaction() as conn:
+        from x_insight.identity.routes import _require_session
+
+        denied, _actor = _require_session(request, conn)
+        if denied is not None:
+            return denied
+        row = (
+            conn.execute(
+                text(
+                    "SELECT version, dataset_hash, terminology_provenance "
+                    "FROM ddi_dataset_releases "
+                    "ORDER BY created_at DESC, version DESC LIMIT 1"
+                )
+            )
+            .mappings()
+            .first()
+        )
+    if row is None:
+        raise HTTPException(404, "No DDI dataset release available.")
+    catalog_version = checker.catalog_version_for(row["terminology_provenance"])
+    return JSONResponse(
+        {
+            "dataset_version": row["version"],
+            "catalog_version": catalog_version,
+            "dataset_hash": row["dataset_hash"],
+        },
+        headers={"Cache-Control": "private, no-store"},
+    )
+
+
 @router.get("/drugs")
 def list_drugs(request: Request, query: str = "", limit: int = 25) -> JSONResponse:
     bounded = max(1, min(limit, 100))

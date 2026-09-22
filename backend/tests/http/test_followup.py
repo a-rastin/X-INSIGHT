@@ -319,7 +319,10 @@ def test_followup_copies_history_and_medications_with_pending_reconciliation(
             "synthetic_flag_true": {"status": "known", "value": True},
             "synthetic_flag_false": {"status": "known", "value": False},
         }
-        medications = [{"label": "synthetic-med-a"}, {"label": "synthetic-med-b"}]
+        medications = [
+            {"catalog_drug_id": "synthetic-med-a"},
+            {"unknown_label": "synthetic-med-b"},
+        ]
         patched = physician.patch(
             f"/api/v1/encounters/{baseline['id']}",
             json={
@@ -466,7 +469,9 @@ def test_followup_reconciliation_rejects_bare_marker_and_requires_object(monkeyp
             f"/api/v1/encounters/{followup_id}",
             json={
                 "draft_data": {
-                    "medications": [{"label": "synthetic-med-a", "dose": "10"}]
+                    "medications": [
+                        {"catalog_drug_id": "synthetic-med-a", "dose": "10"}
+                    ]
                 }
             },
             headers=mutation_headers(physician, revision=2),

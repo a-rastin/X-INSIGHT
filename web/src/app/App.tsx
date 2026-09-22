@@ -5,12 +5,14 @@ import {
   activateModelBundle,
   addNetworkVersion,
   changeOwnPassword,
+  checkDdi,
   createFollowup,
   createPhysician,
   createPatient,
   discardEncounter,
   fetchSession,
   addNote,
+  getDdiCurrent,
   getEncounter,
   getHistoryContent,
   getModelBundle,
@@ -31,10 +33,13 @@ import {
   patchPatientPhone,
   rollbackModelBundle,
   saveProviderSettings,
+  searchDrugs,
   testProviderSettings,
   updateTheme,
   validateNetworkVersion,
   type BundlePinInput,
+  type DdiReport,
+  type DrugSearchResult,
   type Encounter,
   type HistoryContent,
   type ModelBundle,
@@ -1051,6 +1056,331 @@ function EffectsSection({
 }
 
 /**
+ * S20 medications + DDI (FR-14/FR-20): drug-only list plus a versioned
+ * coverage-aware interaction report, reusing the S07 autosave path
+ * (revisionRef/timer/saveState live in DraftEditor; these sections only edit
+ * values and request a check). No regimen detail is ever stored: entries
+ * carry exactly one of catalog_drug_id|unknown_label. Unknown labels and
+ * source evidence render as plain JSX text (React escapes by default; never
+ * dangerouslySetInnerHTML).
+ */
+type MedEntry = { catalog_drug_id?: string; unknown_label?: string };
+
+function medsFromStored(stored: unknown): MedEntry[] {
+  if (!Array.isArray(stored)) {
+    return [];
+  }
+  const out: MedEntry[] = [];
+  for (const entry of stored) {
+    if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+      continue;
+    }
+    const rec = entry as Record<string, unknown>;
+    const keys = Object.keys(rec);
+    if (
+      keys.length === 1 &&
+      keys[0] === "catalog_drug_id" &&
+      typeof rec.catalog_drug_id === "string" &&
+      rec.catalog_drug_id.trim() !== ""
+    ) {
+      out.push({ catalog_drug_id: rec.catalog_drug_id });
+    } else if (
+      keys.length === 1 &&
+      keys[0] === "unknown_label" &&
+      typeof rec.unknown_label === "string" &&
+      rec.unknown_label.trim() !== ""
+    ) {
+      out.push({ unknown_label: rec.unknown_label });
+    }
+  }
+  return out;
+}
+
+function ddiFromStored(stored: unknown): DdiReport | null {
+  if (typeof stored !== "object" || stored === null || Array.isArray(stored)) {
+    return null;
+  }
+  const rec = stored as Record<string, unknown>;
+  if (typeof rec.dataset_version !== "string" || rec.dataset_version.trim() === "") {
+    return null;
+  }
+  if (
+    typeof rec.medication_fingerprint !== "string" ||
+    rec.medication_fingerprint.trim() === ""
+  ) {
+    return null;
+  }
+  return rec as unknown as DdiReport;
+}
+
+function medsDirtyKey(meds: MedEntry[]): string {
+  const normalized = meds.map((entry) =>
+    entry.catalog_drug_id !== undefined
+      ? { catalog_drug_id: entry.catalog_drug_id }
+      : { unknown_label: entry.unknown_label as string },
+  );
+  normalized.sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  return JSON.stringify(normalized);
+}
+
+function MedicationsSection({
+  encounterId,
+  meds,
+  readOnly,
+  onRemove,
+  onAddCatalog,
+  onAddUnknown,
+}: {
+  encounterId: string;
+  meds: MedEntry[];
+  readOnly: boolean;
+  onRemove: (index: number) => void;
+  onAddCatalog: (conceptId: string) => void;
+  onAddUnknown: (label: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<DrugSearchResult[]>([]);
+  const [searchNotice, setSearchNotice] = useState("Searching…");
+  const [unknown, setUnknown] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setSearchNotice("Searching…");
+    const timer = setTimeout(() => {
+      searchDrugs(query)
+        .then((payload) => {
+          if (cancelled) {
+            return;
+          }
+          const items = Array.isArray(payload.results) ? payload.results : [];
+          setResults(items);
+          setSearchNotice(items.length === 0 ? "No catalog matches." : "");
+        })
+        .catch(() => {
+          if (cancelled) {
+            return;
+          }
+          setResults([]);
+          setSearchNotice("Catalog unavailable.");
+        });
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [query]);
+
+  function handleAddUnknown(): void {
+    const trimmed = unknown.trim();
+    if (trimmed === "" || readOnly) {
+      return;
+    }
+    onAddUnknown(trimmed);
+    setUnknown("");
+  }
+
+  return (
+    <section data-testid="medications-section" aria-label="Medications">
+      <h3>Medications</h3>
+      <p>Drug names only — doses, routes, and schedules are never stored.</p>
+      <div className="x-field">
+        <label htmlFor={`medications-search-${encounterId}`}>Search catalog</label>
+        <input
+          id={`medications-search-${encounterId}`}
+          data-testid="medications-search"
+          autoComplete="off"
+          value={query}
+          disabled={readOnly}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </div>
+      <div data-testid="medications-search-results">
+        {searchNotice !== "" ? (
+          <p>{searchNotice}</p>
+        ) : (
+          results.map((item) => (
+            <div key={item.concept_id}>
+              <span>{item.concept_id}</span>{" "}
+              <button
+                type="button"
+                className="x-button"
+                data-testid={`medications-add-${item.concept_id}`}
+                disabled={readOnly}
+                onClick={() => onAddCatalog(item.concept_id)}
+              >
+                Add {item.concept_id}
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+      <div className="x-field">
+        <label htmlFor={`medications-unknown-${encounterId}`}>Unknown medication</label>
+        <input
+          id={`medications-unknown-${encounterId}`}
+          data-testid="medications-unknown-input"
+          autoComplete="off"
+          value={unknown}
+          disabled={readOnly}
+          onChange={(event) => setUnknown(event.target.value)}
+        />
+        <button
+          type="button"
+          className="x-button"
+          data-testid="medications-unknown-add"
+          disabled={readOnly}
+          onClick={handleAddUnknown}
+        >
+          Add unknown
+        </button>
+      </div>
+      <ul data-testid="medications-list">
+        {meds.map((entry, index) => (
+          <li key={index}>
+            {entry.catalog_drug_id !== undefined ? (
+              <span>{entry.catalog_drug_id}</span>
+            ) : (
+              <span>Unknown: {entry.unknown_label as string} (coverage unavailable)</span>
+            )}{" "}
+            <button
+              type="button"
+              className="x-button"
+              data-testid={`medications-remove-${index}`}
+              disabled={readOnly}
+              onClick={() => onRemove(index)}
+            >
+              Remove
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function DdiSection({
+  encounterId,
+  encounterKind,
+  report,
+  status,
+  errorDetail,
+  reconciliationStatus,
+  readOnly,
+  onCheck,
+}: {
+  encounterId: string;
+  encounterKind: string;
+  report: DdiReport | null;
+  status: "idle" | "pending" | "current" | "error";
+  errorDetail: string | null;
+  reconciliationStatus: string;
+  readOnly: boolean;
+  onCheck: () => void;
+}) {
+  const rawPairs = report?.pairs;
+  const pairs: NonNullable<DdiReport["pairs"]> = Array.isArray(rawPairs)
+    ? rawPairs
+    : [];
+  const rawLimitations = report?.limitations;
+  const limitations: string[] = Array.isArray(rawLimitations) ? rawLimitations : [];
+  const conflicts: Array<{ source_severity: string; source_path?: string }> = [];
+  for (const pair of pairs) {
+    for (const conflict of pair.conflicts ?? []) {
+      conflicts.push(conflict);
+    }
+  }
+  let statusText = "No DDI report yet.";
+  if (status === "pending") {
+    statusText = "DDI report pending — medications changed.";
+  } else if (status === "current" && report !== null) {
+    statusText = `DDI report current (dataset ${report.dataset_version}).`;
+  } else if (status === "error") {
+    statusText =
+      errorDetail !== null && errorDetail !== ""
+        ? `DDI check failed. ${errorDetail}`
+        : "DDI check failed.";
+  }
+  return (
+    <section data-testid="ddi-section" aria-label="Drug interactions">
+      <h3>Drug interactions</h3>
+      {encounterKind === "follow_up" && reconciliationStatus !== "confirmed" ? (
+        <p data-testid="medications-reconcile-notice">
+          Copied medications need reconciliation before relying on DDI.
+        </p>
+      ) : null}
+      <button
+        type="button"
+        className="x-button"
+        id={`ddi-check-${encounterId}`}
+        data-testid="ddi-check"
+        disabled={readOnly}
+        onClick={onCheck}
+      >
+        Check interactions
+      </button>
+      {/*
+        No role="status" here: DraftEditor keeps a single live status
+        (the shared saveState). A second role would trip strict-mode
+        getByRole("status") Saved assertions across the suite; ddi-status
+        remains addressable via its testid.
+      */}
+      <p data-testid="ddi-status">
+        {statusText}
+      </p>
+      {status === "current" && report !== null ? (
+        <div data-testid="ddi-report">
+          {pairs.length === 0 ? <p>No pairs to evaluate.</p> : null}
+          {pairs.map((pair) => (
+            <article key={pair.pair_key} data-testid={`ddi-pair-${pair.pair_key}`}>
+              <p>
+                {pair.pair_key}: {pair.drug_a} + {pair.drug_b}
+              </p>
+              <p data-testid={`ddi-severity-${pair.pair_key}`}>
+                Severity: {pair.highest_known_severity ?? "unknown"}
+              </p>
+              <p data-testid={`ddi-status-${pair.pair_key}`}>Status: {pair.status}</p>
+              {pair.coverage_basis ? <p>Coverage: {pair.coverage_basis}</p> : null}
+              {pair.evidence !== undefined && pair.evidence.length > 0 ? (
+                <ul>
+                  {pair.evidence.map((item, index) => (
+                    <li key={index}>
+                      {item.source_severity ?? "unknown"}: {item.raw_text ?? ""} (
+                      {item.source_path ?? ""})
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No listed evidence.</p>
+              )}
+            </article>
+          ))}
+          <div data-testid="ddi-conflicts">
+            {conflicts.length === 0 ? (
+              <p>No conflicts.</p>
+            ) : (
+              <ul>
+                {conflicts.map((conflict, index) => (
+                  <li key={index}>
+                    {conflict.source_severity} ({conflict.source_path ?? ""})
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <ul data-testid="ddi-limitations">
+            {limitations.length === 0 ? (
+              <li>None</li>
+            ) : (
+              limitations.map((item, index) => <li key={index}>{item}</li>)
+            )}
+          </ul>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+/**
  * S11 slice 4 C-SSRS section reusing the S07 autosave path (revisionRef/timer/
  * saveState live in DraftEditor; this section only edits levels + requests skip).
  * Ideation L1-L5 only; intensity/behavior/lethality are never edited here and
@@ -2042,6 +2372,18 @@ function DraftEditor({
   const [recon, setRecon] = useState<Record<string, unknown> | null>(null);
   const reconRef = useRef<Record<string, unknown> | null>(null);
   const savedReconRef = useRef(JSON.stringify(null));
+  const [meds, setMeds] = useState<MedEntry[]>([]);
+  const medsRef = useRef<MedEntry[]>([]);
+  const savedMedsRef = useRef(medsDirtyKey([]));
+  const [ddiReport, setDdiReport] = useState<DdiReport | null>(null);
+  const ddiReportRef = useRef<DdiReport | null>(null);
+  const savedDdiRef = useRef(JSON.stringify(null));
+  const [ddiStatus, setDdiStatus] = useState<"idle" | "pending" | "current" | "error">(
+    "idle",
+  );
+  const [ddiError, setDdiError] = useState<string | null>(null);
+  const [lastCheckedKey, setLastCheckedKey] = useState<string | null>(null);
+  const lastCheckedKeyRef = useRef<string | null>(null);
   const [phone, setPhone] = useState("");
   const [phoneState, setPhoneState] = useState("");
   const phoneRevisionRef = useRef(0);
@@ -2069,6 +2411,14 @@ function DraftEditor({
 
   function isReconDirty(): boolean {
     return JSON.stringify(reconRef.current) !== savedReconRef.current;
+  }
+
+  function isMedsDirty(): boolean {
+    return medsDirtyKey(medsRef.current) !== savedMedsRef.current;
+  }
+
+  function isDdiDirty(): boolean {
+    return JSON.stringify(ddiReportRef.current) !== savedDdiRef.current;
   }
 
   async function reloadPreservingEdits(): Promise<void> {
@@ -2184,6 +2534,24 @@ function DraftEditor({
         setRecon(initialRecon);
         reconRef.current = initialRecon;
         savedReconRef.current = JSON.stringify(initialRecon);
+        const initialMeds = medsFromStored(full.draft_data?.medications);
+        setMeds(initialMeds);
+        medsRef.current = initialMeds;
+        savedMedsRef.current = medsDirtyKey(initialMeds);
+        const initialDdi = ddiFromStored(full.draft_data?.ddi_report);
+        setDdiReport(initialDdi);
+        ddiReportRef.current = initialDdi;
+        savedDdiRef.current = JSON.stringify(initialDdi);
+        lastCheckedKeyRef.current = null;
+        setLastCheckedKey(null);
+        if (initialDdi === null && initialMeds.length === 0) {
+          setDdiStatus("idle");
+        } else {
+          // Conservative: a persisted report is stale until explicitly
+          // re-checked, so it never renders as current after reload.
+          setDdiStatus("pending");
+        }
+        setDdiError(null);
         setPhone(patient.phone ?? "");
         phoneRevisionRef.current = patient.revision;
         setPhoneState("");
@@ -2287,11 +2655,46 @@ function DraftEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyDef]);
 
+  // S20 DDI freshness: any medication change invalidates the last check.
+  // The checked report stays hidden while pending so a stale report never
+  // renders as current; the user re-checks explicitly (no auto-fetch loop).
+  useEffect(() => {
+    if (ddiStatus === "error") {
+      return;
+    }
+    const currentKey = medsDirtyKey(meds);
+    if (lastCheckedKey === null) {
+      if (ddiReport === null && meds.length === 0) {
+        if (ddiStatus !== "idle") {
+          setDdiStatus("idle");
+        }
+      } else if (ddiStatus !== "pending") {
+        setDdiStatus("pending");
+      }
+      return;
+    }
+    let checkedMeds: string | null = null;
+    try {
+      const parsed = JSON.parse(lastCheckedKey) as { meds?: unknown };
+      checkedMeds = typeof parsed.meds === "string" ? parsed.meds : null;
+    } catch {
+      checkedMeds = null;
+    }
+    if (ddiReport === null || checkedMeds === null || currentKey !== checkedMeds) {
+      if (ddiStatus !== "pending") {
+        setDdiStatus("pending");
+      }
+    } else if (ddiStatus !== "current") {
+      setDdiStatus("current");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meds, ddiReport, lastCheckedKey]);
+
   // Page-transition flush: attempt a final save when leaving.
   useEffect(() => {
     function onBeforeUnload(event: BeforeUnloadEvent): void {
       if (
-        (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty()) &&
+        (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty() || isMedsDirty() || isDdiDirty()) &&
         encounter !== null
       ) {
         event.preventDefault();
@@ -2304,13 +2707,13 @@ function DraftEditor({
   // Shared dirty flag so in-app navigation (open another draft) can warn.
   useEffect(() => {
     (window as unknown as { __xinsight_dirty?: boolean }).__xinsight_dirty =
-      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty()) &&
+      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty() || isMedsDirty() || isDdiDirty()) &&
       encounter !== null;
   });
 
   function handleClose(): void {
     if (
-      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty()) &&
+      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty() || isMedsDirty() || isDdiDirty()) &&
       encounter !== null
     ) {
       // Warn while local edits remain; dismiss keeps the editor + edits.
@@ -2383,6 +2786,12 @@ function DraftEditor({
     ) as EffectsState;
     const historySnapshot: HistoryState = { ...historyRef.current };
     const reconSnapshot = reconRef.current === null ? null : { ...reconRef.current };
+    const medsSnapshot: MedEntry[] = medsRef.current.map((entry) =>
+      entry.catalog_drug_id !== undefined
+        ? { catalog_drug_id: entry.catalog_drug_id }
+        : { unknown_label: entry.unknown_label as string },
+    );
+    const ddiSnapshot = ddiReportRef.current;
     const historyVersionSnapshot = historyDefRef.current?.definition_version ?? null;
     const effectsBlock = serializeEffects(effectsSnapshot, historyVersionSnapshot);
     const historyBlock = serializeHistory(historySnapshot, historyVersionSnapshot);
@@ -2396,8 +2805,11 @@ function DraftEditor({
         effectsBlock === undefined ? withCssrs : { ...withCssrs, effects: effectsBlock };
       const withHistory =
         historyBlock === undefined ? withEffects : { ...withEffects, history: historyBlock };
-      const payload =
+      const withRecon =
         reconSnapshot === null ? withHistory : { ...withHistory, history_reconciliation: reconSnapshot };
+      const withMeds = { ...withRecon, medications: medsSnapshot };
+      const payload =
+        ddiSnapshot === null ? withMeds : { ...withMeds, ddi_report: ddiSnapshot };
       const updated = await patchEncounter(
         encounter.id,
         payload,
@@ -2416,6 +2828,8 @@ function DraftEditor({
       if (historyBlock !== undefined) {
         savedHistoryRef.current = historyDirtyKey(historySnapshot);
       }
+      savedMedsRef.current = medsDirtyKey(medsSnapshot);
+      savedDdiRef.current = JSON.stringify(ddiSnapshot);
       savedReconRef.current = JSON.stringify(reconSnapshot);
       setEncounter(updated);
       const storedDiag =
@@ -2443,6 +2857,8 @@ function DraftEditor({
           cssrsDirtyKey(cssrsLevelsSnapshot, cssrsSkipSnapshot) &&
         effectsDirtyKey(effectsRef.current) === effectsDirtyKey(effectsSnapshot) &&
         historyDirtyKey(historyRef.current) === historyDirtyKey(historySnapshot) &&
+        medsDirtyKey(medsRef.current) === medsDirtyKey(medsSnapshot) &&
+        JSON.stringify(ddiReportRef.current) === JSON.stringify(ddiSnapshot) &&
         JSON.stringify(reconRef.current) === JSON.stringify(reconSnapshot)
       ) {
         setSaveState(`Saved (rev ${updated.revision})`);
@@ -2768,6 +3184,122 @@ function DraftEditor({
     scheduleSave(noteRef.current, diagAnswersRef.current);
   }
 
+  function markMedsStale(): void {
+    setDdiError(null);
+    if (medsRef.current.length === 0 && ddiReportRef.current === null) {
+      setDdiStatus("idle");
+    } else {
+      setDdiStatus("pending");
+    }
+  }
+
+  function handleAddCatalog(conceptId: string): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    const trimmed = conceptId.trim();
+    if (trimmed === "") {
+      return;
+    }
+    const next = [...medsRef.current, { catalog_drug_id: trimmed }];
+    setMeds(next);
+    medsRef.current = next;
+    markMedsStale();
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
+  function handleAddUnknown(label: string): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    const trimmed = label.trim();
+    if (trimmed === "") {
+      return;
+    }
+    const next = [...medsRef.current, { unknown_label: trimmed }];
+    setMeds(next);
+    medsRef.current = next;
+    markMedsStale();
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
+  function handleRemoveMed(index: number): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    if (!Number.isInteger(index) || index < 0 || index >= medsRef.current.length) {
+      return;
+    }
+    const next = medsRef.current.filter((_, i) => i !== index);
+    setMeds(next);
+    medsRef.current = next;
+    markMedsStale();
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
+  async function handleDdiCheck(): Promise<void> {
+    if (!encounter || encounter.state !== "draft" || readOnly) {
+      return;
+    }
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    setDdiError(null);
+    setDdiStatus("pending");
+    let datasetVersion: string | null = null;
+    try {
+      const current = await getDdiCurrent();
+      datasetVersion = current.dataset_version;
+    } catch {
+      const storedVersion = ddiReportRef.current?.dataset_version;
+      if (typeof storedVersion === "string" && storedVersion.trim() !== "") {
+        datasetVersion = storedVersion;
+      }
+    }
+    if (datasetVersion === null) {
+      setDdiError("DDI dataset unavailable.");
+      setDdiStatus("error");
+      return;
+    }
+    try {
+      const payload: Array<Record<string, string>> = [];
+      for (const entry of medsRef.current) {
+        if (entry.catalog_drug_id !== undefined) {
+          payload.push({ catalog_drug_id: entry.catalog_drug_id });
+        } else {
+          payload.push({ unknown_label: entry.unknown_label as string });
+        }
+      }
+      const checked = await checkDdi(datasetVersion, payload);
+      ddiReportRef.current = checked;
+      setDdiReport(checked);
+      const key = JSON.stringify({
+        meds: medsDirtyKey(medsRef.current),
+        dataset_version: datasetVersion,
+      });
+      lastCheckedKeyRef.current = key;
+      setLastCheckedKey(key);
+      setDdiStatus("current");
+      scheduleSave(noteRef.current, diagAnswersRef.current);
+    } catch (failure: unknown) {
+      setDdiError(failure instanceof Error ? failure.message : "DDI check failed.");
+      setDdiStatus("error");
+    }
+  }
+
   async function handlePhoneSave(): Promise<void> {
     if (role !== "physician") {
       return;
@@ -2812,6 +3344,8 @@ function DraftEditor({
       savedHistoryRef.current = historyDirtyKey(historyRef.current);
       savedEffectsRef.current = effectsDirtyKey(effectsRef.current);
       savedReconRef.current = JSON.stringify(reconRef.current);
+      savedMedsRef.current = medsDirtyKey(medsRef.current);
+      savedDdiRef.current = JSON.stringify(ddiReportRef.current);
       staleRef.current = false;
       setEncounter(discarded);
       setSaveState("Draft discarded.");
@@ -2926,6 +3460,26 @@ function DraftEditor({
             readOnly={readOnly}
             onStatusChange={handleEffectStatus}
             onSeverityChange={handleEffectSeverity}
+          />
+          <MedicationsSection
+            encounterId={encounter.id}
+            meds={meds}
+            readOnly={readOnly}
+            onRemove={handleRemoveMed}
+            onAddCatalog={handleAddCatalog}
+            onAddUnknown={handleAddUnknown}
+          />
+          <DdiSection
+            encounterId={encounter.id}
+            encounterKind={encounter.kind}
+            report={ddiReport}
+            status={ddiStatus}
+            errorDetail={ddiError}
+            reconciliationStatus={
+              typeof recon?.status === "string" ? String(recon?.status) : ""
+            }
+            readOnly={readOnly}
+            onCheck={() => void handleDdiCheck()}
           />
           <div className="x-field">
             <label htmlFor={`draft-phone-${encounter.id}`}>Phone (optional)</label>

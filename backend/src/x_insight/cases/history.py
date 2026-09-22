@@ -57,20 +57,50 @@ def _load_released_definition() -> dict[str, Any]:
 
 
 def validate_medications(medications: Any) -> Any:
-    """Reject FR-14-excluded regimen fields anywhere in a medication list.
+    """Strict allowlist for medication entries (S20).
 
-    Valid drug-only entries pass through verbatim; any entry carrying a
-    regimen field (or a non-object entry/list shape) raises ValueError so
-    the PATCH flow returns 422 with revision and draft_data untouched.
+    Each entry must be a dict with exactly one key in
+    {catalog_drug_id, unknown_label} and a non-empty str value
+    (stripped). Any extra key — including FR-14 regimen fields and
+    status — both/neither discriminator, empty value, non-dict entry,
+    or non-list payload raises ValueError so the PATCH flow returns
+    422 with revision and draft_data untouched. Valid lists pass
+    through verbatim.
     """
     if not isinstance(medications, list):
         raise ValueError("medications must be a list")
     for entry in medications:
         if not isinstance(entry, dict):
             raise ValueError("invalid medication entry")
-        if MEDICATION_REGIMEN_EXCLUDED_FIELDS & set(entry):
-            raise ValueError("excluded medication regimen field")
+        if set(entry) != {"catalog_drug_id"} and set(entry) != {"unknown_label"}:
+            raise ValueError("medication entry must carry exactly one identifier")
+        value = next(iter(entry.values()))
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("medication identifier must be a non-empty string")
     return medications
+
+
+def validate_ddi_report(report: Any) -> Any:
+    """Permissive shape guard for a stored DDI report reference (S20).
+
+    None passes through as absent; otherwise the report must be a dict
+    carrying non-empty str dataset_version + medication_fingerprint,
+    with pairs (when present) a list. All other keys pass through
+    verbatim with no freshness check.
+    """
+    if report is None:
+        return None
+    if not isinstance(report, dict):
+        raise ValueError("DDI report must be an object")
+    dataset_version = report.get("dataset_version")
+    fingerprint = report.get("medication_fingerprint")
+    if not isinstance(dataset_version, str) or not dataset_version.strip():
+        raise ValueError("DDI report dataset_version must be a non-empty string")
+    if not isinstance(fingerprint, str) or not fingerprint.strip():
+        raise ValueError("DDI report medication_fingerprint must be a non-empty string")
+    if "pairs" in report and not isinstance(report["pairs"], list):
+        raise ValueError("DDI report pairs must be a list")
+    return report
 
 
 def validate_history_reconciliation(reconciliation: Any) -> Any:

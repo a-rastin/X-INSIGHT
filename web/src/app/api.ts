@@ -908,3 +908,98 @@ export async function login(
   };
   return { user: payload.user, researchNotice: payload.research_notice ?? null };
 }
+
+/** S20 medications/DDI client: catalog search + pinned versioned check. */
+export interface DrugSearchResult {
+  concept_id: string;
+  canonical_name: string;
+}
+
+export async function searchDrugs(
+  query: string,
+): Promise<{ catalog_version: string; results: DrugSearchResult[] }> {
+  const params = new URLSearchParams({ query, limit: "25" });
+  const response = await fetch(`/api/v1/drugs?${params}`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw Object.assign(new Error("Catalog unavailable."), {
+      status: response.status,
+    });
+  }
+  return (await response.json()) as {
+    catalog_version: string;
+    results: DrugSearchResult[];
+  };
+}
+
+export async function getDdiCurrent(): Promise<{
+  dataset_version: string;
+  catalog_version: string;
+  dataset_hash: string;
+}> {
+  const response = await fetch("/api/v1/ddi/current", {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw Object.assign(new Error("DDI dataset unavailable."), {
+      status: response.status,
+    });
+  }
+  return (await response.json()) as {
+    dataset_version: string;
+    catalog_version: string;
+    dataset_hash: string;
+  };
+}
+
+export interface DdiReport {
+  dataset_version: string;
+  catalog_version?: string;
+  dataset_hash?: string;
+  medication_fingerprint: string;
+  generated_at?: string;
+  resolved_medications?: unknown[];
+  unresolved_medications?: unknown[];
+  pairs?: Array<{
+    pair_key: string;
+    drug_a: string;
+    drug_b: string;
+    status: string;
+    highest_known_severity: string | null;
+    has_unknown_severity: boolean;
+    conflicts?: Array<{ source_severity: string; source_path?: string }>;
+    evidence?: Array<{
+      source_severity?: string;
+      direction?: unknown;
+      raw_text?: string;
+      management?: string | null;
+      source_path?: string;
+      span?: unknown;
+    }>;
+    coverage_basis?: string;
+  }>;
+  limitations?: string[];
+}
+
+export async function checkDdi(
+  dataset_version: string,
+  medications: Array<Record<string, string>>,
+): Promise<DdiReport> {
+  const csrf = csrfToken();
+  const response = await fetch("/api/v1/ddi/check", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(csrf ? { "X-CSRF-Token": csrf } : {}),
+    },
+    body: JSON.stringify({ dataset_version, medications }),
+  });
+  if (!response.ok) {
+    throw Object.assign(new Error("DDI check failed."), {
+      status: response.status,
+    });
+  }
+  return (await response.json()) as DdiReport;
+}

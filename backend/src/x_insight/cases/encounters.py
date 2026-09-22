@@ -18,6 +18,7 @@ from x_insight.assessments.panss import evaluate_panss
 from x_insight.cases.history import (
     validate_and_stamp_effects,
     validate_and_stamp_history,
+    validate_ddi_report,
     validate_history_reconciliation,
     validate_medications,
 )
@@ -401,6 +402,16 @@ def _apply_medications_guard(incoming: dict[str, Any]) -> dict[str, Any]:
     return incoming
 
 
+def _apply_ddi_report_guard(incoming: dict[str, Any]) -> dict[str, Any]:
+    if "ddi_report" not in incoming:
+        return incoming
+    try:
+        validate_ddi_report(incoming["ddi_report"])
+    except ValueError as exc:
+        raise HTTPException(422, "Invalid DDI report content.") from exc
+    return incoming
+
+
 def _apply_reconciliation_guard(incoming: dict[str, Any]) -> dict[str, Any]:
     if "history_reconciliation" not in incoming:
         return incoming
@@ -455,24 +466,26 @@ def patch_encounter(
         actor_id = str(actor["user_id"])
         new_revision = int(row["revision"]) + 1
         new_draft = _apply_reconciliation_guard(
-            _apply_medications_guard(
-                _apply_effects_validation(
-                    _apply_history_validation(
-                        _apply_cssrs_validation(
-                            _apply_panss_validation(
-                                _apply_diagnosis_ack(
-                                    dict(body.draft_data),
-                                    stored_draft,
-                                    actor_id,
-                                    new_revision,
+            _apply_ddi_report_guard(
+                _apply_medications_guard(
+                    _apply_effects_validation(
+                        _apply_history_validation(
+                            _apply_cssrs_validation(
+                                _apply_panss_validation(
+                                    _apply_diagnosis_ack(
+                                        dict(body.draft_data),
+                                        stored_draft,
+                                        actor_id,
+                                        new_revision,
+                                    )
                                 )
-                            )
+                            ),
+                            actor_id,
+                            new_revision,
                         ),
                         actor_id,
                         new_revision,
-                    ),
-                    actor_id,
-                    new_revision,
+                    )
                 )
             )
         )
