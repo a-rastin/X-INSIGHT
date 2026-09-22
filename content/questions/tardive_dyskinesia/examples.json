@@ -1,0 +1,391 @@
+{
+ "note": "Clinical vignettes are synthetic author-created illustrations for owner review of wording and missingness behavior. They are NOT empirical probabilities, NOT guideline cutoffs, and NOT an independent clinical oracle. The numerical fixture is an independently hand-worked mathematical check of table ordering and inference plumbing, computed by plain enumeration outside the implementation under test.",
+ "package_version": "tardive_dyskinesia-v0.1-draft",
+ "clinical_cases": [
+  {
+   "name": "effect present, moderate-or-severe disabling TD with associated attribution",
+   "kind": "ordinary",
+   "effect_gate": "present (synthetic follow-up effect status)",
+   "inputs": {
+    "MotorSeverity": {
+     "state": "moderate_or_severe",
+     "source": "effect present + severity moderate_or_severe (synthetic)"
+    },
+    "DisablingImpact": {
+     "state": "present",
+     "source": "proposed disabling field present (synthetic)"
+    },
+    "MildTreatmentConsideration": {
+     "state": "absent_assessed",
+     "source": "proposed mild-consideration field absent (synthetic)"
+    },
+    "AttributionContext": {
+     "state": "antipsychotic_associated_assessed",
+     "source": "proposed attribution field assessed (synthetic)"
+    },
+    "DoseReductionLink": {
+     "state": "absent_assessed",
+     "source": "proposed dose-link field absent (synthetic)"
+    },
+    "UrgentDysphagiaConcern": {
+     "state": "absent_assessed",
+     "source": "proposed urgent field absent (synthetic)"
+    }
+   },
+   "reference_row_lookup": {
+    "parent_states": [
+     "moderate_or_severe",
+     "present",
+     "absent_assessed",
+     "antipsychotic_associated_assessed"
+    ],
+    "synthetic_reference_percentages": [
+     82.0,
+     6.0,
+     6.0,
+     6.0
+    ]
+   },
+   "proposed_template_branch": "recommended_vmat2_review",
+   "proposed_clinical_expectation_for_review": "Review prompt for VMAT2 discussion with candidate-specific label safety review; physician decides product and dose. Expectation is proposed, not approved.",
+   "deterministic_urgent_flag": "does not fire"
+  },
+  {
+   "name": "effect present, mild TD with consideration reason and unknown disabling detail",
+   "kind": "ordinary_with_unknown",
+   "effect_gate": "present (synthetic)",
+   "inputs": {
+    "MotorSeverity": {
+     "state": "mild",
+     "source": "effect present + severity mild (synthetic)"
+    },
+    "DisablingImpact": {
+     "state": "unknown_incomplete",
+     "source": "proposed disabling field not yet collected (synthetic)"
+    },
+    "MildTreatmentConsideration": {
+     "state": "present",
+     "source": "proposed mild-consideration field present, e.g. patient preference (synthetic)"
+    },
+    "AttributionContext": {
+     "state": "antipsychotic_associated_assessed",
+     "source": "proposed attribution field assessed (synthetic)"
+    },
+    "DoseReductionLink": {
+     "state": "unknown_incomplete",
+     "source": "proposed dose-link field not yet collected (synthetic)"
+    },
+    "UrgentDysphagiaConcern": {
+     "state": "absent_assessed",
+     "source": "proposed urgent field absent (synthetic)"
+    }
+   },
+   "reference_row_lookup": {
+    "parent_states": [
+     "mild",
+     "unknown_incomplete",
+     "present",
+     "antipsychotic_associated_assessed"
+    ],
+    "synthetic_reference_percentages": [
+     6.0,
+     82.0,
+     6.0,
+     6.0
+    ]
+   },
+   "proposed_template_branch": "consider_vmat2_review PLUS unknown_disclosure listing DisablingImpact and DoseReductionLink",
+   "proposed_clinical_expectation_for_review": "Uncertainty is preserved as consider with disclosure, never as monitor/reassurance. Proposed; owner to confirm.",
+   "deterministic_urgent_flag": "does not fire"
+  },
+  {
+   "name": "effect present, mild TD without consideration reason",
+   "kind": "ordinary",
+   "effect_gate": "present (synthetic)",
+   "inputs": {
+    "MotorSeverity": {
+     "state": "mild",
+     "source": "effect present + severity mild (synthetic)"
+    },
+    "DisablingImpact": {
+     "state": "absent_assessed",
+     "source": "proposed disabling field absent (synthetic)"
+    },
+    "MildTreatmentConsideration": {
+     "state": "absent_assessed",
+     "source": "proposed mild-consideration field absent (synthetic)"
+    },
+    "AttributionContext": {
+     "state": "antipsychotic_associated_assessed",
+     "source": "proposed attribution field assessed (synthetic)"
+    },
+    "DoseReductionLink": {
+     "state": "absent_assessed",
+     "source": "proposed dose-link field absent (synthetic)"
+    },
+    "UrgentDysphagiaConcern": {
+     "state": "absent_assessed",
+     "source": "proposed urgent field absent (synthetic)"
+    }
+   },
+   "reference_row_lookup": {
+    "parent_states": [
+     "mild",
+     "absent_assessed",
+     "absent_assessed",
+     "antipsychotic_associated_assessed"
+    ],
+    "synthetic_reference_percentages": [
+     6.0,
+     6.0,
+     82.0,
+     6.0
+    ]
+   },
+   "proposed_template_branch": "monitor_and_discuss",
+   "proposed_clinical_expectation_for_review": "Review prompt for longitudinal measurement and counseling with revisit conditions; not a safety clearance. Proposed, not approved.",
+   "deterministic_urgent_flag": "does not fire"
+  },
+  {
+   "name": "effect present, attribution unresolved with dose-reduction link and urgent feature",
+   "kind": "urgent",
+   "effect_gate": "present (synthetic)",
+   "inputs": {
+    "MotorSeverity": {
+     "state": "moderate_or_severe",
+     "source": "effect present + severity moderate_or_severe (synthetic)"
+    },
+    "DisablingImpact": {
+     "state": "present",
+     "source": "proposed disabling field present (synthetic)"
+    },
+    "MildTreatmentConsideration": {
+     "state": "present",
+     "source": "proposed mild-consideration field present (synthetic)"
+    },
+    "AttributionContext": {
+     "state": "alternative_or_unresolved",
+     "source": "proposed attribution field: withdrawal-emergent course under reassessment (synthetic)"
+    },
+    "DoseReductionLink": {
+     "state": "present",
+     "source": "proposed dose-link field present (synthetic)"
+    },
+    "UrgentDysphagiaConcern": {
+     "state": "present",
+     "source": "proposed urgent field present with gagging (synthetic)"
+    }
+   },
+   "reference_row_lookup": {
+    "parent_states": [
+     "moderate_or_severe",
+     "present",
+     "present",
+     "alternative_or_unresolved"
+    ],
+    "synthetic_reference_percentages": [
+     6.0,
+     6.0,
+     6.0,
+     82.0
+    ]
+   },
+   "proposed_template_branch": "assess_diagnosis_and_attribution PLUS deterministic urgent flag; longitudinal branch review_withdrawal_and_course",
+   "proposed_clinical_expectation_for_review": "No VMAT2 prompt from this branch; workup plus airway-first urgent care govern. Proposed, not approved.",
+   "deterministic_urgent_flag": "FIRES: 'constant movement with gagging/choking or breathing impact is recorded. Seek immediate senior/emergency evaluation per local emergency protocol, including airway assessment. Do not await model output.' Displayed even if the run fails or is still queued."
+  },
+  {
+   "name": "gate absent: effect recorded absent",
+   "kind": "gate_absent",
+   "effect_gate": "absent (synthetic follow-up effect status)",
+   "inputs": {
+    "tardive_dyskinesia_effect": {
+     "state": "absent",
+     "source": "FR-21 effect status absent (synthetic)"
+    },
+    "severity": "null (required when absent)"
+   },
+   "expected_behavior": "not_applicable with reason: no inference, no CPTs, no posterior; absent is never converted into a negative indication posterior or evidence of another movement disorder.",
+   "proposed_clinical_expectation_for_review": "Gate-absent handling is proposed; owner to confirm absent yields not_applicable rather than needs_clarification."
+  },
+  {
+   "name": "gate unknown: effect recorded not_assessed",
+   "kind": "required_missing",
+   "effect_gate": "not_assessed (synthetic)",
+   "inputs": {
+    "tardive_dyskinesia_effect": {
+     "state": "not_assessed",
+     "source": "FR-21 effect status not_assessed (synthetic)"
+    }
+   },
+   "expected_behavior": "needs_clarification: no posterior reported, later questions stopped, template needs_clarification branch rendered naming the tardive dyskinesia effect assessment. Saving corrected input creates a new run. Distinct from gate-absent (not_applicable).",
+   "proposed_clinical_expectation_for_review": "Blocking on not_assessed (not on explicit unknown context) is proposed; owner to confirm."
+  },
+  {
+   "name": "required-missing: effect present without severity",
+   "kind": "required_missing",
+   "effect_gate": "present without severity (synthetic)",
+   "inputs": {
+    "MotorSeverity": {
+     "state": "MISSING (present requires mild or moderate_or_severe)",
+     "source": "FR-21 severity missing (synthetic)"
+    }
+   },
+   "expected_behavior": "needs_clarification: no posterior reported, later questions stopped, template needs_clarification branch rendered naming MotorSeverity. Present-without-severity is invalid per the adverse-effect contract and never mapped to mild.",
+   "proposed_clinical_expectation_for_review": "Required-severity blocking is proposed; owner to confirm."
+  },
+  {
+   "name": "permitted-unknown: proposed context fields not yet collected",
+   "kind": "ordinary_with_unknown",
+   "effect_gate": "present (synthetic)",
+   "inputs": {
+    "MotorSeverity": {
+     "state": "mild",
+     "source": "effect present + severity mild (synthetic)"
+    },
+    "DisablingImpact": {
+     "state": "unknown_incomplete",
+     "source": "proposed field not yet collected (synthetic)"
+    },
+    "MildTreatmentConsideration": {
+     "state": "unknown_incomplete",
+     "source": "proposed field not yet collected (synthetic)"
+    },
+    "AttributionContext": {
+     "state": "unknown_incomplete",
+     "source": "proposed field not yet collected (synthetic)"
+    },
+    "DoseReductionLink": {
+     "state": "unknown_incomplete",
+     "source": "proposed field not yet collected (synthetic)"
+    },
+    "UrgentDysphagiaConcern": {
+     "state": "absent_assessed",
+     "source": "proposed urgent field absent (synthetic)"
+    }
+   },
+   "reference_row_lookup": {
+    "parent_states": [
+     "mild",
+     "unknown_incomplete",
+     "unknown_incomplete",
+     "unknown_incomplete"
+    ],
+    "synthetic_reference_percentages": [
+     6.0,
+     6.0,
+     6.0,
+     82.0
+    ]
+   },
+   "proposed_template_branch": "assess_diagnosis_and_attribution PLUS unknown_disclosure listing four inputs",
+   "proposed_clinical_expectation_for_review": "Unknown attribution renders assess, not a treatment prompt; unknown is never reported as low concern. Proposed; owner to confirm."
+  }
+ ],
+ "numerical_fixture": {
+  "provenance": "Independently hand-worked by plain enumeration over the synthetic reference tables in network.xml; not produced by the implementation under test; checks ordering/transpose plumbing, not clinical correctness.",
+  "ordering_contract": "child state fastest; last declared parent (AttributionContext) next; first declared parent (MotorSeverity) slowest",
+  "checks": [
+   {
+    "name": "single-row lookup is the posterior under complete evidence",
+    "evidence": {
+     "MotorSeverity": "moderate_or_severe",
+     "DisablingImpact": "present",
+     "MildTreatmentConsideration": "absent_assessed",
+     "AttributionContext": "antipsychotic_associated_assessed"
+    },
+    "expected_posterior_percentages": [
+     82.0,
+     6.0,
+     6.0,
+     6.0
+    ],
+    "work": "indication row 27 (moderate_or_severe,present,absent_assessed,antipsychotic_associated_assessed) is [0.82, 0.06, 0.06, 0.06] by the documented synthetic rule; with all four parents observed there is exactly one active row"
+   },
+   {
+    "name": "monitor row is unique among mild-associated rows",
+    "evidence": {
+     "MotorSeverity": "mild",
+     "DisablingImpact": "absent_assessed",
+     "MildTreatmentConsideration": "absent_assessed",
+     "AttributionContext": "antipsychotic_associated_assessed"
+    },
+    "expected_posterior_percentages": [
+     6.0,
+     6.0,
+     82.0,
+     6.0
+    ],
+    "work": "indication row 12 is the single monitor row among the 18 associated rows; all other 8 mild-associated rows are consider"
+   },
+   {
+    "name": "transpose detector: swapping first/last parent changes the row",
+    "row_a": {
+     "parent_states": [
+      "moderate_or_severe",
+      "present",
+      "absent_assessed",
+      "antipsychotic_associated_assessed"
+     ],
+     "expected": [
+      82.0,
+      6.0,
+      6.0,
+      6.0
+     ]
+    },
+    "row_b": {
+     "parent_states": [
+      "mild",
+      "absent_assessed",
+      "absent_assessed",
+      "alternative_or_unresolved"
+     ],
+     "expected": [
+      6.0,
+      6.0,
+      6.0,
+      82.0
+     ]
+    },
+    "table": "IndicationReview",
+    "work": "rows differ in first parent (MotorSeverity) and last parent (AttributionContext); an implementation that transposes parent order returns the wrong row"
+   },
+   {
+    "name": "asymmetry detector: mild consider vs monitor",
+    "row_c": {
+     "parent_states": [
+      "present"
+     ],
+     "expected": [
+      88.0,
+      12.0
+     ],
+     "table": "LongitudinalReview"
+    },
+    "row_d": {
+     "parent_states": [
+      "absent_assessed"
+     ],
+     "expected": [
+      12.0,
+      88.0
+     ],
+     "table": "LongitudinalReview"
+    },
+    "work": "swapping DoseReductionLink present/absent swaps the argmax; the unknown row [50.0, 50.0] is symmetric by design"
+   },
+   {
+    "name": "prior-marginal over synthetic root references (indication)",
+    "work": "sum over all 54 parent configurations weighted by root references MotorSeverity [0.70,0.30], DisablingImpact [0.15,0.70,0.15], MildTreatmentConsideration [0.30,0.55,0.15], AttributionContext [0.60,0.25,0.15]",
+    "expected_posterior_probabilities": [
+     0.1968,
+     0.256308,
+     0.182892,
+     0.364
+    ],
+    "tolerance": 1e-09
+   }
+  ]
+ }
+}

@@ -1,0 +1,285 @@
+{
+ "package_version": "tardive_dyskinesia-v0.1-draft",
+ "question_key": "tardive_dyskinesia",
+ "workflow": "followup",
+ "order": "F1",
+ "review_status": "awaiting_review",
+ "reviewer": null,
+ "review_date": null,
+ "clinical_activation_allowed": false,
+ "review_notice": "Draft for owner review. Nothing in this package is clinically approved, establishes a diagnostic cutoff, or selects treatment. Do not activate.",
+ "source_classification": {
+  "source_derived": "Statements reproduced or conservatively constrained from the cited sources without adding a clinical threshold or converting evidence grades into probabilities.",
+  "proposed_for_review": "Agent-proposed graph, states, transforms, horizons, wording, and reference values; not source-derived clinical rules.",
+  "drafting_lead": "BN-14 is an incomplete, inference-disabled drafting lead, not an approved mapping. Its deterministic 0/1 tables were replaced with soft argmax-preserving placeholders; no BN-14 activation metadata was copied."
+ },
+ "question_enumeration": {
+  "specific_question": "For an adult follow-up encounter whose tardive dyskinesia effect status is recorded as present, given current motor severity, disabling impact, mild-treatment consideration, diagnostic/attribution context, dose-reduction linkage, and urgent dysphagia concern, what is the posterior distribution over VMAT2 review prompts (recommended review vs consider review vs monitor-and-discuss vs assess-diagnosis-and-attribution), with parallel longitudinal-course and urgent-safety review prompts, to structure physician review?",
+  "intended_setting": "Adult outpatient follow-up for schizophrenia; current dated encounter. Not the emergency department. Local setting confirmation requested.",
+  "proposed_time_horizon": "Current encounter (no outcome prediction horizon). Longitudinal reassessment over up to several months is a parallel review prompt for withdrawal-emergent presentation, not a timed prediction.",
+  "output_meanings": {
+   "recommended_vmat2_review": "Review prompt: moderate-to-severe or disabling TD associated with antipsychotic therapy is recorded; review a reversible VMAT2 inhibitor per current local labeling. Not a prescription and not a product choice.",
+   "consider_vmat2_review": "Review prompt: mild TD with a recorded reason to consider treatment (preference, impairment, psychosocial impact, or preserved uncertainty) is recorded; discuss whether a VMAT2 trial is wanted. Not a prescription.",
+   "monitor_and_discuss": "Review prompt: mild TD without a recorded consideration reason and without disabling impact; continue longitudinal measurement and counseling with revisit conditions. Not a safety clearance.",
+   "assess_diagnosis_and_attribution": "Review prompt: attribution is alternative-or-unresolved or still unknown; assess pattern/persistence/exposure/onset and alternatives before any VMAT2 discussion. No VMAT2 prompt from this branch.",
+   "review_withdrawal_and_course": "Parallel prompt: dyskinesia began or increased around dose reduction; assess the longitudinal course for up to several months. Never delays urgent care.",
+   "urgent_clinician_assessment": "Parallel prompt plus deterministic flag: urgent dysphagia/constant-movement concern takes priority regardless of diagnostic status."
+  },
+  "applicability": "Follow-up encounters only (encounter.kind == followup) with tardive dyskinesia effect status present. Absent yields not_applicable with reason; not_assessed/missing/conflicting yields needs_clarification stopping later questions."
+ },
+ "sources": [
+  {
+   "path": "docs/medical-docs/tardive-dyskinesia-criteria.md",
+   "bytes": 1581,
+   "sha256": "ca9bd22fb0064d3ae24b61ecc20bacddc33592ebd25d6a4966e8cd83ef4cfe5a",
+   "locators": [
+    "Diagnostic features",
+    "Differential diagnosis",
+    "Research criteria and assessment (Schooler-Kane; AIMS measurement-only rule)"
+   ],
+   "classification": "source_derived"
+  },
+  {
+   "path": "docs/medical-docs/guideline/STATEMENT-14.md",
+   "bytes": 19523,
+   "sha256": "896a311d5654137f97d272db8922a64114fc440999e1d448133040ad6132bd24",
+   "locators": [
+    "STATEMENT 14 recommendation (1B): moderate to severe or disabling TD -> VMAT2; mild TD consider on preference/impairment/psychosocial",
+    "Implementation (tardive-syndrome course, withdrawal-emergent dyskinesia, AIMS/DISCUS no intervention threshold, contributor workup, dose-reduction longitudinal course, anticholinergic worsening)",
+    "TABLE 11 VMAT2 characteristics (background only; dosing/product selection explicitly out of scope)",
+    "Life-threatening circumstances paragraph (gagging/choking airway priority)",
+    "Balancing Benefits/Harms; Quality Measurement Considerations (passive prompts need structured syndrome/severity/disability data)"
+   ],
+   "classification": "source_derived"
+  },
+  {
+   "path": "content/history/history-effects-v0.1-draft.json",
+   "bytes": 27249,
+   "sha256": "3a3c29d89b31e48a01606130f7980ee3e78094117b7c0041a68260243009a34e",
+   "locators": [
+    "adverse_effect_contract (present/absent/not_assessed; present requires severity; status change clears severity)",
+    "tardive_dyskinesia severity enum mild vs moderate_or_severe (proposed, awaiting_review)",
+    "mapping_gaps.unresolved_is_not_not_assessed, effect_specific_inputs_not_in_minimum_record, tardive_dyskinesia_impact"
+   ],
+   "classification": "source_derived"
+  },
+  {
+   "path": "BNs/BN-14.xml",
+   "bytes": 28109,
+   "sha256": "4d4b90dbc12f426649fa3b3ccb5433f2428735b3d89740605c97c7608743d5d8",
+   "locators": [
+    "TardiveDyskinesiaAssessment / AntipsychoticAssociation / MotorSeverity / DisablingImpact / MildTardiveDyskinesiaTreatmentConsideration / DoseReductionTemporalLink / UrgentSafetyConcern (drafting leads)",
+    "TardiveDyskinesiaIndicationReview + LongitudinalReview + UrgentSafetyReview + VMAT2 safety/shared-decision + AnticholinergicReview (six proposed deterministic 0/1 tables; replaced, not copied)"
+   ],
+   "classification": "drafting_lead"
+  },
+  {
+   "path": "BNs/schema.xml",
+   "bytes": 12875,
+   "sha256": "7b8ae840dd81f64f61aa388d7ab1db7430045ed0bae5f7a3ca5ec65e370ba8c1",
+   "locators": [
+    "XSD authoring profile v1 (structure only)"
+   ],
+   "classification": "source_derived"
+  },
+  {
+   "path": "docs/dev/user-requirements.md",
+   "bytes": 7150,
+   "sha256": "d50724f604ac3f61d6a54211f9310912e6ff60dd429c98c7a6df320d2cfaab29",
+   "locators": [
+    "FR-20",
+    "FR-21",
+    "FR-30",
+    "FR-31",
+    "FR-32",
+    "FR-33",
+    "FR-34",
+    "FR-35"
+   ],
+   "classification": "source_derived"
+  },
+  {
+   "path": "docs/dev/plan.md",
+   "bytes": 66198,
+   "sha256": "9f006a3b07720b16589d057760f575238abf0a17ef6e1902968ceeaa0e4448fe",
+   "locators": [
+    "Section 2.2 follow-up (effect present/absent/not-assessed; severity required when present)",
+    "Section 5 adverse effects (no invented common severity bands; no mandatory full scales)",
+    "Section 7.1 F1 row",
+    "Section 7.2 package shape",
+    "Section 7.3 registry validation",
+    "Section 7.4 CPT contract"
+   ],
+   "classification": "source_derived"
+  }
+ ],
+ "source_comparison": {
+  "bn14_scope_vs_f1": "BN-14 is a 16-node review-workflow draft (10 clinician inputs + 6 deterministic review outputs) with inference_allowed=false and deployment_allowed=false. F1 keeps its input vocabulary (severity, disabling impact, mild-consideration, dose link, urgent concern, attribution) and its three parallel-review outputs (indication, longitudinal, urgent) but restructures them into a 9-node executable network: 6 roots + 3 outputs with 6 GIVEN edges. VMAT2 candidate-safety, treatment-preference, shared-decision, and anticholinergic subnetworks are deliberately excluded from v0.1 (see deferred items); their concerns are preserved as template safety-review wording and owner questions, not as network nodes. All six BN-14 deterministic 0/1 tables were replaced with soft argmax-preserving synthetic placeholders; no BN-14 TABLE bytes, priors, or inference/deployment flags were copied.",
+  "guideline_gives_no_threshold": "STATEMENT-14 states a 1B recommendation for moderate-to-severe or disabling TD and a consider-option for mild TD on preference/impairment/psychosocial grounds, with no AIMS score threshold for intervention and no product/dose selection rule in this package. The 4-state IndicationReview preserves that wording as review prompts only; the posterior maximum is never a prescription rule.",
+  "criteria_reuse": "Movement pattern, 4-week persistence, 3-month (1-month at 60+) exposure, and 4-week oral / 8-week LAI onset windows plus the differential list and Schooler-Kane research thresholds are background for the proposed AttributionContext field; none is encoded as a network gate or probability. AIMS is measurement only per both sources.",
+  "severity_reuse": "The mild vs moderate_or_severe motor-severity enum follows the history-effects draft proposal (itself following the BN-14 lead), which remains awaiting_review and therefore unapproved; F1 treats it as a candidate mapping and flags the approval dependency in Q1. Disabling impact is kept distinct from motor severity per both the criteria source and BN-14.",
+  "history_reuse": "FR-21 status/severity mechanics are reused as the gate plus MotorSeverity mapping; the history draft's mapping gaps (unresolved-vs-not_assessed, effect-specific inputs, TD impact) are resolved here by separate proposed AttributionContext/DisablingImpact/DoseReductionLink/UrgentDysphagiaConcern/MildTreatmentConsideration fields, each unknown-permitting except the two required inputs."
+ },
+ "graph_decision": {
+  "nodes": [
+   "MotorSeverity (2 states, required)",
+   "DisablingImpact (3)",
+   "MildTreatmentConsideration (3)",
+   "AttributionContext (3)",
+   "DoseReductionLink (3)",
+   "UrgentDysphagiaConcern (2, required)",
+   "IndicationReview (4 states; parents in order MotorSeverity, DisablingImpact, MildTreatmentConsideration, AttributionContext)",
+   "LongitudinalReview (2 states; parent DoseReductionLink)",
+   "UrgentSafetyReview (2 states; parent UrgentDysphagiaConcern)"
+  ],
+  "edges": [
+   [
+    "MotorSeverity",
+    "IndicationReview"
+   ],
+   [
+    "DisablingImpact",
+    "IndicationReview"
+   ],
+   [
+    "MildTreatmentConsideration",
+    "IndicationReview"
+   ],
+   [
+    "AttributionContext",
+    "IndicationReview"
+   ],
+   [
+    "DoseReductionLink",
+    "LongitudinalReview"
+   ],
+   [
+    "UrgentDysphagiaConcern",
+    "UrgentSafetyReview"
+   ]
+  ],
+  "why_this_shape": "One indication review node over the four diagnostic/severity inputs plus two parallel review nodes for course and urgency, mirroring BN-14's parallel-output structure at an executable size (242 cells). VMAT2 product/safety choice and anticholinergic reconciliation are excluded from v0.1 to keep the first draft reviewable and to respect the FR-14 drug-only contract; they remain visible as template wording and owner questions. All discrete nature nodes for the v1 execution profile; no latent nodes, no posterior chaining into other questions.",
+  "double_counting_rationale_for_review": "Each assessed input is proposed as usage=both (CPT-estimation context + hard observation). Rationale for review: conditioning once in Bayes rule is a single update, not double counting; the LLM conditions table estimates on the patient's context while inference instantiates the same observed states as evidence. Optional missing inputs use estimation context only (the gap is noted in the conditioning context) with no hard evidence, so no update occurs on an unobserved node. Owner to accept or restrict any mapping to observation-only."
+ },
+ "missing_structured_fields_proposed": [
+  {
+   "id": "disabling_impact",
+   "proposed_values": [
+    "present",
+    "absent_assessed",
+    "unknown_incomplete"
+   ],
+   "period": "current_encounter",
+   "basis": "STATEMENT-14 disabling criterion + criteria functional-impact recording; distinct from motor severity per history draft gap tardive_dyskinesia_impact"
+  },
+  {
+   "id": "mild_treatment_consideration",
+   "proposed_values": [
+    "present",
+    "absent_assessed",
+    "unknown_incomplete"
+   ],
+   "period": "current_encounter",
+   "basis": "STATEMENT-14 mild-TD consideration factors (patient preference, associated impairment, psychosocial functioning)"
+  },
+  {
+   "id": "attribution_context",
+   "proposed_values": [
+    "antipsychotic_associated_assessed",
+    "alternative_or_unresolved",
+    "unknown_incomplete"
+   ],
+   "period": "current_encounter assessment with historical exposure/onset dates where recorded",
+   "basis": "Criteria diagnostic features + differential + STATEMENT-14 workup/withdrawal-emergent paragraphs; never inferred from severity, medication presence, or AIMS"
+  },
+  {
+   "id": "dose_reduction_link",
+   "proposed_values": [
+    "present",
+    "absent_assessed",
+    "unknown_incomplete"
+   ],
+   "period": "current_encounter assessment of recent change linkage",
+   "basis": "STATEMENT-14 dose-reduction longitudinal-course paragraph; BN-14 DoseReductionTemporalLink lead"
+  },
+  {
+   "id": "urgent_dysphagia_concern",
+   "proposed_values": [
+    "present",
+    "absent_assessed"
+   ],
+   "period": "current_encounter",
+   "basis": "STATEMENT-14 life-threatening circumstances (constant movement, gagging, choking); required input with deterministic flag"
+  }
+ ],
+ "reference_table_provenance": {
+  "status": "synthetic structural placeholder only; zero clinical validity",
+  "rule": "Root references illustrative (MotorSeverity [0.70,0.30] reflecting majority-mild course; DisablingImpact [0.15,0.70,0.15]; MildTreatmentConsideration [0.30,0.55,0.15]; AttributionContext [0.60,0.25,0.15]; DoseReductionLink [0.20,0.65,0.15]; UrgentDysphagiaConcern [0.05,0.95]). Indication rows from the documented mapping: attribution alternative/unknown -> assess [0.06,0.06,0.06,0.82] (36 rows); associated + moderate_or_severe -> recommended [0.82,0.06,0.06,0.06] (9 rows); associated + mild + (disabling present OR consideration present OR either unknown) -> consider [0.06,0.82,0.06,0.06] (8 rows); associated + mild + absent/absent -> monitor [0.06,0.06,0.82,0.06] (1 row). Longitudinal: present [0.88,0.12], absent [0.12,0.88], unknown [0.50,0.50]. Urgent: present [0.90,0.10], absent [0.10,0.90]. Lookup exists only to give the validator/inference harness complete, normalized, correctly ordered tables. Never present these as patient estimates.",
+  "forbidden": "No empirical probabilities were manufactured; no guideline evidence rating (1B) or AIMS/Schooler-Kane value was converted into a probability."
+ },
+ "independent_examples_provenance": {
+  "clinical_cases": "synthetic author-created illustrations for wording/missingness review; not a clinical oracle",
+  "numerical_fixture": "hand-worked by plain enumeration outside the implementation under test (see examples.json); expected literals recorded for harness replay"
+ },
+ "admission_measurements": {
+  "xml_bytes": 8657,
+  "xml_sha256": "0396d0d6152048de55ecfa2b2da67800026cce6a1dc1e4adb1e549579bfdc811",
+  "nodes": 9,
+  "cpt_cells": 242,
+  "child_rows": 59,
+  "prompt_bytes": 6333,
+  "xsd_valid": true,
+  "semantic_executable_structurally": true,
+  "clinical_activation_allowed": false,
+  "note": "Structural executability is not clinical validity and not activation. S25 package validator pending (no content/questions schema exists yet); S23 inference-harness replay pending. T5 XSD+semantics checked with pinned repo validators; numerical fixture recomputed independently from file bytes with stdlib only."
+ },
+ "owner_questions": [
+  {
+   "id": "Q1",
+   "question": "Approve the mild vs moderate_or_severe motor-severity enum and its binding to the FR-21 effect severity (still awaiting_review in the history package)?",
+   "proposal": "Keep the 2-state MotorSeverity mapping with present-requires-severity and no AIMS cutoff as drafted."
+  },
+  {
+   "id": "Q2",
+   "question": "Approve the five proposed td_assessment fields (disabling_impact, mild_treatment_consideration, attribution_context with its pattern/persistence/exposure/onset/alternative constituents, dose_reduction_link, urgent_dysphagia_concern) and their collection instruments?",
+   "proposal": "Field ids/values/periods as stated; absent proposed fields map to unknown_incomplete with disclosure (required inputs block instead)."
+  },
+  {
+   "id": "Q3",
+   "question": "Confirm the gate mapping: effect absent yields not_applicable (never a negative posterior) while not_assessed/missing/conflicting yields needs_clarification stopping later questions?",
+   "proposal": "Gate rule as drafted; present-without-severity and missing urgent concern block as required-missing."
+  },
+  {
+   "id": "Q4",
+   "question": "Approve the indication mapping, especially: moderate_or_severe alone suffices for recommended; mild + any consideration/unknown yields consider (never monitor as reassurance); unknown/alternative attribution yields assess with no VMAT2 prompt?",
+   "proposal": "54-row mapping as documented; posterior maximum is review wording only, never a prescription rule."
+  },
+  {
+   "id": "Q5",
+   "question": "Confirm that VMAT2 product choice, dosing, and candidate-specific safety review stay outside the network as physician label review (template wording only), with no product node in v0.1?",
+   "proposal": "Keep v0.1 without product/safety/anticholinergic nodes; add them only as separately reviewed extensions."
+  },
+  {
+   "id": "Q6",
+   "question": "Confirm template wording, the parallel longitudinal/urgent rendering, and that the deterministic urgent flag never waits for LLM output?",
+   "proposal": "Wording as in template.json; urgent gagging/choking flag fires from saved inputs even when the run fails or is queued."
+  },
+  {
+   "id": "Q7",
+   "question": "Confirm that AIMS totals/regional scores (including Schooler-Kane 3-in-one / 2-in-two research thresholds) remain measurement-only and are never mapped to network states?",
+   "proposal": "Keep the AIMS exclusion as drafted; no AIMS-derived threshold is added without a new reviewed field."
+  },
+  {
+   "id": "Q8",
+   "question": "Confirm v0.1 needs no outcome time horizon beyond the current encounter, with the up-to-several-months longitudinal course as a parallel review prompt only?",
+   "proposal": "Keep current-encounter horizon; add dated persistence/onset windows only as reviewed field refinements."
+  }
+ ],
+ "unresolved_assumptions": [
+  "The motor-severity enum and all five td_assessment fields are proposals; the history-effects package itself is still awaiting_review, so no severity definition used here is approved.",
+  "Exposure-duration cutoffs (3 months; 1 month at 60+), persistence (4 weeks), and onset windows (4 weeks oral / 8 weeks LAI) are background for the attribution field, not encoded gates or probabilities.",
+  "VMAT2 candidate-safety review (hepatic/renal, CYP2D6/CYP3A4, QT, mood/suicidality, sedation/falls, parkinsonism, MAOI/reserpine, duplicate exposure), treatment preference beyond the mild-consideration aggregate, and anticholinergic reconciliation are physician-side review items in v0.1, not network nodes.",
+  "Both-usage (context+observation) rationale needs review.",
+  "Reference tables are synthetic placeholders with zero clinical validity."
+ ]
+}

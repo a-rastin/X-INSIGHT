@@ -1,0 +1,71 @@
+{
+ "description": "Predefined physician-review wording for tardive dyskinesia F1. The LLM never supplies this text; the app renders the matching branch deterministically from stored posteriors, evidence, and missingness. All slots are escaped at render time. No branch diagnoses TD, selects a VMAT2 product, gives dosage, or clears safety.",
+ "template_version": "tardive_dyskinesia-template-v0.1-draft",
+ "review_status": "awaiting_review",
+ "branches": {
+  "recommended_vmat2_review": {
+   "heading": "Tardive dyskinesia review (F1): recommended VMAT2 review",
+   "body": "Recorded inputs: motor severity {MotorSeverity_state} ({MotorSeverity_source}); disabling impact {DisablingImpact_state} ({DisablingImpact_source}); mild-treatment consideration {MildTreatmentConsideration_state} ({MildTreatmentConsideration_source}); attribution {AttributionContext_state} ({AttributionContext_source}); dose-reduction link {DoseReductionLink_state} ({DoseReductionLink_source}); urgent dysphagia concern {UrgentDysphagiaConcern_state} ({UrgentDysphagiaConcern_source}). Network TardiveDyskinesia_F1_draft ({network_version}) posteriors: indication recommended {p_recommended}%, consider {p_consider}%, monitor {p_monitor}%, assess-diagnosis {p_assess}% (CPT percentages and posteriors are shown separately; posteriors are not diagnostic probabilities and not treatment-effect estimates). Review prompt: moderate-to-severe or disabling TD associated with antipsychotic therapy is recorded; review a reversible VMAT2 inhibitor per current local labeling with the patient, checking hepatic/renal function, hypersensitivity, CYP interactions, MAOI/reserpine and duplicate VMAT2 exposure, QT risk, mood/suicidality, sedation/falls, and parkinsonism for the named candidate. The physician decides treatment and product; this output never selects a drug or dose. Longitudinal: {longitudinal_text}. Safety: {urgent_text}. {unknown_disclosure}",
+   "posterior_state": "recommended_vmat2_review"
+  },
+  "consider_vmat2_review": {
+   "heading": "Tardive dyskinesia review (F1): consider VMAT2 review",
+   "body": "Recorded inputs: motor severity {MotorSeverity_state} ({MotorSeverity_source}); disabling impact {DisablingImpact_state} ({DisablingImpact_source}); mild-treatment consideration {MildTreatmentConsideration_state} ({MildTreatmentConsideration_source}); attribution {AttributionContext_state} ({AttributionContext_source}); dose-reduction link {DoseReductionLink_state} ({DoseReductionLink_source}); urgent dysphagia concern {UrgentDysphagiaConcern_state} ({UrgentDysphagiaConcern_source}). Network TardiveDyskinesia_F1_draft ({network_version}) posteriors: indication recommended {p_recommended}%, consider {p_consider}%, monitor {p_monitor}%, assess-diagnosis {p_assess}%. Review prompt: mild TD associated with antipsychotic therapy is recorded with a reason to consider treatment (preference, impairment, or psychosocial impact, including uncertainty recorded as unknown). Discuss whether a VMAT2 trial is wanted per current local labeling with the same candidate-specific safety review as above. The physician decides; this output never selects a drug or dose. Longitudinal: {longitudinal_text}. Safety: {urgent_text}. {unknown_disclosure}",
+   "posterior_state": "consider_vmat2_review"
+  },
+  "monitor_and_discuss": {
+   "heading": "Tardive dyskinesia review (F1): monitor and discuss",
+   "body": "Recorded inputs: motor severity {MotorSeverity_state} ({MotorSeverity_source}); disabling impact {DisablingImpact_state} ({DisablingImpact_source}); mild-treatment consideration {MildTreatmentConsideration_state} ({MildTreatmentConsideration_source}); attribution {AttributionContext_state} ({AttributionContext_source}); dose-reduction link {DoseReductionLink_state} ({DoseReductionLink_source}); urgent dysphagia concern {UrgentDysphagiaConcern_state} ({UrgentDysphagiaConcern_source}). Network TardiveDyskinesia_F1_draft ({network_version}) posteriors: indication recommended {p_recommended}%, consider {p_consider}%, monitor {p_monitor}%, assess-diagnosis {p_assess}%. Review prompt: mild TD without a recorded reason to consider VMAT2 treatment and without disabling impact is recorded. Continue longitudinal assessment with a structured tool (e.g., AIMS as measurement), counsel on course and contributors, and revisit if preference, impairment, or psychosocial impact changes. This is not a safety clearance. Longitudinal: {longitudinal_text}. Safety: {urgent_text}. {unknown_disclosure}",
+   "posterior_state": "monitor_and_discuss"
+  },
+  "assess_diagnosis_and_attribution": {
+   "heading": "Tardive dyskinesia review (F1): assess diagnosis and attribution",
+   "body": "Recorded inputs: motor severity {MotorSeverity_state} ({MotorSeverity_source}); disabling impact {DisablingImpact_state} ({DisablingImpact_source}); mild-treatment consideration {MildTreatmentConsideration_state} ({MildTreatmentConsideration_source}); attribution {AttributionContext_state} ({AttributionContext_source}); dose-reduction link {DoseReductionLink_state} ({DoseReductionLink_source}); urgent dysphagia concern {UrgentDysphagiaConcern_state} ({UrgentDysphagiaConcern_source}). Network TardiveDyskinesia_F1_draft ({network_version}) posteriors: indication recommended {p_recommended}%, consider {p_consider}%, monitor {p_monitor}%, assess-diagnosis {p_assess}%. Review prompt: the movement attribution is recorded as alternative-or-unresolved or is still unknown/incomplete. Assess movement pattern, persistence, exposure, onset, and alternative explanations (including spontaneous dyskinesia, Huntington/Wilson, dental, other medication-induced movements; distinguish from parkinsonian tremor, acute dystonia, akathisia) with neurological examination and indicated history/labs before any VMAT2 discussion. No VMAT2 prompt is made from this branch. Longitudinal: {longitudinal_text}. Safety: {urgent_text}. {unknown_disclosure}",
+   "posterior_state": "assess_diagnosis_and_attribution"
+  },
+  "needs_clarification": {
+   "heading": "Tardive dyskinesia review (F1): clarification required",
+   "body": "No posterior is reported. Required input is missing, partial, or conflicting: {missing_fields}. Complete or reconcile {missing_fields} and start a new run; later questions are stopped until this is resolved. Any already-recorded urgent feature below remains visible and does not wait for a model run."
+  },
+  "not_applicable": {
+   "heading": "Tardive dyskinesia review (F1): not applicable",
+   "body": "No posterior is reported. The follow-up tardive dyskinesia effect status is recorded as absent ({effect_source}), so this question does not apply. No inference, no CPTs, and no negative TD posterior are produced. An absent recording is never evidence of another movement disorder."
+  },
+  "unknown_disclosure": "Inputs recorded as unknown/incomplete: {unknown_fields_or_none}. Unknown is not a negative finding; clarify as clinically indicated. AIMS findings, where recorded, are measurement only and never establish diagnosis or intervention."
+ },
+ "deterministic_urgent_flag": {
+  "rule": "Rendered directly from saved inputs WITHOUT waiting for any LLM request, inference result, or template posterior. Shown alongside (never replaced by) the posterior branch.",
+  "conditions": [
+   {
+    "when": "UrgentDysphagiaConcern == present",
+    "text": "URGENT recorded finding: constant movement with gagging/choking or breathing impact is recorded. Seek immediate senior/emergency evaluation per local emergency protocol, including airway assessment. Do not await model output."
+   }
+  ],
+  "otherwise": "No deterministic urgent flag fires; the posterior branch above still requires physician review."
+ },
+ "mapping_rule": "Render the branch matching the highest-posterior IndicationReview state ONLY as a review prompt; the posterior maximum is not a validated recommendation rule and the physician may choose any course. Always render the stored LongitudinalReview and UrgentSafetyReview posteriors alongside. Always append unknown_disclosure. Always evaluate deterministic_urgent_flag from saved inputs first.",
+ "slots": [
+  "MotorSeverity_state",
+  "MotorSeverity_source",
+  "DisablingImpact_state",
+  "DisablingImpact_source",
+  "MildTreatmentConsideration_state",
+  "MildTreatmentConsideration_source",
+  "AttributionContext_state",
+  "AttributionContext_source",
+  "DoseReductionLink_state",
+  "DoseReductionLink_source",
+  "UrgentDysphagiaConcern_state",
+  "UrgentDysphagiaConcern_source",
+  "network_version",
+  "p_recommended",
+  "p_consider",
+  "p_monitor",
+  "p_assess",
+  "longitudinal_text",
+  "urgent_text",
+  "unknown_fields_or_none",
+  "missing_fields",
+  "effect_source"
+ ]
+}

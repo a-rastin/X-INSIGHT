@@ -1,0 +1,336 @@
+{
+ "schema_version": "1.0-draft",
+ "question_key": "tardive_dyskinesia",
+ "title": "Tardive dyskinesia review at follow-up (F1)",
+ "workflow": "followup",
+ "version": "tardive_dyskinesia-v0.1-draft",
+ "review_status": "awaiting_review",
+ "network_file": "network.xml",
+ "network_hash": "sha256:0396d0d6152048de55ecfa2b2da67800026cce6a1dc1e4adb1e549579bfdc811",
+ "source_refs": [
+  "docs/medical-docs/tardive-dyskinesia-criteria.md",
+  "docs/medical-docs/guideline/STATEMENT-14.md",
+  "content/history/history-effects-v0.1-draft.json",
+  "BNs/BN-14.xml",
+  "BNs/schema.xml",
+  "docs/dev/user-requirements.md",
+  "docs/dev/plan.md"
+ ],
+ "declared_node_order": [
+  "MotorSeverity",
+  "DisablingImpact",
+  "MildTreatmentConsideration",
+  "AttributionContext",
+  "DoseReductionLink",
+  "UrgentDysphagiaConcern",
+  "IndicationReview",
+  "LongitudinalReview",
+  "UrgentSafetyReview"
+ ],
+ "variables": [
+  {
+   "node_id": "MotorSeverity",
+   "xmlbif_kind": "nature",
+   "patient_value_type": "enum",
+   "states": [
+    "mild",
+    "moderate_or_severe"
+   ],
+   "ordered_parents": []
+  },
+  {
+   "node_id": "DisablingImpact",
+   "xmlbif_kind": "nature",
+   "patient_value_type": "enum",
+   "states": [
+    "present",
+    "absent_assessed",
+    "unknown_incomplete"
+   ],
+   "ordered_parents": []
+  },
+  {
+   "node_id": "MildTreatmentConsideration",
+   "xmlbif_kind": "nature",
+   "patient_value_type": "enum",
+   "states": [
+    "present",
+    "absent_assessed",
+    "unknown_incomplete"
+   ],
+   "ordered_parents": []
+  },
+  {
+   "node_id": "AttributionContext",
+   "xmlbif_kind": "nature",
+   "patient_value_type": "enum",
+   "states": [
+    "antipsychotic_associated_assessed",
+    "alternative_or_unresolved",
+    "unknown_incomplete"
+   ],
+   "ordered_parents": []
+  },
+  {
+   "node_id": "DoseReductionLink",
+   "xmlbif_kind": "nature",
+   "patient_value_type": "enum",
+   "states": [
+    "present",
+    "absent_assessed",
+    "unknown_incomplete"
+   ],
+   "ordered_parents": []
+  },
+  {
+   "node_id": "UrgentDysphagiaConcern",
+   "xmlbif_kind": "nature",
+   "patient_value_type": "enum",
+   "states": [
+    "present",
+    "absent_assessed"
+   ],
+   "ordered_parents": []
+  },
+  {
+   "node_id": "IndicationReview",
+   "xmlbif_kind": "nature",
+   "patient_value_type": "enum",
+   "states": [
+    "recommended_vmat2_review",
+    "consider_vmat2_review",
+    "monitor_and_discuss",
+    "assess_diagnosis_and_attribution"
+   ],
+   "ordered_parents": [
+    "MotorSeverity",
+    "DisablingImpact",
+    "MildTreatmentConsideration",
+    "AttributionContext"
+   ]
+  },
+  {
+   "node_id": "LongitudinalReview",
+   "xmlbif_kind": "nature",
+   "patient_value_type": "enum",
+   "states": [
+    "review_withdrawal_and_course",
+    "continue_longitudinal_assessment"
+   ],
+   "ordered_parents": [
+    "DoseReductionLink"
+   ]
+  },
+  {
+   "node_id": "UrgentSafetyReview",
+   "xmlbif_kind": "nature",
+   "patient_value_type": "enum",
+   "states": [
+    "urgent_clinician_assessment",
+    "routine_safety_assessment"
+   ],
+   "ordered_parents": [
+    "UrgentDysphagiaConcern"
+   ]
+  }
+ ],
+ "patient_mappings": [
+  {
+   "node_id": "MotorSeverity",
+   "allowed_source_paths": [
+    "encounters.draft_data.effects.tardive_dyskinesia.status",
+    "encounters.draft_data.effects.tardive_dyskinesia.severity",
+    "content/history/history-effects-v0.1-draft.json#adverse_effect_contract.effects.tardive_dyskinesia"
+   ],
+   "typed_transform": "mild iff effect status present AND severity mild; moderate_or_severe iff present AND severity moderate_or_severe. Present-without-severity is required-missing (needs_clarification), never defaulted to mild. AIMS totals or regional scores are never mapped.",
+   "time_window": "current_encounter; clinician rating recorded with actor and timestamp per the runtime value envelope",
+   "usage": "both",
+   "missing_policy": "effect absent is handled at the gate (not_applicable), not here. Effect present with missing severity, or missing effect record, yields needs_clarification (blocks)."
+  },
+  {
+   "node_id": "DisablingImpact",
+   "allowed_source_paths": [
+    "encounters.draft_data.td_assessment.disabling_impact (PROPOSED, not collected)"
+   ],
+   "typed_transform": "present iff clinician records current TD as disabling; absent_assessed iff clinician records not disabling; else unknown_incomplete. Distinct from motor severity; mild motor signs may still be disabling.",
+   "time_window": "current_encounter",
+   "usage": "both",
+   "missing_policy": "field absent yields unknown_incomplete with disclosure until the field is reviewed and collected (permits inference)."
+  },
+  {
+   "node_id": "MildTreatmentConsideration",
+   "allowed_source_paths": [
+    "encounters.draft_data.td_assessment.mild_treatment_consideration (PROPOSED, not collected)"
+   ],
+   "typed_transform": "present iff at least one assessed reason to consider treatment of mild TD is recorded (patient preference, associated impairment, or psychosocial impact); absent_assessed iff clinician records none; else unknown_incomplete.",
+   "time_window": "current_encounter",
+   "usage": "both",
+   "missing_policy": "field absent yields unknown_incomplete with disclosure until reviewed and collected (permits inference)."
+  },
+  {
+   "node_id": "AttributionContext",
+   "allowed_source_paths": [
+    "encounters.draft_data.td_assessment.attribution_context (PROPOSED, not collected: movement_pattern, persistence_weeks, exposure_history, onset_timing, alternative_explanations)"
+   ],
+   "typed_transform": "antipsychotic_associated_assessed iff clinician records persistent TD associated with antipsychotic exposure after pattern/persistence/exposure/onset review with no unresolved alternative; alternative_or_unresolved iff an alternative explanation is recorded or the course is withdrawal-emergent/spontaneous pending reassessment; else unknown_incomplete. Never inferred from severity, medication presence, or any AIMS value.",
+   "time_window": "current_encounter for the assessment; historical_interval for exposure/onset dates where recorded",
+   "usage": "both",
+   "missing_policy": "field absent yields unknown_incomplete with disclosure until reviewed and collected (permits inference; renders assess_diagnosis_and_attribution)."
+  },
+  {
+   "node_id": "DoseReductionLink",
+   "allowed_source_paths": [
+    "encounters.draft_data.td_assessment.dose_reduction_link (PROPOSED, not collected)"
+   ],
+   "typed_transform": "present iff dyskinesia began or increased around antipsychotic dose reduction; absent_assessed iff clinician records no such link; else unknown_incomplete. Prompts longitudinal review only, never an exclusion or waiting period.",
+   "time_window": "current_encounter assessment of recent medication-change linkage",
+   "usage": "both",
+   "missing_policy": "field absent yields unknown_incomplete with disclosure until reviewed and collected (permits inference)."
+  },
+  {
+   "node_id": "UrgentDysphagiaConcern",
+   "allowed_source_paths": [
+    "encounters.draft_data.td_assessment.urgent_dysphagia_concern (PROPOSED, not collected)"
+   ],
+   "typed_transform": "present iff clinician records constant movement with gagging/choking or breathing impact; absent_assessed iff clinician records none. Deterministic urgent flag fires from this saved value without waiting for any model output.",
+   "time_window": "current_encounter",
+   "usage": "both",
+   "missing_policy": "field absent yields needs_clarification (required input blocks) until reviewed and collected."
+  }
+ ],
+ "applicability": {
+  "expression": "encounter.kind == 'followup' AND TardiveDyskinesiaEffect == 'present'",
+  "expression_language": "allowlisted conjunction of == comparisons on encounter.kind and the FR-21 effect status only; no arithmetic, no function calls, no note access (proposed for owner review; the S25 allowlist parser is authoritative)",
+  "required_fields": [
+   "encounter.kind",
+   "tardive_dyskinesia effect status (gate)",
+   "MotorSeverity severity when present (required)",
+   "UrgentDysphagiaConcern assessment (required non-gate)",
+   "absence of conflicting values for mapped nodes"
+  ],
+  "unknown_policy": "effect absent yields not_applicable with reason (no inference, no CPTs, no posterior; a false gate is never a negative posterior). Effect not_assessed, missing, or conflicting yields needs_clarification and stops later questions; saving corrected input creates a new run. Missing required non-gate input (severity when present, urgent concern) yields needs_clarification. Missing optional input (disabling, mild-consideration, attribution, dose link) leaves that node as unknown_incomplete; inference proceeds and the template renders an unknown disclosure."
+ },
+ "cpt_contract": {
+  "units": "percentages [0,100]",
+  "all_nodes_mandatory": true,
+  "row_order": "child state fastest; last declared parent next; first parent slowest",
+  "rows": [
+   {
+    "node_id": "MotorSeverity",
+    "parent_ids": [],
+    "row_count": 1
+   },
+   {
+    "node_id": "DisablingImpact",
+    "parent_ids": [],
+    "row_count": 1
+   },
+   {
+    "node_id": "MildTreatmentConsideration",
+    "parent_ids": [],
+    "row_count": 1
+   },
+   {
+    "node_id": "AttributionContext",
+    "parent_ids": [],
+    "row_count": 1
+   },
+   {
+    "node_id": "DoseReductionLink",
+    "parent_ids": [],
+    "row_count": 1
+   },
+   {
+    "node_id": "UrgentDysphagiaConcern",
+    "parent_ids": [],
+    "row_count": 1
+   },
+   {
+    "node_id": "IndicationReview",
+    "parent_ids": [
+     "MotorSeverity",
+     "DisablingImpact",
+     "MildTreatmentConsideration",
+     "AttributionContext"
+    ],
+    "row_count": 54
+   },
+   {
+    "node_id": "LongitudinalReview",
+    "parent_ids": [
+     "DoseReductionLink"
+    ],
+    "row_count": 3
+   },
+   {
+    "node_id": "UrgentSafetyReview",
+    "parent_ids": [
+     "UrgentDysphagiaConcern"
+    ],
+    "row_count": 2
+   }
+  ],
+  "validation": "one table per node in declared order; exact node/parent/state identity and order; no extra fields; finite numbers in [0,100]; each row sums to 100 within 1e-6; reject missing/duplicate/extra rows, strings/booleans/null, nonfinite, out-of-range, wrong sums; never normalize/clip/repair"
+ },
+ "query_nodes": [
+  "IndicationReview",
+  "LongitudinalReview",
+  "UrgentSafetyReview"
+ ],
+ "evidence_mappings": [
+  {
+   "node_id": "MotorSeverity",
+   "evidence": "mapped mild/moderate_or_severe state as hard evidence when effect present; missing blocks before inference"
+  },
+  {
+   "node_id": "DisablingImpact",
+   "evidence": "mapped state, including unknown_incomplete as an observed state"
+  },
+  {
+   "node_id": "MildTreatmentConsideration",
+   "evidence": "mapped state, including unknown_incomplete as an observed state"
+  },
+  {
+   "node_id": "AttributionContext",
+   "evidence": "mapped state, including unknown_incomplete as an observed state"
+  },
+  {
+   "node_id": "DoseReductionLink",
+   "evidence": "mapped state, including unknown_incomplete as an observed state"
+  },
+  {
+   "node_id": "UrgentDysphagiaConcern",
+   "evidence": "mapped present/absent_assessed state as hard evidence when assessed; missing blocks before inference"
+  }
+ ],
+ "impossible_evidence_policy": "fail with explicit error; never soften or approximate. All declared states (including unknown_incomplete where declared) are possible, so impossibility arises only from schema violations (undeclared node/state, conflicting evidence on one node).",
+ "likelihood_evidence": "disabled",
+ "prompt_version": "tardive_dyskinesia-prompt-v0.1-draft (prompt.txt)",
+ "template_version": "tardive_dyskinesia-template-v0.1-draft (template.json)",
+ "reviewed_result_mapping": "posterior branch rendered as review prompt only; maximum posterior is not a recommendation rule; deterministic urgent flag from saved inputs shown first and never waits for LLM; longitudinal and urgent posteriors always rendered alongside the indication branch; unknown_disclosure always appended; needs_clarification branch on required missing/conflict; not_applicable branch on gate-absent",
+ "numerical_tolerances": {
+  "percentage_row_sum_absolute": 1e-06,
+  "probability_sum_after_divide_by_100_absolute": 1e-08,
+  "replay_posterior_absolute": 1e-09
+ },
+ "context_output_resource_limits": {
+  "xml_bytes": 8657,
+  "cpt_cells": 242,
+  "prompt_bytes_proposed_max": 8192,
+  "response_bytes_proposed_max": 16384,
+  "note": "Limits are proposed engineering ceilings for review; final values set after measuring admitted models per plan 8.3. Full-CPT payload must fit or admission is rejected; no silent truncation."
+ },
+ "engine_configuration": {
+  "inference": "deterministic exact",
+  "dtype": "float64",
+  "elimination_order": "deterministic pinned order with deterministic tie-breaking",
+  "note": "Pinned engine/runtime recorded at admission in S39; replay reads stored effective CPTs/evidence/query without provider calls."
+ },
+ "review": {
+  "assumptions": "see review.json unresolved_assumptions",
+  "reviewer": null,
+  "decision": "pending_owner_review",
+  "date": null
+ },
+ "all_nodes_mandatory": true
+}
