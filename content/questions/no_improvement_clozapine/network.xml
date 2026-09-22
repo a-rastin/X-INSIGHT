@@ -4,7 +4,7 @@
 <NAME>NoImprovementClozapine_F5_draft</NAME>
 <PROPERTY>label=no-improvement clozapine F5 draft network</PROPERTY>
 <PROPERTY>package=no_improvement_clozapine v0.1-draft</PROPERTY>
-<PROPERTY>review_status=awaiting_review</PROPERTY>
+<PROPERTY>review_status=reviewed</PROPERTY>
 <PROPERTY>clinical_validity=none; reference tables are synthetic structural placeholders, not patient estimates</PROPERTY>
 <PROPERTY>ordering_contract=child state fastest, last declared parent next, first parent slowest</PROPERTY>
 <PROPERTY>drafting_lead=BNs/BN-07.xml inference-disabled draft; follow-up ongoing-treatment subset retained verbatim for states and edges; registration-scope nodes deferred to R7; missing root priors added and deterministic 0-1 workflow tables replaced with soft synthetic placeholders preserving each deterministic argmax</PROPERTY>

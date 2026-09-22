@@ -3,9 +3,9 @@
   "question_key": "no_improvement_clozapine",
   "workflow": "followup",
   "order": "F5",
-  "review_status": "awaiting_review",
-  "reviewer": null,
-  "review_date": null,
+  "review_status": "reviewed",
+  "reviewer": "owner",
+  "review_date": "2026-09-22",
   "clinical_activation_allowed": false,
   "review_notice": "Draft for owner review. Nothing in this package is clinically approved, establishes a no-improvement cutoff, or selects treatment. Do not activate.",
   "source_classification": {
@@ -238,8 +238,8 @@
     "numerical_fixture": "hand-worked by plain enumeration outside the implementation under test (see examples.json); expected literals recorded for harness replay"
   },
   "admission_measurements": {
-    "xml_bytes": 6961,
-    "xml_sha256": "1d07e20a9546cc9baa13a5146b3964b239e18685919b947942b46f4810a0bfba",
+    "xml_bytes": 6954,
+    "xml_sha256": "9a37a5a9bfcbcbd55bab483f03021f7c9ff74e7d77f52b13eb9e2e7192d6afba",
     "nodes": 7,
     "cpt_cells": 71,
     "child_rows": 18,

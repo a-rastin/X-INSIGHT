@@ -1,7 +1,7 @@
 {
   "description": "Predefined physician-review wording for no-improvement clozapine F5. The LLM never supplies this text; the app renders the matching branch deterministically from stored posteriors, evidence, and missingness. All slots are escaped at render time. No branch diagnoses schizophrenia, certifies treatment resistance or no improvement, selects augmentation, gives dosage or levels, or clears safety.",
   "template_version": "no_improvement_clozapine-template-v0.1-draft",
-  "review_status": "awaiting_review",
+  "review_status": "reviewed",
   "branches": {
     "continue_periodic_review": {
       "heading": "Clozapine follow-up review (F5): continue periodic review",

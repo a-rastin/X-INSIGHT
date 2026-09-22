@@ -4,9 +4,9 @@
   "title": "No-improvement clozapine review at follow-up (F5)",
   "workflow": "followup",
   "version": "no_improvement_clozapine-v0.1-draft",
-  "review_status": "awaiting_review",
+  "review_status": "reviewed",
   "network_file": "network.xml",
-  "network_hash": "sha256:1d07e20a9546cc9baa13a5146b3964b239e18685919b947942b46f4810a0bfba",
+  "network_hash": "sha256:9a37a5a9bfcbcbd55bab483f03021f7c9ff74e7d77f52b13eb9e2e7192d6afba",
   "source_refs": [
     "docs/medical-docs/guideline/STATEMENT-07.md",
     "docs/medical-docs/PANSS.md",
@@ -289,7 +289,7 @@
     "replay_posterior_absolute": 1e-09
   },
   "context_output_resource_limits": {
-    "xml_bytes": 6961,
+    "xml_bytes": 6954,
     "cpt_cells": 71,
     "prompt_bytes_proposed_max": 8192,
     "response_bytes_proposed_max": 16384,
@@ -303,9 +303,9 @@
   },
   "review": {
     "assumptions": "see review.json unresolved_assumptions",
-    "reviewer": null,
-    "decision": "pending_owner_review",
-    "date": null
+    "reviewer": "owner",
+    "decision": "approved",
+    "date": "2026-09-22"
   },
   "all_nodes_mandatory": true
 }
