@@ -1,0 +1,495 @@
+{
+  "note": "Clinical vignettes are synthetic author-created illustrations for owner review of wording and missingness behavior. They are NOT empirical probabilities, NOT guideline cutoffs, and NOT an independent clinical oracle. The numerical fixture is an independently hand-worked mathematical check of table ordering and inference plumbing, computed by plain enumeration outside the implementation under test.",
+  "package_version": "no_improvement_clozapine-v0.1-draft",
+  "clinical_cases": [
+    {
+      "name": "linked baseline with complete PANSS pair, residual No with adequate trial (improvement context)",
+      "kind": "ordinary",
+      "gate": "followup with linked_current baseline and both_complete_assessed PANSS pair (synthetic)",
+      "inputs": {
+        "ClozapineTreatmentStatus": {
+          "state": "CurrentTreatment",
+          "source": "medications hold catalog clozapine; exposure assessed current (synthetic)"
+        },
+        "ClozapineTrialAdequate": {
+          "state": "Yes",
+          "source": "proposed trial-adequacy field Yes with agents, dates, response, adherence evidence (synthetic)"
+        },
+        "ResidualSymptomsOnClozapine": {
+          "state": "No",
+          "source": "proposed residual field No with symptom domains and scale name and version (synthetic)"
+        },
+        "ExposureInterpretationConcern": {
+          "state": "No",
+          "source": "proposed exposure field No (synthetic)"
+        },
+        "UrgentSafetyConcern": {
+          "state": "Absent",
+          "source": "proposed urgent field Absent (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E1 registration 2026-03-01 signed, reconciled and confirmed, baseline_changed false (synthetic)"
+        },
+        "PANSSPairCompleteness": {
+          "state": "both_complete_assessed",
+          "source": "baseline PANSS total 92 on 2026-03-01 panss-v1 plus follow-up PANSS total 58 on 2026-05-20 panss-v1, same instrument, dates recorded (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "PersistentSymptomsReview",
+        "parent_states": [
+          "CurrentTreatment",
+          "No",
+          "Yes"
+        ],
+        "synthetic_reference_percentages": [
+          6.0,
+          82.0,
+          6.0,
+          6.0
+        ]
+      },
+      "proposed_template_branch": "continue_periodic_review",
+      "proposed_clinical_expectation_for_review": "Improvement context renders periodic review with repeated measures; PANSS totals are supporting context only and no cutoff determined the branch. Expectation is proposed, not approved.",
+      "deterministic_urgent_flag": "does not fire"
+    },
+    {
+      "name": "linked baseline with complete pair, residual Yes with adequate trial (no-improvement context)",
+      "kind": "ordinary",
+      "gate": "followup with linked_current baseline and both_complete_assessed pair (synthetic)",
+      "inputs": {
+        "ClozapineTreatmentStatus": {
+          "state": "CurrentTreatment",
+          "source": "medications hold catalog clozapine; exposure assessed current (synthetic)"
+        },
+        "ClozapineTrialAdequate": {
+          "state": "Yes",
+          "source": "proposed trial-adequacy field Yes (synthetic)"
+        },
+        "ResidualSymptomsOnClozapine": {
+          "state": "Yes",
+          "source": "proposed residual field Yes with domains and scale (synthetic)"
+        },
+        "ExposureInterpretationConcern": {
+          "state": "No",
+          "source": "proposed exposure field No (synthetic)"
+        },
+        "UrgentSafetyConcern": {
+          "state": "Absent",
+          "source": "proposed urgent field Absent (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E1 registration 2026-03-01 signed, reconciled, baseline_changed false (synthetic)"
+        },
+        "PANSSPairCompleteness": {
+          "state": "both_complete_assessed",
+          "source": "baseline PANSS total 94 on 2026-03-01 panss-v1 plus follow-up PANSS total 91 on 2026-05-20 panss-v1, same instrument (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "PersistentSymptomsReview",
+        "parent_states": [
+          "CurrentTreatment",
+          "Yes",
+          "Yes"
+        ],
+        "synthetic_reference_percentages": [
+          6.0,
+          6.0,
+          6.0,
+          82.0
+        ]
+      },
+      "proposed_template_branch": "specialist_persistent_symptoms_review",
+      "proposed_clinical_expectation_for_review": "No-improvement context renders specialist review of psychosocial care and augmentation options with no automatic ECT or polypharmacy; the small PANSS difference did not determine the branch by any cutoff. Proposed, not approved.",
+      "deterministic_urgent_flag": "does not fire"
+    },
+    {
+      "name": "linked baseline with complete pair, residual Yes with inadequate trial",
+      "kind": "ordinary",
+      "gate": "followup with linked_current baseline and both_complete_assessed pair (synthetic)",
+      "inputs": {
+        "ClozapineTreatmentStatus": {
+          "state": "CurrentTreatment",
+          "source": "medications hold catalog clozapine (synthetic)"
+        },
+        "ClozapineTrialAdequate": {
+          "state": "No",
+          "source": "proposed trial-adequacy field No, exposure too brief to judge (synthetic)"
+        },
+        "ResidualSymptomsOnClozapine": {
+          "state": "Yes",
+          "source": "proposed residual field Yes (synthetic)"
+        },
+        "ExposureInterpretationConcern": {
+          "state": "Yes",
+          "source": "proposed exposure field Yes with adherence uncertainty (synthetic)"
+        },
+        "UrgentSafetyConcern": {
+          "state": "Absent",
+          "source": "proposed urgent field Absent (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E1 linked and reconciled (synthetic)"
+        },
+        "PANSSPairCompleteness": {
+          "state": "both_complete_assessed",
+          "source": "baseline 96 plus follow-up 93, same instrument (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "PersistentSymptomsReview",
+        "parent_states": [
+          "CurrentTreatment",
+          "Yes",
+          "No"
+        ],
+        "synthetic_reference_percentages": [
+          6.0,
+          6.0,
+          82.0,
+          6.0
+        ]
+      },
+      "proposed_template_branch": "review_trial_adequacy PLUS exposure branch Triggered",
+      "proposed_clinical_expectation_for_review": "Inadequate trial renders adequacy review before any nonresponse label; exposure Triggered is rendered in parallel. Proposed, not approved.",
+      "deterministic_urgent_flag": "does not fire"
+    },
+    {
+      "name": "linked baseline with complete pair, exposure unknown with disclosure",
+      "kind": "ordinary_with_unknown",
+      "gate": "followup with linked_current baseline and both_complete_assessed pair (synthetic)",
+      "inputs": {
+        "ClozapineTreatmentStatus": {
+          "state": "CurrentTreatment",
+          "source": "medications hold catalog clozapine (synthetic)"
+        },
+        "ClozapineTrialAdequate": {
+          "state": "Yes",
+          "source": "proposed trial-adequacy field Yes (synthetic)"
+        },
+        "ResidualSymptomsOnClozapine": {
+          "state": "Yes",
+          "source": "proposed residual field Yes (synthetic)"
+        },
+        "ExposureInterpretationConcern": {
+          "state": "MISSING (optional input not yet assessed)",
+          "source": "proposed exposure field not yet collected (synthetic)"
+        },
+        "UrgentSafetyConcern": {
+          "state": "Absent",
+          "source": "proposed urgent field Absent (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E1 linked and reconciled (synthetic)"
+        },
+        "PANSSPairCompleteness": {
+          "state": "both_complete_assessed",
+          "source": "baseline 94 plus follow-up 90, same instrument (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "PersistentSymptomsReview",
+        "parent_states": [
+          "CurrentTreatment",
+          "Yes",
+          "Yes"
+        ],
+        "synthetic_reference_percentages": [
+          6.0,
+          6.0,
+          6.0,
+          82.0
+        ]
+      },
+      "proposed_template_branch": "specialist_persistent_symptoms_review PLUS unknown_disclosure listing ExposureInterpretationConcern",
+      "proposed_clinical_expectation_for_review": "Unknown optional exposure permits inference with disclosure and does not block; unknown is never reported as no concern. Proposed; owner to confirm optional status.",
+      "deterministic_urgent_flag": "does not fire"
+    },
+    {
+      "name": "linked baseline with complete pair and urgent concern present",
+      "kind": "urgent",
+      "gate": "followup with linked_current baseline and both_complete_assessed pair (synthetic)",
+      "inputs": {
+        "ClozapineTreatmentStatus": {
+          "state": "CurrentTreatment",
+          "source": "medications hold catalog clozapine (synthetic)"
+        },
+        "ClozapineTrialAdequate": {
+          "state": "Yes",
+          "source": "proposed trial-adequacy field Yes (synthetic)"
+        },
+        "ResidualSymptomsOnClozapine": {
+          "state": "Yes",
+          "source": "proposed residual field Yes (synthetic)"
+        },
+        "ExposureInterpretationConcern": {
+          "state": "No",
+          "source": "proposed exposure field No (synthetic)"
+        },
+        "UrgentSafetyConcern": {
+          "state": "Present",
+          "source": "proposed urgent field Present with severe constipation (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E1 linked and reconciled (synthetic)"
+        },
+        "PANSSPairCompleteness": {
+          "state": "both_complete_assessed",
+          "source": "baseline 95 plus follow-up 92, same instrument (synthetic)"
+        }
+      },
+      "reference_row_lookup": {
+        "table": "PersistentSymptomsReview",
+        "parent_states": [
+          "CurrentTreatment",
+          "Yes",
+          "Yes"
+        ],
+        "synthetic_reference_percentages": [
+          6.0,
+          6.0,
+          6.0,
+          82.0
+        ]
+      },
+      "proposed_template_branch": "specialist_persistent_symptoms_review PLUS deterministic urgent flag",
+      "proposed_clinical_expectation_for_review": "Urgent concern does not change the posterior branch but takes priority in display and care. Proposed, not approved.",
+      "deterministic_urgent_flag": "FIRES: 'URGENT recorded finding: an urgent safety concern is recorded (for example suspected severe neutropenia, myocarditis or NMS, severe or unresolved constipation, or acute psychiatric danger). Seek immediate senior or emergency evaluation per local emergency protocol. Do not await model output.' Displayed even if the run fails or is still queued."
+    },
+    {
+      "name": "gate absent: follow-up without current clozapine treatment",
+      "kind": "gate_absent",
+      "gate": "not_applicable (synthetic follow-up status PreviouslyTreated)",
+      "inputs": {
+        "ClozapineTreatmentStatus": {
+          "state": "PreviouslyTreated",
+          "source": "medications hold no clozapine; past exposure recorded (synthetic)"
+        },
+        "encounter_kind": "followup (synthetic)"
+      },
+      "expected_behavior": "not_applicable with reason: no inference, no CPTs, no posterior; a non-current status is never converted into a negative no-improvement posterior or into another question's evidence.",
+      "proposed_clinical_expectation_for_review": "Gate-absent handling is proposed; owner to confirm non-current status yields not_applicable rather than needs_clarification."
+    },
+    {
+      "name": "gate absent: registration encounter never satisfies the follow-up gate",
+      "kind": "gate_absent",
+      "gate": "not_applicable (synthetic registration encounter)",
+      "inputs": {
+        "encounter_kind": "registration (synthetic)",
+        "ClozapineTreatmentStatus": {
+          "state": "CurrentTreatment",
+          "source": "status current but encounter kind is registration (synthetic)"
+        }
+      },
+      "expected_behavior": "not_applicable with reason: F5 is follow-up only; registration clozapine indication belongs to R7. No inference, no CPTs, no posterior.",
+      "proposed_clinical_expectation_for_review": "Registration exclusion is proposed to keep R7 and F5 identities separate; owner to confirm."
+    },
+    {
+      "name": "required-missing: outdated baseline with newer signed record pending reconciliation (baseline E2)",
+      "kind": "required_missing",
+      "gate": "needs_clarification (synthetic outdated baseline)",
+      "inputs": {
+        "ClozapineTreatmentStatus": {
+          "state": "CurrentTreatment",
+          "source": "medications hold catalog clozapine (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "outdated_unreconciled (baseline E2: follow-up still points to superseded registration E0 while a newer signed follow-up E1 exists; baseline_changed true; reconciliation pending)",
+          "source": "baseline_encounter_id E0 with baseline_changed true and history_reconciliation pending (synthetic)"
+        },
+        "PANSSPairCompleteness": {
+          "state": "baseline total from superseded E0 available but not the reconciled baseline (synthetic)"
+        }
+      },
+      "expected_behavior": "needs_clarification: no posterior reported, later questions stopped, template needs_clarification branch rendered naming baseline linkage and reconciliation. Saving reconciled input against the current baseline creates a new run. Outdated baselines are never silently skipped and never reported as no improvement.",
+      "proposed_clinical_expectation_for_review": "Outdated-baseline blocking is proposed; owner to confirm no recency cutoff is imposed and any future cutoff needs review."
+    },
+    {
+      "name": "required-missing: follow-up PANSS not_assessed with linked baseline (missing score is not no improvement)",
+      "kind": "required_missing",
+      "gate": "needs_clarification (synthetic not_assessed follow-up)",
+      "inputs": {
+        "ClozapineTreatmentStatus": {
+          "state": "CurrentTreatment",
+          "source": "medications hold catalog clozapine (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E1 linked and reconciled with baseline PANSS total 93 panss-v1 (synthetic)"
+        },
+        "PANSSPairCompleteness": {
+          "state": "MISSING (follow-up PANSS skipped not_assessed; one or more required items unanswered)",
+          "source": "current PANSS not_assessed per panss-v1 completeness (synthetic)"
+        },
+        "ResidualSymptomsOnClozapine": {
+          "state": "Yes",
+          "source": "proposed residual field Yes (synthetic)"
+        }
+      },
+      "expected_behavior": "needs_clarification: no posterior reported, later questions stopped, template needs_clarification branch rendered naming the PANSS pair. The recorded residual Yes alone does not produce a no-improvement posterior without the complete pair. Saving a complete follow-up PANSS creates a new run.",
+      "proposed_clinical_expectation_for_review": "Missing-score blocking is proposed; owner to confirm missing follow-up is never no improvement."
+    },
+    {
+      "name": "required-missing: trial adequacy not yet assessed with linked baseline and complete pair",
+      "kind": "required_missing",
+      "gate": "needs_clarification (synthetic missing adequacy)",
+      "inputs": {
+        "ClozapineTreatmentStatus": {
+          "state": "CurrentTreatment",
+          "source": "medications hold catalog clozapine (synthetic)"
+        },
+        "BaselineCurrency": {
+          "state": "linked_current",
+          "source": "baseline E1 linked and reconciled (synthetic)"
+        },
+        "PANSSPairCompleteness": {
+          "state": "both_complete_assessed",
+          "source": "baseline 92 plus follow-up 89, same instrument (synthetic)"
+        },
+        "ClozapineTrialAdequate": {
+          "state": "MISSING (adequacy not yet recorded)",
+          "source": "proposed trial-adequacy field unanswered (synthetic)"
+        }
+      },
+      "expected_behavior": "needs_clarification: no posterior reported, later questions stopped, template needs_clarification branch rendered naming trial adequacy. Adequacy must be explicitly Yes or No; it is never defaulted from exposure duration or inferred from PANSS.",
+      "proposed_clinical_expectation_for_review": "Adequacy-required blocking is proposed; owner to confirm."
+    },
+    {
+      "name": "differing baseline: same follow-up measures against baseline E1 linked versus baseline E0 outdated",
+      "kind": "differing_baseline",
+      "gate": "one executes, one blocks (synthetic pair)",
+      "inputs": {
+        "variant_A_linked": {
+          "BaselineCurrency": "linked_current with baseline E1 (follow-up 2026-05-20 points to signed follow-up baseline E1 2026-04-02, reconciled, baseline_changed false)",
+          "PANSSPairCompleteness": "both_complete_assessed (E1 PANSS 88 plus current 86, same instrument)",
+          "expected_behavior": "executes: PersistentSymptomsReview posterior reported with the E1 pair as context"
+        },
+        "variant_B_outdated": {
+          "BaselineCurrency": "outdated_unreconciled with baseline E0 (same follow-up still points to superseded registration E0 2026-03-01 while E1 is signed; baseline_changed true)",
+          "PANSSPairCompleteness": "E0 PANSS 94 available but not the reconciled baseline pair",
+          "expected_behavior": "needs_clarification: no posterior reported; the E0 total is displayed as historical only and never substituted as the baseline pair"
+        }
+      },
+      "proposed_clinical_expectation_for_review": "Baseline identity determines applicability, not just score availability; differing baselines must not be silently substituted. Proposed; owner to confirm baseline-identity rule and no recency cutoff."
+    }
+  ],
+  "numerical_fixture": {
+    "provenance": "Independently hand-worked by plain enumeration over the synthetic reference tables in network.xml; not produced by the implementation under test; checks ordering/transpose plumbing, not clinical correctness.",
+    "ordering_contract": "child state fastest; last declared parent fastest among parents; first declared parent slowest",
+    "checks": [
+      {
+        "name": "single-row lookup is the posterior under complete evidence (specialist)",
+        "evidence": {
+          "ClozapineTreatmentStatus": "CurrentTreatment",
+          "ResidualSymptomsOnClozapine": "Yes",
+          "ClozapineTrialAdequate": "Yes"
+        },
+        "expected_posterior_percentages": [
+          6.0,
+          6.0,
+          6.0,
+          82.0
+        ],
+        "work": "persistent row 0 (CurrentTreatment,Yes,Yes) is [0.06, 0.06, 0.06, 0.82] by the documented synthetic rule; with all three parents observed there is exactly one active row"
+      },
+      {
+        "name": "continue row is unique among current-treatment rows with residual No",
+        "evidence": {
+          "ClozapineTreatmentStatus": "CurrentTreatment",
+          "ResidualSymptomsOnClozapine": "No",
+          "ClozapineTrialAdequate": "Yes"
+        },
+        "expected_posterior_percentages": [
+          6.0,
+          82.0,
+          6.0,
+          6.0
+        ],
+        "work": "persistent row 2 (CurrentTreatment,No,Yes) is [0.06, 0.82, 0.06, 0.06]; row 3 (CurrentTreatment,No,No) is identical, so residual No renders continue regardless of adequacy"
+      },
+      {
+        "name": "transpose detector: swapping first and last parent changes the row",
+        "row_a": {
+          "parent_states": [
+            "CurrentTreatment",
+            "Yes",
+            "Yes"
+          ],
+          "expected": [
+            6.0,
+            6.0,
+            6.0,
+            82.0
+          ]
+        },
+        "row_b": {
+          "parent_states": [
+            "NeverTreated",
+            "Yes",
+            "Yes"
+          ],
+          "expected": [
+            82.0,
+            6.0,
+            6.0,
+            6.0
+          ]
+        },
+        "table": "PersistentSymptomsReview",
+        "work": "rows differ only in first parent (ClozapineTreatmentStatus); an implementation that transposes parent order returns the wrong row"
+      },
+      {
+        "name": "asymmetry detector: exposure present vs absent swaps the argmax",
+        "row_c": {
+          "parent_states": [
+            "CurrentTreatment",
+            "Yes"
+          ],
+          "expected": [
+            88.0,
+            12.0
+          ],
+          "table": "ClozapineExposureReview"
+        },
+        "row_d": {
+          "parent_states": [
+            "CurrentTreatment",
+            "No"
+          ],
+          "expected": [
+            6.0,
+            94.0
+          ],
+          "table": "ClozapineExposureReview"
+        },
+        "work": "swapping ExposureInterpretationConcern Yes/No swaps the argmax from Triggered to NotTriggered; the five non-trigger rows are symmetric by design"
+      },
+      {
+        "name": "prior-marginal over synthetic root references (exposure)",
+        "work": "sum over all 6 parent configurations weighted by root references ClozapineTreatmentStatus [0.35,0.25,0.40] and ExposureInterpretationConcern [0.20,0.80]",
+        "expected_posterior_probabilities": [
+          0.1174,
+          0.8826
+        ],
+        "tolerance": 1e-09
+      },
+      {
+        "name": "prior-marginal over synthetic root references (persistent)",
+        "work": "sum over all 12 parent configurations weighted by root references ClozapineTreatmentStatus [0.35,0.25,0.40], ResidualSymptomsOnClozapine [0.50,0.50], ClozapineTrialAdequate [0.55,0.45]",
+        "expected_posterior_probabilities": [
+          0.554,
+          0.193,
+          0.11985,
+          0.13315
+        ],
+        "tolerance": 1e-09
+      }
+    ]
+  }
+}

@@ -1,0 +1,303 @@
+{
+  "package_version": "no_improvement_clozapine-v0.1-draft",
+  "question_key": "no_improvement_clozapine",
+  "workflow": "followup",
+  "order": "F5",
+  "review_status": "awaiting_review",
+  "reviewer": null,
+  "review_date": null,
+  "clinical_activation_allowed": false,
+  "review_notice": "Draft for owner review. Nothing in this package is clinically approved, establishes a no-improvement cutoff, or selects treatment. Do not activate.",
+  "source_classification": {
+    "source_derived": "Statements reproduced or conservatively constrained from the cited sources without adding a clinical threshold, without converting evidence grades into probabilities, and without converting a scale total or percent change into a no-improvement probability.",
+    "proposed_for_review": "Agent-proposed graph, states, transforms, baseline and measure windows, horizons, wording, and reference values; not source-derived clinical rules.",
+    "drafting_lead": "BN-07 is an incomplete, inference-disabled drafting lead, not an approved mapping. Its ongoing-treatment nodes were retained verbatim for states and edges; registration-scope nodes were deferred to R7. Deterministic 0/1 workflow tables were replaced with soft argmax-preserving placeholders; no BN-07 TABLE bytes or activation flags were copied."
+  },
+  "question_enumeration": {
+    "specific_question": "For an adult follow-up encounter during current clozapine treatment with a linked current baseline, a complete baseline and follow-up PANSS pair with recorded instruments and dates, a recorded trial-adequacy category, a recorded residual-symptom judgment, an exposure-interpretation context, and an urgent assessment, what is the posterior distribution over persistent-symptom review prompts (continue periodic review vs review trial adequacy vs specialist persistent-symptoms review, with outside-scope estimated for completeness), with a parallel exposure review, to structure physician review?",
+    "intended_setting": "Adult outpatient follow-up for schizophrenia during ongoing clozapine treatment; current dated encounter with a chosen signed baseline. Not the emergency department. Local setting confirmation requested.",
+    "proposed_time_horizon": "Current encounter (no outcome prediction horizon). The baseline-to-current interval is recorded and displayed; no maximum recency interval is imposed in v0.1.",
+    "output_meanings": {
+      "continue_periodic_review": "Review prompt: no current clinically significant residual symptoms on clozapine are recorded with an adequate-trial context and a linked baseline. Continue periodic review with repeated validated measures. Not an improvement certification and not a safety clearance.",
+      "review_trial_adequacy": "Review prompt: residual symptoms are recorded but the trial is recorded as not adequate, or exposure interpretation is uncertain. Review exposure, adherence evidence, interacting factors, sampling validity, and duration before labeling nonresponse. Never a no-improvement label from an inadequate trial or a missing score.",
+      "specialist_persistent_symptoms_review": "Review prompt: persistent clinically significant residual symptoms on clozapine are recorded despite a recorded adequate trial with a linked baseline and a complete pair. Arrange specialist review of psychosocial care and augmentation options per Statement 7 optimizing-treatment discussion. No automatic ECT, polypharmacy, or discontinuation.",
+      "outside_current_treatment_scope": "Contract-completeness branch only: estimated for all CPT rows but never reached when the gate holds (non-current status yields not_applicable without inference). Not an improvement finding and not a resistance finding.",
+      "triggered": "Parallel prompt: exposure interpretation concern is recorded during current treatment; review adherence, interacting factors, and sampling validity.",
+      "not_triggered": "Parallel prompt: no exposure interpretation concern is recorded; continue routine exposure surveillance with disclosure of any unknown context."
+    },
+    "applicability": "Follow-up encounters only (encounter.kind == followup) with current clozapine treatment, a linked current baseline with confirmed reconciliation, and a complete baseline and follow-up PANSS pair. Non-current status or a registration encounter yields not_applicable with reason; outdated, unreconciled, unknown, missing, partial, not_assessed, or conflicting baseline or measure yields needs_clarification stopping later questions."
+  },
+  "sources": [
+    {
+      "path": "docs/medical-docs/guideline/STATEMENT-07.md",
+      "bytes": 39765,
+      "sha256": "b17d50118726361c28fc612f15e6b5c60bea41cd3b16ff91c6c9112e49d3de57",
+      "locators": [
+        "STATEMENT 7: Clozapine in Treatment-Resistant Schizophrenia (1B recommendation)",
+        "Identification of Treatment-Resistant Schizophrenia (TRRIP reference: diagnosis plus persistent significant symptoms; 12 weeks total; moderate severity with moderate functional impairment e.g. SOFAS below 60; 20 percent improvement as additional evidence only; two different antipsychotics, at least 6 weeks at therapeutic dosage, at least 80 percent adherence)",
+        "Initiation of Treatment With Clozapine (partial response with persistent symptoms may still warrant a trial; shared decision-making)",
+        "Use of Clozapine Levels (adherence, interactions, smoking/caffeine, sampling timing as interpretation context, not encoded thresholds)",
+        "Optimizing Treatment With Clozapine (adequate exposure and at least 8 weeks reference for ongoing review; typically 300-450 mg/day and greater than 350 ng/mL discussed as background only and explicitly excluded from stored fields by FR-14; longitudinal quantitative measure helpful; augmentation and ECT discussion deferred)",
+        "Monitoring for Side Effects (ANC, cardiac, bowel including severe/unresolved constipation, metabolic effects; REMS context)"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "docs/medical-docs/PANSS.md",
+      "bytes": 6349,
+      "sha256": "644a291ac807533b78cec4a20b40acd23e515d6f8c7fd28c5e7773ba83d2ee1e",
+      "locators": [
+        "30 items 1-7 with positive 7/negative 7/general 16/total 30-210 arithmetic",
+        "Previous 7 days rating window with interview and collateral",
+        "Approximate total-score anchors explicitly not diagnostic thresholds or treatment rules",
+        "For follow-up, compare the same domains over time; percentage change (baseline total minus follow-up total) divided by baseline total times 100"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "content/assessments/panss.json",
+      "bytes": 17019,
+      "sha256": "1ce753228ec6113a2c96e41cf5e1eec64775200a43620b4294fbc3b59f4311db",
+      "locators": [
+        "definition panss-v1, 30 items 1-7 with 4 sum rules only",
+        "completeness: fresh 30 unanswered with null total; Skip persists not_assessed; one missing required item suppresses the total"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "content/history/history-effects-v0.1-draft.json",
+      "bytes": 27249,
+      "sha256": "3a3c29d89b31e48a01606130f7980ee3e78094117b7c0041a68260243009a34e",
+      "locators": [
+        "adverse_effect_contract (present/absent/not_assessed; present requires severity; status change clears severity)",
+        "runtime_value_envelope provenance (source encounter/revision, recorded_by, recorded_at)",
+        "source_derived_constraints.history (follow-up copies signed history with provenance and requires reconciliation; page notes never influence analysis)",
+        "mapping_gaps.regimen_detail_conflict and response_and_adherence_operationalization"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "BNs/BN-07.xml",
+      "bytes": 36754,
+      "sha256": "3bfd302f6d800f803326746c5fa9f294b1535fc8963afd0f8e8e9e4615272226",
+      "locators": [
+        "ClozapineTreatmentStatus / ClozapineTrialAdequate / ResidualSymptomsOnClozapine / ExposureInterpretationConcern / UrgentSafetyConcern (retained drafting leads)",
+        "ClozapineExposureReview + PersistentSymptomsReview (two proposed deterministic 0/1 tables; replaced, not copied)",
+        "Registration-scope nodes deferred to R7 (SchizophreniaEstablished, PersistentSignificantSymptoms, Trial1Assessment, Trial2Assessment, TrialsUseDifferentDrugs, SymptomsAtLeast12Weeks, ModerateSymptomsAndFunctionalImpairment, WillingToDiscussClozapine, ClozapineMonitoringPlanAvailable, ClozapineInitiationDiscussionAppropriate, TwoAdequateSuboptimalTrials, TreatmentResistantSchizophreniaReview, AdditionalResearchFeatures, PriorTrialAdequacyReview, ClozapineInitiationDiscussionPreparation, TreatmentResistanceClozapineReviewPathway)"
+      ],
+      "classification": "drafting_lead"
+    },
+    {
+      "path": "BNs/schema.xml",
+      "bytes": 12875,
+      "sha256": "7b8ae840dd81f64f61aa388d7ab1db7430045ed0bae5f7a3ca5ec65e370ba8c1",
+      "locators": [
+        "XSD authoring profile v1 (structure only)"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "docs/dev/user-requirements.md",
+      "bytes": 7150,
+      "sha256": "d50724f604ac3f61d6a54211f9310912e6ff60dd429c98c7a6df320d2cfaab29",
+      "locators": [
+        "FR-20",
+        "FR-30",
+        "FR-31",
+        "FR-32",
+        "FR-33",
+        "FR-34",
+        "FR-35"
+      ],
+      "classification": "source_derived"
+    },
+    {
+      "path": "docs/dev/plan.md",
+      "bytes": 66198,
+      "sha256": "9f006a3b07720b16589d057760f575238abf0a17ef6e1902968ceeaa0e4448fe",
+      "locators": [
+        "Section 2.2 follow-up (baseline copy with provenance, reconciliation, new PANSS/C-SSRS, prior scores as historical)",
+        "Section 2.3 concurrency (baseline acknowledgment, separate drafts, baseline_changed indicator)",
+        "Section 4.2 fingerprint and snapshot rules (signed snapshots preserve the full displayed record; running encounters do not read mutable files)",
+        "Section 5 PANSS/change-formula denominator and zero-case rule and no treatment threshold from score bands",
+        "Section 7.1 F5 row",
+        "Section 7.2 package shape",
+        "Section 7.3 registry validation",
+        "Section 7.4 CPT contract"
+      ],
+      "classification": "source_derived"
+    }
+  ],
+  "source_comparison": {
+    "bn07_scope_vs_f5": "BN-07 is a 23-node combined registration and ongoing-treatment draft with inference_allowed=false and deployment_allowed=false. F5 keeps only its 7 ongoing-treatment nodes (5 clinician inputs plus 2 review outputs) with states and GIVEN edges retained verbatim, and defers the 16 registration-scope nodes to R7. The two BN-07 deterministic 0/1 tables for the retained outputs were replaced with soft argmax-preserving synthetic placeholders; no BN-07 TABLE bytes, priors, or inference/deployment flags were copied.",
+    "r7_vs_f5_separation": "R7 (EstablishedCaseClozapine_R7_draft, 18 nodes, registration gate with established status and two prior trials) and F5 (NoImprovementClozapine_F5_draft, 7 nodes, follow-up gate with current treatment, linked baseline, and complete PANSS pair) share BN-07 as a drafting lead and share ClozapineTreatmentStatus and UrgentSafetyConcern concepts, but have distinct question keys, network names, node sets, edge sets, gates, prompts, and templates. No file is shared between the packages except the cited source hashes. A first-time or non-current case never receives an F5 posterior; a follow-up without a linked baseline never receives an R7 posterior.",
+    "guideline_gives_no_cutoff": "STATEMENT-07 states a 1B clozapine recommendation for treatment-resistant schizophrenia and describes TRRIP background (12 weeks, moderate severity with moderate impairment, 20 percent improvement as additional evidence, two 6-week therapeutic trials with 80 percent adherence) plus optimizing-treatment background (adequate exposure with at least 8 weeks; typically 300-450 mg/day and greater than 350 ng/mL; longitudinal quantitative measure helpful). None of these is encoded as a gate, threshold, stored regimen number, or probability. The 20 percent and 8-week points are background references in definitions only. Dose, level, unit, route, and frequency are excluded by FR-14 redesign.",
+    "panss_reuse": "PANSS.md 30-item 1-7 arithmetic, previous-7-days window, and the (baseline minus follow-up) divided by baseline times 100 formula shape are reproduced as supporting context only. The denominator (baseline total) and zero-case note are recorded because plan section 5 requires them for any future change formula, but v0.1 computes no change value and applies no cutoff. Approximate total-score anchors are explicitly not thresholds. A missing follow-up total is never no improvement. Baseline totals are read from frozen signed snapshots, never recomputed and never as newly completed answers.",
+    "history_baseline_reuse": "Follow-up baseline mechanics (chosen signed baseline_encounter_id, verbatim history and medication copy with restamped provenance, pending reconciliation until confirmed, baseline_changed indicator on newer signed records, prior scores as historical) are reused as the baseline-linkage gate. Page notes are excluded from every mapping. No new regimen field is added."
+  },
+  "graph_decision": {
+    "nodes": [
+      "ClozapineTreatmentStatus (3 states, required)",
+      "ClozapineTrialAdequate (2, required)",
+      "ResidualSymptomsOnClozapine (2, required)",
+      "ExposureInterpretationConcern (2, optional with disclosure)",
+      "UrgentSafetyConcern (2, required with deterministic flag)",
+      "ClozapineExposureReview (2 states; parents in order ClozapineTreatmentStatus, ExposureInterpretationConcern)",
+      "PersistentSymptomsReview (4 states; parents in order ClozapineTreatmentStatus, ResidualSymptomsOnClozapine, ClozapineTrialAdequate)"
+    ],
+    "edges": [
+      [
+        "ClozapineTreatmentStatus",
+        "ClozapineExposureReview"
+      ],
+      [
+        "ExposureInterpretationConcern",
+        "ClozapineExposureReview"
+      ],
+      [
+        "ClozapineTreatmentStatus",
+        "PersistentSymptomsReview"
+      ],
+      [
+        "ResidualSymptomsOnClozapine",
+        "PersistentSymptomsReview"
+      ],
+      [
+        "ClozapineTrialAdequate",
+        "PersistentSymptomsReview"
+      ]
+    ],
+    "why_this_shape": "Two parallel review outputs over the ongoing-treatment inputs, mirroring BN-07's exposure and persistent-symptom structure at an executable size (71 cells). Baseline linkage and PANSS-pair completeness gate execution as estimation context (cpt_context only, like R7 ClinicalStatusGate) rather than as network parents, so the network conditions on the current-trial inputs while the gate enforces the linked-baseline and complete-measure requirements. Registration indication, TRS flagging, willingness, monitoring, and medical-review nodes are excluded as R7 scope; augmentation product choice and dosing are excluded entirely. All discrete nature nodes for the v1 execution profile; no latent nodes, no posterior chaining into other questions.",
+    "double_counting_rationale_for_review": "Each assessed network input is proposed as usage=both (CPT-estimation context + hard observation). Rationale for review: conditioning once in Bayes rule is a single update, not double counting; the LLM conditions table estimates on the patient's context while inference instantiates the same observed states as evidence. Optional missing exposure uses estimation context only (the gap is noted in the conditioning context) with no hard evidence, so no update occurs on an unobserved node. Baseline and PANSS-pair applicability inputs are usage=cpt_context only (they gate execution and condition estimation but are never network nodes, so no observation exists). Owner to accept or restrict any mapping to observation-only."
+  },
+  "missing_structured_fields_proposed": [
+    {
+      "id": "baseline_linkage",
+      "proposed_values": [
+        "linked_current",
+        "outdated_unreconciled",
+        "unknown_incomplete"
+      ],
+      "period": "baseline encounter timestamp through current encounter timestamp with reconciliation date",
+      "basis": "Follow-up baseline_encounter_id plus history_reconciliation plus baseline_changed indicator plus frozen signed PANSS snapshot; no recency cutoff imposed"
+    },
+    {
+      "id": "panss_pair_context",
+      "proposed_values": [
+        "both_complete_assessed",
+        "incomplete_or_not_assessed",
+        "unknown_incomplete"
+      ],
+      "period": "baseline previous-7-days window at the baseline date plus current previous-7-days window at the follow-up date, same approved instrument family with recorded versions",
+      "basis": "PANSS.md 30-item 1-7 with panss-v1 completeness; supporting context only, never a gate cutoff"
+    },
+    {
+      "id": "trial_adequacy",
+      "proposed_values": [
+        "Yes",
+        "No"
+      ],
+      "period": "current encounter judgment covering the current clozapine trial interval with documented agents, dates, response, and adherence evidence",
+      "basis": "BN-07 ClozapineTrialAdequate lead with STATEMENT-07 8-week optimizing-treatment background; status only, no regimen numbers"
+    },
+    {
+      "id": "residual_symptoms",
+      "proposed_values": [
+        "Yes",
+        "No"
+      ],
+      "period": "current encounter with recorded symptom domains and validated scale name and version",
+      "basis": "BN-07 ResidualSymptomsOnClozapine lead; never inferred from a total, band, or percent change"
+    },
+    {
+      "id": "exposure_concern",
+      "proposed_values": [
+        "Yes",
+        "No"
+      ],
+      "period": "current encounter",
+      "basis": "BN-07 ExposureInterpretationConcern lead (adherence, smoking/caffeine, interactions, concentrations, sampling timing); optional with disclosure"
+    },
+    {
+      "id": "urgent_assessment",
+      "proposed_values": [
+        "Present",
+        "Absent"
+      ],
+      "period": "current encounter",
+      "basis": "BN-07 UrgentSafetyConcern lead (neutropenia, myocarditis/NMS, severe or unresolved constipation, acute psychiatric danger); required with deterministic flag"
+    }
+  ],
+  "reference_table_provenance": {
+    "status": "synthetic structural placeholder only; zero clinical validity",
+    "rule": "Root references illustrative (ClozapineTreatmentStatus [0.35,0.25,0.40]; ClozapineTrialAdequate [0.55,0.45]; ResidualSymptomsOnClozapine [0.50,0.50]; ExposureInterpretationConcern [0.20,0.80]; UrgentSafetyConcern [0.10,0.90]). Exposure rows from the documented mapping: (CurrentTreatment,Yes) triggers [0.88,0.12]; all other 5 rows rest [0.06,0.94]. Persistent rows from the documented mapping: non-current status yields outside [0.82,0.06,0.06,0.06] (8 rows); current with residual No yields continue [0.06,0.82,0.06,0.06] (2 rows); current with residual Yes and adequate No yields adequacy [0.06,0.06,0.82,0.06] (1 row); current with residual Yes and adequate Yes yields specialist [0.06,0.06,0.06,0.82] (1 row). Lookup exists only to give the validator/inference harness complete, normalized, correctly ordered tables. Never present these as patient estimates.",
+    "forbidden": "No empirical probabilities were manufactured; no guideline evidence rating (1B), TRRIP duration or adherence number, 8-week reference, 20 percent background, dose or level, or PANSS total or band was converted into a probability."
+  },
+  "independent_examples_provenance": {
+    "clinical_cases": "synthetic author-created illustrations for wording/missingness review; not a clinical oracle",
+    "numerical_fixture": "hand-worked by plain enumeration outside the implementation under test (see examples.json); expected literals recorded for harness replay"
+  },
+  "admission_measurements": {
+    "xml_bytes": 6961,
+    "xml_sha256": "1d07e20a9546cc9baa13a5146b3964b239e18685919b947942b46f4810a0bfba",
+    "nodes": 7,
+    "cpt_cells": 71,
+    "child_rows": 18,
+    "prompt_bytes": 7680,
+    "xsd_valid": true,
+    "semantic_executable_structurally": true,
+    "clinical_activation_allowed": false,
+    "note": "Structural executability is not clinical validity and not activation. S25 package validator pending (no content/questions schema exists yet); S23 inference-harness replay pending. T5 XSD+semantics checked with pinned repo validators; numerical fixture recomputed independently from file bytes with stdlib only."
+  },
+  "owner_questions": [
+    {
+      "id": "Q1",
+      "question": "Approve the baseline encounter and window definition (chosen signed baseline_encounter_id with confirmed reconciliation, baseline_changed false, baseline PANSS from the frozen signed snapshot, interval recorded with no maximum recency cutoff)?",
+      "proposal": "Linked-current definition as drafted; outdated or unreconciled baselines yield needs_clarification and stop later questions, never not_applicable and never a posterior."
+    },
+    {
+      "id": "Q2",
+      "question": "Approve the instrument and context rule (PANSS v1 30 items 1-7, previous-7-days windows at both dates, same instrument family, both complete with recorded versions and dates, totals as supporting context only, no percent-change cutoff, missing follow-up never no improvement)?",
+      "proposal": "Both-complete rule as drafted, with the denominator (baseline total) and zero-case note recorded for any future change formula that is not computed in v0.1."
+    },
+    {
+      "id": "Q3",
+      "question": "Approve the adequate-treatment information without regimen fields (clinician Yes/No trial-adequacy category with agents, dates, response, adherence evidence plus Yes/No exposure concern; 8-week, 20 percent, dose, and level points as background only)?",
+      "proposal": "Status-only categories as drafted; no dose, unit, route, frequency, or level is stored or requested."
+    },
+    {
+      "id": "Q4",
+      "question": "Confirm the gate mapping: follow-up with CurrentTreatment plus linked baseline plus complete pair executes; registration or PreviouslyTreated or NeverTreated yields not_applicable (never a posterior); outdated, unreconciled, unknown, missing, partial, not_assessed, or conflicting baseline or measure yields needs_clarification stopping later questions?",
+      "proposal": "Gate rule as drafted; assessed adequacy No or residual No still executes and determines the pathway branch."
+    },
+    {
+      "id": "Q5",
+      "question": "Confirm that outdated baselines and not_assessed PANSS pause with needs_clarification rather than silently skipping, and that a missing follow-up score is never reported as no improvement?",
+      "proposal": "Required-ambiguity blocking as drafted, with differing-baseline identity (not just score availability) determining applicability."
+    },
+    {
+      "id": "Q6",
+      "question": "Approve the 7-node graph (5 retained BN-07 roots plus 2 retained review outputs), the baseline and measure inputs as cpt_context-only gate context, exposure as the sole optional input with disclosure, and the soft argmax-preserving reference values?",
+      "proposal": "Graph, usages, and synthetic values as drafted; reference tables have zero clinical validity."
+    },
+    {
+      "id": "Q7",
+      "question": "Confirm template wording, the parallel exposure rendering, the posterior-maximum-is-not-a-rule mapping, and that the deterministic urgent flag never waits for LLM output?",
+      "proposal": "Wording as in template.json; urgent Present fires from saved inputs even when the run fails or is queued; Absent never certifies safety."
+    },
+    {
+      "id": "Q8",
+      "question": "Confirm F5 stays a separate package from R7 (own key, gate, network name, prompt, template) with the documented source overlap, and that v0.1 needs no outcome horizon beyond the current encounter?",
+      "proposal": "Separate identities as drafted; current-encounter horizon with the baseline-to-current interval recorded and displayed."
+    }
+  ],
+  "unresolved_assumptions": [
+    "The baseline-linkage, PANSS-pair, trial-adequacy, residual, exposure, and urgent fields are proposals; the history-effects package itself is still awaiting_review and the clozapine_followup namespace is not collected, so no mapping used here is approved.",
+    "No maximum baseline recency interval is imposed; the interval is recorded for physician interpretation and any future cutoff needs review.",
+    "No percent-change value is computed and no cutoff is applied; the denominator and zero-case note exists only to satisfy the plan section 5 requirement for any future formula.",
+    "Adequate-tolerated-exposure and residual-symptom judgments rely on clinician-recorded agents, dates, response, adherence evidence, domains, and scale versions; the locally intended evidence requirements for adequate, partial, and uncertain remain unresolved.",
+    "Exposure concern as the sole optional input with disclosure needs review; all other missing required inputs block.",
+    "Both-usage (context+observation) rationale needs review.",
+    "Reference tables are synthetic placeholders with zero clinical validity."
+  ]
+}

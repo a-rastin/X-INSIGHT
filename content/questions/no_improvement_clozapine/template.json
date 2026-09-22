@@ -1,0 +1,74 @@
+{
+  "description": "Predefined physician-review wording for no-improvement clozapine F5. The LLM never supplies this text; the app renders the matching branch deterministically from stored posteriors, evidence, and missingness. All slots are escaped at render time. No branch diagnoses schizophrenia, certifies treatment resistance or no improvement, selects augmentation, gives dosage or levels, or clears safety.",
+  "template_version": "no_improvement_clozapine-template-v0.1-draft",
+  "review_status": "awaiting_review",
+  "branches": {
+    "continue_periodic_review": {
+      "heading": "Clozapine follow-up review (F5): continue periodic review",
+      "body": "Recorded gate (follow-up no-improvement review): follow-up encounter with linked current baseline ({baseline_source}); currently receiving clozapine ({status_source}); complete PANSS pair with recorded instruments and dates (baseline {baseline_total} on {baseline_date} {baseline_instrument}; follow-up {followup_total} on {followup_date} {followup_instrument}; {panss_source}). Residual symptoms on clozapine: {residual_state} ({residual_source}); trial adequacy: {adequacy_state} ({adequacy_source}); exposure concern: {exposure_state} ({exposure_source}). Network NoImprovementClozapine_F5_draft ({network_version}) posteriors: persistent-symptoms ContinuePeriodicReview {p_continue}% (full distribution: outside {p_outside}%, continue {p_continue}%, adequacy {p_adequacy}%, specialist {p_specialist}%; CPT percentages and posteriors are shown separately; no posterior certifies improvement or resistance). Review prompt: no current clinically significant residual symptoms on clozapine are recorded with an adequate-trial context and a linked baseline. Continue periodic review with repeated validated measures, functioning assessment, and side-effect surveillance per local guidance. The physician decides next steps; this output never prescribes, doses, or clears treatment. Exposure: {exposure_text}. Safety: {urgent_text}. {unknown_disclosure}",
+      "posterior_state": "ContinuePeriodicReview"
+    },
+    "review_trial_adequacy": {
+      "heading": "Clozapine follow-up review (F5): review trial adequacy",
+      "body": "Recorded gate (follow-up no-improvement review): follow-up encounter with linked current baseline ({baseline_source}); currently receiving clozapine ({status_source}); complete PANSS pair (baseline {baseline_total} on {baseline_date} {baseline_instrument}; follow-up {followup_total} on {followup_date} {followup_instrument}; {panss_source}). Residual symptoms on clozapine: {residual_state} ({residual_source}); trial adequacy: {adequacy_state} ({adequacy_source}); exposure concern: {exposure_state} ({exposure_source}). Network NoImprovementClozapine_F5_draft ({network_version}) posteriors: persistent-symptoms ReviewTrialAdequacy {p_adequacy}% (full distribution: outside {p_outside}%, continue {p_continue}%, adequacy {p_adequacy}%, specialist {p_specialist}%). Review prompt: residual symptoms are recorded but the clozapine trial is recorded as not adequate, or exposure interpretation is uncertain. Review exposure, adherence evidence, interacting factors, sampling validity, and duration before labeling nonresponse; do not label no improvement from an inadequate trial or from a missing follow-up score. The physician decides next steps; this output never escalates dose or orders levels. Exposure: {exposure_text}. Safety: {urgent_text}. {unknown_disclosure}",
+      "posterior_state": "ReviewTrialAdequacy"
+    },
+    "specialist_persistent_symptoms_review": {
+      "heading": "Clozapine follow-up review (F5): specialist persistent-symptoms review",
+      "body": "Recorded gate (follow-up no-improvement review): follow-up encounter with linked current baseline ({baseline_source}); currently receiving clozapine ({status_source}); complete PANSS pair (baseline {baseline_total} on {baseline_date} {baseline_instrument}; follow-up {followup_total} on {followup_date} {followup_instrument}; {panss_source}). Residual symptoms on clozapine: {residual_state} ({residual_source}); trial adequacy: {adequacy_state} ({adequacy_source}); exposure concern: {exposure_state} ({exposure_source}). Network NoImprovementClozapine_F5_draft ({network_version}) posteriors: persistent-symptoms SpecialistPersistentSymptomsReview {p_specialist}% (full distribution: outside {p_outside}%, continue {p_continue}%, adequacy {p_adequacy}%, specialist {p_specialist}%). Review prompt: persistent clinically significant residual symptoms on clozapine are recorded despite a recorded adequate trial with a linked baseline. Arrange specialist review of psychosocial care and augmentation options per Statement 7 optimizing-treatment discussion; no automatic ECT, polypharmacy, or discontinuation is authorized by this output. PANSS totals are supporting context only; no percent-change cutoff determined this branch. The physician decides next steps. Exposure: {exposure_text}. Safety: {urgent_text}. {unknown_disclosure}",
+      "posterior_state": "SpecialistPersistentSymptomsReview"
+    },
+    "outside_current_treatment_scope": {
+      "heading": "Clozapine follow-up review (F5): outside current-treatment scope",
+      "body": "Recorded inputs include a clozapine status other than current treatment ({status_source}). Network NoImprovementClozapine_F5_draft ({network_version}) posteriors: persistent-symptoms OutsideCurrentTreatmentScope {p_outside}% (full distribution: outside {p_outside}%, continue {p_continue}%, adequacy {p_adequacy}%, specialist {p_specialist}%). Review prompt: this follow-up no-improvement review applies only during current clozapine treatment. Assess registration or other follow-up questions for indication; do not read this branch as improvement or as resistance. This branch is estimated for contract completeness and is not reached when the gate holds (non-current status yields not_applicable without inference). {unknown_disclosure}",
+      "posterior_state": "OutsideCurrentTreatmentScope"
+    },
+    "needs_clarification": {
+      "heading": "Clozapine follow-up review (F5): clarification required",
+      "body": "No posterior is reported. Required input is missing, partial, not_assessed, outdated, unreconciled, or conflicting: {missing_fields}. Complete or reconcile {missing_fields} and start a new run; later questions are stopped until this is resolved. A missing follow-up PANSS total is never reported as no improvement, and an outdated baseline is never silently skipped. Any already-recorded urgent feature below remains visible and does not wait for a model run."
+    },
+    "not_applicable": {
+      "heading": "Clozapine follow-up review (F5): not applicable",
+      "body": "No posterior is reported. This follow-up no-improvement review does not apply: {not_applicable_reason}. No inference, no CPTs, and no negative or positive no-improvement posterior are produced. A registration encounter, or a follow-up without current clozapine treatment, never receives a no-improvement posterior from this question."
+    },
+    "unknown_disclosure": "Inputs recorded as unknown or without hard evidence: {unknown_fields_or_none}. Unknown is not a negative finding; clarify as clinically indicated. PANSS totals, where recorded, are supporting context only with recorded instrument versions and dates; no total, band, or percent change establishes no improvement. Trial adequacy and exposure assessments are status categories only with no dose, level, unit, route, or frequency."
+  },
+  "deterministic_urgent_flag": {
+    "rule": "Rendered directly from saved inputs WITHOUT waiting for any LLM request, inference result, or template posterior. Shown alongside (never replaced by) the posterior branch.",
+    "conditions": [
+      {
+        "when": "UrgentSafetyConcern == Present",
+        "text": "URGENT recorded finding: an urgent safety concern is recorded (for example suspected severe neutropenia, myocarditis or NMS, severe or unresolved constipation, or acute psychiatric danger). Seek immediate senior or emergency evaluation per local emergency protocol. Do not await model output."
+      }
+    ],
+    "otherwise": "No deterministic urgent flag fires; the posterior branch above still requires physician review. Absent never certifies safety."
+  },
+  "mapping_rule": "Render the branch matching the highest-posterior PersistentSymptomsReview state ONLY as a review prompt; the posterior maximum is not a validated recommendation rule and the physician may choose any course. Always render the stored ClozapineExposureReview posterior alongside. Always append unknown_disclosure. Always evaluate deterministic_urgent_flag from saved inputs first.",
+  "slots": [
+    "baseline_source",
+    "status_source",
+    "baseline_total",
+    "baseline_date",
+    "baseline_instrument",
+    "followup_total",
+    "followup_date",
+    "followup_instrument",
+    "panss_source",
+    "residual_state",
+    "residual_source",
+    "adequacy_state",
+    "adequacy_source",
+    "exposure_state",
+    "exposure_source",
+    "network_version",
+    "p_outside",
+    "p_continue",
+    "p_adequacy",
+    "p_specialist",
+    "exposure_text",
+    "urgent_text",
+    "unknown_fields_or_none",
+    "missing_fields",
+    "not_applicable_reason"
+  ]
+}

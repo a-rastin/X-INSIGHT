@@ -1,0 +1,311 @@
+{
+  "schema_version": "1.0-draft",
+  "question_key": "no_improvement_clozapine",
+  "title": "No-improvement clozapine review at follow-up (F5)",
+  "workflow": "followup",
+  "version": "no_improvement_clozapine-v0.1-draft",
+  "review_status": "awaiting_review",
+  "network_file": "network.xml",
+  "network_hash": "sha256:1d07e20a9546cc9baa13a5146b3964b239e18685919b947942b46f4810a0bfba",
+  "source_refs": [
+    "docs/medical-docs/guideline/STATEMENT-07.md",
+    "docs/medical-docs/PANSS.md",
+    "content/assessments/panss.json",
+    "content/history/history-effects-v0.1-draft.json",
+    "BNs/BN-07.xml",
+    "BNs/schema.xml",
+    "docs/dev/user-requirements.md",
+    "docs/dev/plan.md"
+  ],
+  "declared_node_order": [
+    "ClozapineTreatmentStatus",
+    "ClozapineTrialAdequate",
+    "ResidualSymptomsOnClozapine",
+    "ExposureInterpretationConcern",
+    "UrgentSafetyConcern",
+    "ClozapineExposureReview",
+    "PersistentSymptomsReview"
+  ],
+  "variables": [
+    {
+      "node_id": "ClozapineTreatmentStatus",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "CurrentTreatment",
+        "PreviouslyTreated",
+        "NeverTreated"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "ClozapineTrialAdequate",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "Yes",
+        "No"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "ResidualSymptomsOnClozapine",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "Yes",
+        "No"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "ExposureInterpretationConcern",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "Yes",
+        "No"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "UrgentSafetyConcern",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "Present",
+        "Absent"
+      ],
+      "ordered_parents": []
+    },
+    {
+      "node_id": "ClozapineExposureReview",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "Triggered",
+        "NotTriggered"
+      ],
+      "ordered_parents": [
+        "ClozapineTreatmentStatus",
+        "ExposureInterpretationConcern"
+      ]
+    },
+    {
+      "node_id": "PersistentSymptomsReview",
+      "xmlbif_kind": "nature",
+      "patient_value_type": "enum",
+      "states": [
+        "OutsideCurrentTreatmentScope",
+        "ContinuePeriodicReview",
+        "ReviewTrialAdequacy",
+        "SpecialistPersistentSymptomsReview"
+      ],
+      "ordered_parents": [
+        "ClozapineTreatmentStatus",
+        "ResidualSymptomsOnClozapine",
+        "ClozapineTrialAdequate"
+      ]
+    }
+  ],
+  "patient_mappings": [
+    {
+      "node_id": "BaselineCurrency (applicability input, not a network node)",
+      "allowed_source_paths": [
+        "encounters.baseline_encounter_id (follow-up linkage to the chosen signed baseline)",
+        "encounters.draft_data.history_reconciliation (must be confirmed, not pending)",
+        "encounters.baseline_changed (must be false; a newer signed record without reconciliation makes the baseline outdated)",
+        "encounters.draft_data.clozapine_followup.baseline_linkage (PROPOSED, not collected: linked_current vs outdated_unreconciled vs unknown_incomplete with recorded baseline encounter id and reconciliation date)"
+      ],
+      "typed_transform": "linked_current iff the follow-up records the chosen signed baseline encounter id, history and medications are reconciled and confirmed, no newer signed record is pending reconciliation, and the baseline PANSS total with date and instrument is available from the frozen signed snapshot. outdated_unreconciled iff any of those fails. unknown_incomplete iff linkage not recorded. No maximum recency interval is imposed in v0.1; the interval between baseline and current dates is recorded and displayed for physician interpretation.",
+      "time_window": "baseline encounter timestamp (frozen signed snapshot) through current follow-up encounter timestamp; reconciliation recorded with actor and timestamp per the runtime value envelope",
+      "usage": "cpt_context",
+      "missing_policy": "outdated_unreconciled, unknown_incomplete, missing, or conflicting linkage yields needs_clarification and stops later questions (never not_applicable, never a posterior). Saving corrected and reconciled input creates a new run."
+    },
+    {
+      "node_id": "PANSSPairCompleteness (applicability input, not a network node)",
+      "allowed_source_paths": [
+        "signed baseline snapshot panss total with instrument version and date (read from the frozen signed record, never recomputed from current values and never as newly completed answers)",
+        "encounters.draft_data.panss (current follow-up PANSS answers and completeness per panss-v1)",
+        "content/assessments/panss.json#panss-v1 (30 items 1-7, previous-7-days window, supporting scale only)"
+      ],
+      "typed_transform": "both_complete_assessed iff the baseline snapshot holds a complete 30-item PANSS total with recorded instrument version and date AND the current follow-up holds a complete 30-item PANSS total with recorded instrument version and date using the same approved instrument family. Any missing item suppresses that total. No percent change is computed for gating and no cutoff is applied. Totals are supporting context only alongside the clinician residual judgment.",
+      "time_window": "baseline previous-7-days window at the baseline encounter date; current previous-7-days window at the follow-up encounter date; both dates recorded",
+      "usage": "cpt_context",
+      "missing_policy": "baseline or follow-up PANSS unanswered, partial, skipped not_assessed, or conflicting, or instrument or date missing, yields needs_clarification and stops later questions. A missing follow-up total is never mapped to no improvement and never mapped to improvement. Any future change formula must specify its denominator (baseline total) and its zero case; v0.1 computes no change value."
+    },
+    {
+      "node_id": "ClozapineTreatmentStatus",
+      "allowed_source_paths": [
+        "encounters.draft_data.medications (catalog clozapine ingredient reference or explicit unknown label; status only)",
+        "encounters.draft_data.clozapine_followup.exposure_status (PROPOSED: current vs previously vs never, status only, not collected)"
+      ],
+      "typed_transform": "CurrentTreatment takes precedence if presently receiving clozapine; PreviouslyTreated iff past exposure is recorded; NeverTreated iff assessed never treated. Status only: no dose, duration, unit, route, frequency, or level is used or requested (FR-14).",
+      "time_window": "current_encounter for current treatment; historical_event_dates for prior exposure",
+      "usage": "both",
+      "missing_policy": "missing or conflicting exposure status yields needs_clarification (gate member). Assessed PreviouslyTreated or NeverTreated yields not_applicable with reason (no inference, no CPTs, no posterior)."
+    },
+    {
+      "node_id": "ClozapineTrialAdequate",
+      "allowed_source_paths": [
+        "encounters.draft_data.clozapine_followup.trial_adequacy (PROPOSED structured field, not collected: Yes vs No with recorded agents, dates, response, and adherence evidence)"
+      ],
+      "typed_transform": "Yes iff the clinician records adequate tolerated exposure and duration for the current clozapine trial with supporting agents, dates, response, and adherence evidence. No iff the clinician records the trial as not adequate. Status only; no dose, level, unit, route, or frequency is stored. The 8-week optimizing-treatment reference is background only, not an encoded cutoff.",
+      "time_window": "current_encounter judgment covering the current clozapine trial interval with documented dates",
+      "usage": "both",
+      "missing_policy": "missing, not_assessed, or conflicting adequacy yields needs_clarification (required non-gate input blocks). Assessed No still executes and renders the adequacy branch; it never yields not_applicable."
+    },
+    {
+      "node_id": "ResidualSymptomsOnClozapine",
+      "allowed_source_paths": [
+        "encounters.draft_data.clozapine_followup.residual_symptoms (PROPOSED structured field, not collected: Yes vs No with recorded symptom domains and validated scale name and version)",
+        "content/assessments/panss.json#panss-v1 (supporting scale only, never a gate by itself)"
+      ],
+      "typed_transform": "Yes iff the clinician documents current clinically significant residual symptoms on clozapine with symptom domains and validated scale name and version. No iff the clinician assesses no such residual symptoms. Never inferred from a PANSS total, band, or percent change alone. A 20 percent change does not by itself determine Yes or No.",
+      "time_window": "current_encounter for the judgment; supporting scale in its documented previous-7-days window with recorded instrument name and version",
+      "usage": "both",
+      "missing_policy": "missing, partial, or conflicting judgment yields needs_clarification (required non-gate input blocks). Assessed No still executes and renders the periodic-review branch as improvement context; it never yields not_applicable."
+    },
+    {
+      "node_id": "ExposureInterpretationConcern",
+      "allowed_source_paths": [
+        "encounters.draft_data.clozapine_followup.exposure_concern (PROPOSED structured field, not collected: Yes vs No with recorded adherence, smoking or caffeine change, interacting drugs, unexpected concentrations, or sampling-timing concern)"
+      ],
+      "typed_transform": "Yes iff the clinician records adherence uncertainty, changed smoking or caffeine use, interacting drugs, unexpected concentrations, or invalid sampling timing relevant to the current trial. No iff the clinician assesses no such concern. Not a numerical toxicity diagnosis.",
+      "time_window": "current_encounter",
+      "usage": "both when assessed; estimation-context-only when missing",
+      "missing_policy": "missing leaves no hard evidence on this node; inference proceeds and the template renders an unknown disclosure (optional input). Assessed Yes or No is observed as hard evidence."
+    },
+    {
+      "node_id": "UrgentSafetyConcern",
+      "allowed_source_paths": [
+        "encounters.draft_data.clozapine_followup.urgent_assessment (PROPOSED structured field, not collected)"
+      ],
+      "typed_transform": "Present iff the clinician records suspected severe neutropenia, myocarditis or NMS, severe or unresolved constipation, or acute psychiatric danger requiring urgent assessment. Absent iff the clinician assesses no urgent concern. Absent does not certify safety.",
+      "time_window": "current_encounter",
+      "usage": "both",
+      "missing_policy": "missing urgent assessment yields needs_clarification (required non-gate input blocks). Present fires the deterministic urgent flag without waiting for any model output."
+    }
+  ],
+  "applicability": {
+    "expression": "encounter.kind == 'followup' AND ClozapineTreatmentStatus == 'CurrentTreatment' AND BaselineCurrency == 'linked_current' AND PANSSPairCompleteness == 'both_complete_assessed'",
+    "expression_language": "allowlisted conjunction of == comparisons on encounter.kind, clozapine status, baseline linkage, and PANSS-pair completeness only; no arithmetic, no function calls, no note access (proposed for owner review; the S25 allowlist parser is authoritative)",
+    "required_fields": [
+      "encounter.kind",
+      "ClozapineTreatmentStatus (gate)",
+      "BaselineCurrency linkage with reconciliation (gate constituent)",
+      "PANSSPairCompleteness with instruments and dates (gate constituent)",
+      "ClozapineTrialAdequate assessment (required non-gate)",
+      "ResidualSymptomsOnClozapine assessment (required non-gate)",
+      "UrgentSafetyConcern assessment (required non-gate)",
+      "absence of conflicting values for mapped nodes"
+    ],
+    "unknown_policy": "registration encounters yield not_applicable with reason (F5 is follow-up only; never a posterior). Assessed PreviouslyTreated or NeverTreated yields not_applicable with reason (no inference, no CPTs, no posterior; a false gate is never a negative no-improvement posterior). Outdated, unreconciled, unknown, missing, partial, skipped-not_assessed, or conflicting baseline linkage or PANSS-pair completeness yields needs_clarification and stops later questions; saving corrected and reconciled input creates a new run. Missing required non-gate input (trial adequacy, residual symptoms, urgent concern) yields needs_clarification. Missing optional input (exposure concern) leaves that node without hard evidence; inference proceeds and the template renders an unknown disclosure."
+  },
+  "cpt_contract": {
+    "units": "percentages [0,100]",
+    "all_nodes_mandatory": true,
+    "row_order": "child state fastest; last declared parent next; first parent slowest",
+    "rows": [
+      {
+        "node_id": "ClozapineTreatmentStatus",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "ClozapineTrialAdequate",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "ResidualSymptomsOnClozapine",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "ExposureInterpretationConcern",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "UrgentSafetyConcern",
+        "parent_ids": [],
+        "row_count": 1
+      },
+      {
+        "node_id": "ClozapineExposureReview",
+        "parent_ids": [
+          "ClozapineTreatmentStatus",
+          "ExposureInterpretationConcern"
+        ],
+        "row_count": 6
+      },
+      {
+        "node_id": "PersistentSymptomsReview",
+        "parent_ids": [
+          "ClozapineTreatmentStatus",
+          "ResidualSymptomsOnClozapine",
+          "ClozapineTrialAdequate"
+        ],
+        "row_count": 12
+      }
+    ],
+    "validation": "one table per node in declared order; exact node/parent/state identity and order; no extra fields; finite numbers in [0,100]; each row sums to 100 within 1e-6; reject missing/duplicate/extra rows, strings/booleans/null, nonfinite, out-of-range, wrong sums; never normalize/clip/repair"
+  },
+  "query_nodes": [
+    "ClozapineExposureReview",
+    "PersistentSymptomsReview"
+  ],
+  "evidence_mappings": [
+    {
+      "node_id": "ClozapineTreatmentStatus",
+      "evidence": "mapped CurrentTreatment state as hard evidence when the gate holds; other states occur only in non-executing contracts"
+    },
+    {
+      "node_id": "ClozapineTrialAdequate",
+      "evidence": "mapped Yes/No state as hard evidence when assessed; missing blocks before inference"
+    },
+    {
+      "node_id": "ResidualSymptomsOnClozapine",
+      "evidence": "mapped Yes/No state as hard evidence when assessed; missing blocks before inference"
+    },
+    {
+      "node_id": "ExposureInterpretationConcern",
+      "evidence": "mapped Yes/No state as hard evidence when assessed; missing leaves no evidence with unknown disclosure (optional)"
+    },
+    {
+      "node_id": "UrgentSafetyConcern",
+      "evidence": "mapped Present/Absent state as hard evidence when assessed; missing blocks before inference; Present also fires the deterministic flag"
+    }
+  ],
+  "impossible_evidence_policy": "fail with explicit error; never soften or approximate. All declared states are possible, so impossibility arises only from schema violations (undeclared node/state, conflicting evidence on one node).",
+  "likelihood_evidence": "disabled",
+  "prompt_version": "no_improvement_clozapine-prompt-v0.1-draft (prompt.txt)",
+  "template_version": "no_improvement_clozapine-template-v0.1-draft (template.json)",
+  "reviewed_result_mapping": "posterior branch rendered as review prompt only; maximum posterior is not a recommendation rule; deterministic urgent flag from saved inputs shown first and never waits for LLM; exposure posterior always rendered alongside the persistent-symptoms branch; unknown_disclosure always appended; needs_clarification branch on required missing/outdated/conflict; not_applicable branch on gate-false",
+  "numerical_tolerances": {
+    "percentage_row_sum_absolute": 1e-06,
+    "probability_sum_after_divide_by_100_absolute": 1e-08,
+    "replay_posterior_absolute": 1e-09
+  },
+  "context_output_resource_limits": {
+    "xml_bytes": 6961,
+    "cpt_cells": 71,
+    "prompt_bytes_proposed_max": 8192,
+    "response_bytes_proposed_max": 16384,
+    "note": "Limits are proposed engineering ceilings for review; final values set after measuring admitted models per plan 8.3. Full-CPT payload must fit or admission is rejected; no silent truncation."
+  },
+  "engine_configuration": {
+    "inference": "deterministic exact",
+    "dtype": "float64",
+    "elimination_order": "deterministic pinned order with deterministic tie-breaking",
+    "note": "Pinned engine/runtime recorded at admission in S39; replay reads stored effective CPTs/evidence/query without provider calls."
+  },
+  "review": {
+    "assumptions": "see review.json unresolved_assumptions",
+    "reviewer": null,
+    "decision": "pending_owner_review",
+    "date": null
+  },
+  "all_nodes_mandatory": true
+}
