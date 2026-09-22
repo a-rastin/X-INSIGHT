@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import "../shared/theme.css";
 import {
   RESEARCH_NOTICE,
+  activateModelBundle,
+  addNetworkVersion,
   changeOwnPassword,
   createFollowup,
   createPhysician,
@@ -11,7 +13,12 @@ import {
   addNote,
   getEncounter,
   getHistoryContent,
+  getModelBundle,
+  getNetworkGraph,
   getProviderSettings,
+  importNetwork,
+  listNetworks,
+  listNetworkVersions,
   listNotes,
   listEncounters,
   listPhysicians,
@@ -19,13 +26,21 @@ import {
   login,
   logout,
   listPatients,
+  networkVersionXmlUrl,
   patchEncounter,
   patchPatientPhone,
+  rollbackModelBundle,
   saveProviderSettings,
   testProviderSettings,
   updateTheme,
+  validateNetworkVersion,
+  type BundlePinInput,
   type Encounter,
   type HistoryContent,
+  type ModelBundle,
+  type NetworkGraph,
+  type NetworkValidation,
+  type NetworkVersionItem,
   type PageNote,
   type Patient,
   type PhysicianAccount,
@@ -34,7 +49,7 @@ import {
   type ThemeName,
 } from "./api";
 
-type Route = "/" | "/register" | "/physicians" | "/provider-settings";
+type Route = "/" | "/register" | "/physicians" | "/provider-settings" | "/networks";
 
 /** S09 diagnosis preview (mirrors backend evaluate_diagnosis, no I/O). */
 type DiagAnswers = {
@@ -1457,6 +1472,9 @@ function currentRoute(): Route {
   if (window.location.pathname === "/provider-settings") {
     return "/provider-settings";
   }
+  if (window.location.pathname === "/networks") {
+    return "/networks";
+  }
   return "/";
 }
 
@@ -1548,6 +1566,11 @@ export function App() {
             Provider settings
           </NavLink>
         ) : null}
+        {user?.role === "admin" ? (
+          <NavLink route="/networks" current={route}>
+            Networks
+          </NavLink>
+        ) : null}
         {!user ? (
           <NavLink route="/register" current={route}>
             Register
@@ -1569,6 +1592,8 @@ export function App() {
         <PhysiciansGate user={user} />
       ) : route === "/provider-settings" ? (
         <ProviderSettingsGate user={user} />
+      ) : route === "/networks" ? (
+        <NetworksGate user={user} />
       ) : user ? (
         <Dashboard user={user} />
       ) : (
@@ -3436,6 +3461,726 @@ function ProviderSettingsSection() {
         </p>
       ) : null}
     </section>
+  );
+}
+
+/** S24 model administration (read-only graph, no edit handlers). */
+function NetworksGate({ user }: { user: SessionUser | null }) {
+  if (!user) {
+    return <LoginHint />;
+  }
+  if (user.role !== "admin") {
+    return <p role="alert">Access denied.</p>;
+  }
+  return <NetworksSection />;
+}
+
+const REGISTRATION_ORDER = [
+  "hospitalization",
+  "pharmacotherapy",
+  "involuntary_care",
+  "high_suicide_clozapine",
+  "lai_indication_choice",
+  "aggression_clozapine",
+  "established_case_clozapine",
+];
+
+const FOLLOWUP_ORDER = [
+  "tardive_dyskinesia",
+  "akathisia",
+  "parkinsonism",
+  "acute_dystonia",
+  "no_improvement_clozapine",
+  "continue_or_adjust",
+];
+
+function shortSha(sha: string): string {
+  return sha.length > 12 ? sha.slice(0, 12) : sha;
+}
+
+/** Plain SVG vertical layout: boxes with states, lines with labels. No drag/edit. */
+function NetworkSvg({ graph }: { graph: NetworkGraph }) {
+  const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
+  const edges = Array.isArray(graph.edges) ? graph.edges : [];
+  const states = (graph.states ?? {}) as Record<string, string[]>;
+  const rowH = 84;
+  const width = 420;
+  const height = Math.max(120, 40 + nodes.length * rowH + 30);
+  const yFor = (index: number) => 40 + index * rowH;
+  const indexByNode = new Map(nodes.map((name, index) => [name, index]));
+  return (
+    <svg
+      role="img"
+      aria-label={`Network graph with ${nodes.length} nodes and ${edges.length} edges`}
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+    >
+      {edges.map(([from, to], i) => {
+        const a = indexByNode.get(String(from));
+        const b = indexByNode.get(String(to));
+        if (a === undefined || b === undefined) {
+          return null;
+        }
+        const x1 = 210;
+        const y1 = yFor(a) + 56;
+        const x2 = 210;
+        const y2 = yFor(b);
+        const midY = (y1 + y2) / 2;
+        return (
+          <g key={`${from}-${to}-${i}`}>
+            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth={2} />
+            <text x={x2 + 8} y={midY} fontSize={12} fill="currentColor">
+              {`${from} to ${to}`}
+            </text>
+          </g>
+        );
+      })}
+      {nodes.map((name, i) => {
+        const y = yFor(i);
+        const list = states[name] ?? [];
+        return (
+          <g key={name}>
+            <rect x={110} y={y} width={200} height={56} fill="none" stroke="currentColor" strokeWidth={2} />
+            <text x={120} y={y + 22} fontSize={13} fontWeight={700} fill="currentColor">
+              {name}
+            </text>
+            <text x={120} y={y + 42} fontSize={12} fill="currentColor">
+              {list.length > 0 ? list.join(", ") : "no states"}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function VersionInspect({ versionId }: { versionId: string }) {
+  const [graph, setGraph] = useState<NetworkGraph | null>(null);
+  const [validation, setValidation] = useState<NetworkValidation | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleInspect(): Promise<void> {
+    setError(null);
+    setLoading(true);
+    try {
+      const [g, v] = await Promise.all([
+        getNetworkGraph(versionId),
+        validateNetworkVersion(versionId),
+      ]);
+      setGraph(g);
+      setValidation(v);
+    } catch {
+      setError("Could not inspect the version.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleValidate(): Promise<void> {
+    setError(null);
+    try {
+      setValidation(await validateNetworkVersion(versionId));
+      if (graph === null) {
+        setGraph(await getNetworkGraph(versionId));
+      }
+    } catch {
+      setError("Could not validate the version.");
+    }
+  }
+
+  const xsd = validation?.xsd_report as Record<string, unknown> | undefined;
+  const semantic = validation?.semantic_report as Record<string, unknown> | undefined;
+  const admission = validation?.admission_report as Record<string, unknown> | undefined;
+  const graphSemantic = graph?.semantic_report as Record<string, unknown> | undefined;
+  const graphAdmission = graph?.admission_report as Record<string, unknown> | undefined;
+  const semanticView = semantic ?? graphSemantic;
+  const admissionView = admission ?? graphAdmission;
+  const executable =
+    validation !== null
+      ? validation.executable
+      : (graph !== null ? graph.executable : null);
+  const admitted =
+    validation !== null
+      ? validation.admitted
+      : (graph !== null ? graph.admitted : null);
+
+  return (
+    <div>
+      <button
+        type="button"
+        className="x-button"
+        data-testid={`version-inspect-${versionId}`}
+        disabled={loading}
+        onClick={() => void handleInspect()}
+      >
+        {loading ? "Inspecting…" : "Inspect"}
+      </button>{" "}
+      <a data-testid={`version-export-${versionId}`} href={networkVersionXmlUrl(versionId)} download>
+        Export
+      </a>
+      {error ? (
+        <p role="alert" className="x-error">
+          {error}
+        </p>
+      ) : null}
+      <div data-testid={`version-graph-${versionId}`}>
+        {graph === null ? (
+          <p>Graph not loaded.</p>
+        ) : (
+          <>
+            <p>
+              Validation status: {graph.validation_status}; XSD{" "}
+              {graph.xsd_valid ? "valid" : "invalid"}; semantic{" "}
+              {graph.executable ? "executable" : "not executable"}; admission{" "}
+              {graph.admitted ? "admitted" : "not admitted"}.
+            </p>
+            <p>
+              Nodes: {graph.nodes.join(", ") || "none"}. Edges:{" "}
+              {graph.edges.map(([a, b]) => `${a} to ${b}`).join("; ") || "none"}.
+            </p>
+            <NetworkSvg graph={graph} />
+          </>
+        )}
+      </div>
+      <div data-testid={`version-validate-${versionId}`}>
+        <button
+          type="button"
+          className="x-button"
+          onClick={() => void handleValidate()}
+        >
+          Validate
+        </button>
+        {validation === null && graph === null ? (
+          <p>Validation not loaded.</p>
+        ) : (
+          <>
+            <p>
+              XSD: {validation !== null ? (validation.xsd_valid ? "valid" : "invalid") : (graph !== null ? (graph.xsd_valid ? "valid" : "invalid") : "unknown")};{" "}
+              semantic executable:{" "}
+              {executable === null ? "unknown" : executable ? "true" : "false"};{" "}
+              admission admitted:{" "}
+              {admitted === null ? "unknown" : admitted ? "true" : "false"}.
+            </p>
+            <p>XSD report: {JSON.stringify(xsd ?? graph?.xsd_report ?? {})}</p>
+            <p>Semantic report: {JSON.stringify(semanticView ?? {})}</p>
+            <p>Admission report: {JSON.stringify(admissionView ?? {})}</p>
+            {semanticView !== undefined && Array.isArray((semanticView as Record<string, unknown>).errors) ? (
+              <p>Semantic errors: {JSON.stringify((semanticView as Record<string, unknown>).errors)}</p>
+            ) : null}
+            {admissionView !== undefined && typeof (admissionView as Record<string, unknown>).measurements !== "undefined" ? (
+              <p>Admission measurements: {JSON.stringify((admissionView as Record<string, unknown>).measurements)}</p>
+            ) : null}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function NetworkCard({
+  networkId,
+  networkKey,
+  onChanged,
+}: {
+  networkId: string;
+  networkKey: string;
+  onChanged: () => void;
+}) {
+  const [versions, setVersions] = useState<NetworkVersionItem[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [newXml, setNewXml] = useState("");
+  const [confirm, setConfirm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const reload = useCallback(async () => {
+    try {
+      setVersions(await listNetworkVersions(networkId));
+      setError(null);
+    } catch {
+      setError("Could not load versions.");
+    }
+  }, [networkId]);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  async function handleNewVersion(): Promise<void> {
+    setError(null);
+    setNotice(null);
+    if (!confirm) {
+      setError("Confirm the new version before submitting.");
+      return;
+    }
+    if (!newXml.trim()) {
+      setError("New version XML is required.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await addNetworkVersion(networkId, newXml);
+      setNewXml("");
+      setConfirm(false);
+      await reload();
+      onChanged();
+      setNotice("Version added.");
+    } catch {
+      setError("Could not add the version.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <article data-testid={`network-${networkId}`}>
+      <h3>{networkKey}</h3>
+      <div data-testid={`network-versions-${networkId}`}>
+        {error ? (
+          <p role="alert" className="x-error">
+            {error}
+          </p>
+        ) : null}
+        {versions === null ? (
+          <p>Loading versions…</p>
+        ) : versions.length === 0 ? (
+          <p>No versions.</p>
+        ) : (
+          <ul data-testid="networks-versions-list">
+            {versions.map((item) => (
+              <li key={item.version_id} data-testid={`network-version-${item.version_id}`}>
+                <p>
+                  Version {item.version_number} · {shortSha(item.sha256)} ·{" "}
+                  {item.byte_count} bytes · XSD {item.xsd_valid ? "valid" : "invalid"}
+                </p>
+                <VersionInspect versionId={item.version_id} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="x-field">
+        <label htmlFor={`network-new-xml-${networkId}`}>New version XML</label>
+        <textarea
+          id={`network-new-xml-${networkId}`}
+          data-testid={`network-new-xml-${networkId}`}
+          value={newXml}
+          onChange={(event) => setNewXml(event.target.value)}
+        />
+        <label htmlFor={`network-new-confirm-${networkId}`}>
+          <input
+            id={`network-new-confirm-${networkId}`}
+            type="checkbox"
+            data-testid={`network-new-confirm-${networkId}`}
+            checked={confirm}
+            onChange={(event) => setConfirm(event.target.checked)}
+          />{" "}
+          Confirm new version
+        </label>
+        <button
+          type="button"
+          className="x-button"
+          data-testid={`network-new-submit-${networkId}`}
+          disabled={saving}
+          onClick={() => void handleNewVersion()}
+        >
+          {saving ? "Adding…" : "Add version"}
+        </button>
+      </div>
+      {notice ? <p role="status">{notice}</p> : null}
+    </article>
+  );
+}
+
+function BundlePanel() {
+  const [workflow, setWorkflow] = useState("registration");
+  const [pointer, setPointer] = useState<ModelBundle | null>(null);
+  const [pinsText, setPinsText] = useState("");
+  const [reviewer, setReviewer] = useState("owner");
+  const [date, setDate] = useState("2026-09-22");
+  const [activateConfirm, setActivateConfirm] = useState(false);
+  const [rollbackTarget, setRollbackTarget] = useState("");
+  const [rollbackConfirm, setRollbackConfirm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const order = workflow === "followup" ? FOLLOWUP_ORDER : REGISTRATION_ORDER;
+
+  const reload = useCallback(
+    async (showLoading: boolean) => {
+      if (showLoading) {
+        setLoading(true);
+      }
+      try {
+        setPointer(await getModelBundle(workflow));
+        if (showLoading) {
+          setError(null);
+        }
+      } catch {
+        if (showLoading) {
+          setError("Could not load the bundle.");
+        }
+      } finally {
+        if (showLoading) {
+          setLoading(false);
+        }
+      }
+    },
+    [workflow],
+  );
+
+  useEffect(() => {
+    setPinsText("");
+    setRollbackTarget("");
+    setActivateConfirm(false);
+    setRollbackConfirm(false);
+    setNotice(null);
+    setError(null);
+    void reload(true);
+  }, [reload]);
+
+  function parsePins(): BundlePinInput[] | null {
+    const lines = pinsText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    if (lines.length !== order.length) {
+      setError(`Enter ${order.length} lines (question_key=versionId) in workflow order.`);
+      return null;
+    }
+    const pins: BundlePinInput[] = [];
+    for (let i = 0; i < order.length; i++) {
+      const line = lines[i];
+      const sep = line.indexOf("=");
+      if (sep < 0) {
+        setError(`Line ${i + 1} must be question_key=versionId.`);
+        return null;
+      }
+      const key = line.slice(0, sep).trim();
+      const versionId = line.slice(sep + 1).trim();
+      if (key !== order[i]) {
+        setError(`Line ${i + 1} must start with ${order[i]}.`);
+        return null;
+      }
+      if (!versionId) {
+        setError(`Line ${i + 1} is missing a version id.`);
+        return null;
+      }
+      pins.push({
+        question_key: key,
+        network_version_id: versionId,
+        review: { decision: "approved", reviewer, date },
+      });
+    }
+    return pins;
+  }
+
+  async function handleActivate(): Promise<void> {
+    setError(null);
+    setNotice(null);
+    if (!activateConfirm) {
+      setError("Confirm the activation before submitting.");
+      return;
+    }
+    const pins = parsePins();
+    if (pins === null) {
+      return;
+    }
+    const expected = pointer?.revision ?? 0;
+    try {
+      const next = await activateModelBundle({
+        workflow,
+        pins,
+        expected_revision: expected,
+      });
+      setPointer(next);
+      setNotice(`Activated revision ${next.revision}.`);
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      if (status === 412) {
+        await reload(false);
+        setError("Bundle changed. Reload and reconcile your edits.");
+      } else if (failure instanceof Error && failure.message) {
+        setError(failure.message);
+      } else {
+        setError("Could not activate the bundle.");
+      }
+    }
+  }
+
+  async function handleRollback(): Promise<void> {
+    setError(null);
+    setNotice(null);
+    if (!rollbackConfirm) {
+      setError("Confirm the rollback before submitting.");
+      return;
+    }
+    const target = Number.parseInt(rollbackTarget.trim(), 10);
+    if (!Number.isInteger(target) || target < 1) {
+      setError("Target revision must be a positive integer.");
+      return;
+    }
+    const expected = pointer?.revision ?? 0;
+    try {
+      const next = await rollbackModelBundle({
+        workflow,
+        target_revision: target,
+        expected_revision: expected,
+      });
+      setPointer(next);
+      setNotice(`Rolled back to revision ${next.revision}.`);
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      if (status === 412) {
+        await reload(false);
+        setError("Bundle changed. Reload and reconcile your edits.");
+      } else if (failure instanceof Error && failure.message) {
+        setError(failure.message);
+      } else {
+        setError("Could not roll back the bundle.");
+      }
+    }
+  }
+
+  if (loading) {
+    return (
+      <section data-testid="bundle-section" aria-label="Workflow bundles">
+        <h2>Workflow bundles</h2>
+        <p>Loading…</p>
+      </section>
+    );
+  }
+
+  return (
+    <section data-testid="bundle-section" aria-label="Workflow bundles">
+      <h2>Workflow bundles</h2>
+      <div className="x-field">
+        <label htmlFor="bundle-workflow">Workflow</label>
+        <select
+          id="bundle-workflow"
+          data-testid="bundle-workflow"
+          value={workflow}
+          onChange={(event) => setWorkflow(event.target.value)}
+        >
+          <option value="registration">registration</option>
+          <option value="followup">followup</option>
+        </select>
+      </div>
+      <div data-testid={`bundle-pointer-${workflow}`}>
+        {pointer === null ? (
+          <p>No bundle pointer.</p>
+        ) : (
+          <div data-testid="bundle-pointer">
+            <p>
+              Revision {pointer.revision} ·{" "}
+              {pointer.bundle_hash ?? "no bundle hash"} · {pointer.workflow}
+            </p>
+            <p>Pins: {JSON.stringify(pointer.pins ?? [])}</p>
+          </div>
+        )}
+      </div>
+      <div className="x-field">
+        <label htmlFor="bundle-activate-pins">
+          Activation pins ({order.length} lines, question_key=versionId, workflow
+          order)
+        </label>
+        <textarea
+          id="bundle-activate-pins"
+          data-testid="bundle-activate-pins"
+          value={pinsText}
+          placeholder={order.map((key) => `${key}=`).join("\n")}
+          onChange={(event) => setPinsText(event.target.value)}
+        />
+        <label htmlFor="bundle-activate-reviewer">Reviewer</label>
+        <input
+          id="bundle-activate-reviewer"
+          data-testid="bundle-activate-reviewer"
+          autoComplete="off"
+          value={reviewer}
+          onChange={(event) => setReviewer(event.target.value)}
+        />
+        <label htmlFor="bundle-activate-date">Review date</label>
+        <input
+          id="bundle-activate-date"
+          data-testid="bundle-activate-date"
+          autoComplete="off"
+          value={date}
+          onChange={(event) => setDate(event.target.value)}
+        />
+        <label htmlFor="bundle-activate-confirm">
+          <input
+            id="bundle-activate-confirm"
+            type="checkbox"
+            data-testid="bundle-activate-confirm"
+            checked={activateConfirm}
+            onChange={(event) => setActivateConfirm(event.target.checked)}
+          />{" "}
+          Confirm activation
+        </label>
+        <button
+          type="button"
+          className="x-button"
+          data-testid={`bundle-activate-${workflow}`}
+          onClick={() => void handleActivate()}
+        >
+          Activate {workflow}
+        </button>
+        <button
+          type="button"
+          className="x-button"
+          data-testid="bundle-activate"
+          onClick={() => void handleActivate()}
+        >
+          Activate
+        </button>
+      </div>
+      <div className="x-field">
+        <label htmlFor="bundle-rollback-target">Rollback target revision</label>
+        <input
+          id="bundle-rollback-target"
+          data-testid="bundle-rollback-target"
+          autoComplete="off"
+          inputMode="numeric"
+          value={rollbackTarget}
+          onChange={(event) => setRollbackTarget(event.target.value)}
+        />
+        <label htmlFor="bundle-rollback-confirm">
+          <input
+            id="bundle-rollback-confirm"
+            type="checkbox"
+            data-testid="bundle-rollback-confirm"
+            checked={rollbackConfirm}
+            onChange={(event) => setRollbackConfirm(event.target.checked)}
+          />{" "}
+          Confirm rollback
+        </label>
+        <button
+          type="button"
+          className="x-button"
+          data-testid={`bundle-rollback-${workflow}`}
+          onClick={() => void handleRollback()}
+        >
+          Roll back {workflow}
+        </button>
+        <button
+          type="button"
+          className="x-button"
+          data-testid="bundle-rollback"
+          onClick={() => void handleRollback()}
+        >
+          Roll back
+        </button>
+      </div>
+      {notice ? (
+        <p role="status" data-testid="bundle-notice">
+          {notice}
+        </p>
+      ) : null}
+      {error ? (
+        <p role="alert" className="x-error" data-testid="bundle-error">
+          {error}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function NetworksSection() {
+  const [xml, setXml] = useState("");
+  const [items, setItems] = useState<{ id: string; key: string }[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const reload = useCallback(async () => {
+    try {
+      const loaded = await listNetworks();
+      setItems(loaded.map((entry) => ({ id: entry.network_id || entry.id, key: entry.key })));
+      setError(null);
+    } catch {
+      setError("Could not load networks.");
+    }
+  }, []);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  async function handleImport(): Promise<void> {
+    setError(null);
+    setNotice(null);
+    if (!xml.trim()) {
+      setError("Network XML is required.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await importNetwork(xml);
+      setXml("");
+      await reload();
+      setNotice("Network imported.");
+    } catch {
+      setError("Could not import the network.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <>
+      <section data-testid="networks-section" aria-label="Networks">
+        <h1>Networks</h1>
+        <p>Admin only. Imports create new immutable versions.</p>
+        <div className="x-field">
+          <label htmlFor="networks-xml">Network XML</label>
+          <textarea
+            id="networks-xml"
+            data-testid="networks-xml-input"
+            value={xml}
+            onChange={(event) => setXml(event.target.value)}
+          />
+          <button
+            type="button"
+            className="x-button"
+            data-testid="networks-import"
+            disabled={saving}
+            onClick={() => void handleImport()}
+          >
+            {saving ? "Importing…" : "Import"}
+          </button>
+        </div>
+        {notice ? (
+          <p role="status" data-testid="networks-notice">
+            {notice}
+          </p>
+        ) : null}
+        {error ? (
+          <p role="alert" className="x-error" data-testid="networks-error">
+            {error}
+          </p>
+        ) : null}
+        <div data-testid="networks-list">
+          {items === null ? (
+            <p>Loading networks…</p>
+          ) : items.length === 0 ? (
+            <p>No networks yet.</p>
+          ) : (
+            items.map((entry) => (
+              <NetworkCard
+                key={entry.id}
+                networkId={entry.id}
+                networkKey={entry.key}
+                onChanged={() => void reload()}
+              />
+            ))
+          )}
+        </div>
+      </section>
+      <BundlePanel />
+    </>
   );
 }
 

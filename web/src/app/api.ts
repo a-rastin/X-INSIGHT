@@ -620,6 +620,270 @@ export async function listProviderVersions(): Promise<ProviderSettings[]> {
   const payload = (await response.json()) as { items: ProviderSettings[] };
   return payload.items ?? [];
 }
+
+/** S24 admin networks client. XML is not secret; errors stay generic. */
+export interface NetworkItem {
+  id: string;
+  network_id: string;
+  key: string;
+}
+
+export interface NetworkVersionItem {
+  version_id: string;
+  id: string;
+  version_number: number;
+  version: number;
+  sha256: string;
+  source_sha256: string;
+  byte_count: number;
+  xsd_valid: boolean;
+}
+
+export interface NetworkGraph {
+  version_id: string;
+  network_id: string;
+  version_number: number;
+  version: number;
+  sha256: string;
+  byte_count: number;
+  nodes: string[];
+  edges: string[][];
+  states: Record<string, string[]>;
+  xsd_valid: boolean;
+  executable: boolean;
+  admitted: boolean;
+  validation_status: string;
+  xsd_report: Record<string, unknown>;
+  semantic_report: Record<string, unknown>;
+  admission_report: Record<string, unknown>;
+}
+
+export interface NetworkValidation {
+  version_id: string;
+  network_id: string;
+  xsd_report: Record<string, unknown>;
+  semantic_report: Record<string, unknown>;
+  admission_report: Record<string, unknown>;
+  xsd_valid: boolean;
+  executable: boolean;
+  admitted: boolean;
+}
+
+export interface ModelBundle {
+  workflow: string;
+  revision: number;
+  bundle_hash: string | null;
+  pins: Record<string, unknown>[];
+}
+
+export interface BundlePinInput {
+  question_key: string;
+  network_version_id: string;
+  review: { decision: string; reviewer: string; date: string };
+}
+
+function networkError(status: number, fallback: string): Error {
+  if (status === 401) {
+    return statusError("Log in to continue.", 401);
+  }
+  if (status === 403) {
+    return statusError("Access denied.", 403);
+  }
+  return statusError(fallback, status);
+}
+
+export async function listNetworks(): Promise<NetworkItem[]> {
+  const response = await fetch("/api/v1/networks", { credentials: "include" });
+  if (!response.ok) {
+    throw networkError(response.status, "Could not load networks.");
+  }
+  const payload = (await response.json()) as { items: NetworkItem[] };
+  return payload.items ?? [];
+}
+
+export async function importNetwork(xml: string): Promise<{
+  network_id: string;
+  version_id: string;
+  version_number: number;
+  sha256: string;
+  byte_count: number;
+}> {
+  const response = await fetch("/api/v1/networks", {
+    method: "POST",
+    credentials: "include",
+    headers: csrfHeaders({ "Idempotency-Key": idempotencyKey() }),
+    body: JSON.stringify({ xml }),
+  });
+  if (response.status === 422) {
+    throw statusError("Invalid network XML.", 422);
+  }
+  if (!response.ok) {
+    throw networkError(response.status, "Could not import the network.");
+  }
+  const body = (await response.json()) as Record<string, unknown>;
+  return {
+    network_id: String(body.network_id ?? body.id ?? ""),
+    version_id: String(body.version_id ?? ""),
+    version_number: Number(body.version_number ?? 1),
+    sha256: String(body.sha256 ?? body.source_sha256 ?? ""),
+    byte_count: Number(body.byte_count ?? 0),
+  };
+}
+
+export async function listNetworkVersions(
+  networkId: string,
+): Promise<NetworkVersionItem[]> {
+  const response = await fetch(`/api/v1/networks/${networkId}/versions`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw networkError(response.status, "Could not load versions.");
+  }
+  const payload = (await response.json()) as {
+    items?: Record<string, unknown>[];
+    versions?: Record<string, unknown>[];
+  };
+  const raw = payload.items ?? payload.versions ?? [];
+  return raw.map((entry) => {
+    const versionId = String(entry.version_id ?? entry.id ?? "");
+    const versionNumber = Number(entry.version_number ?? entry.version ?? 0);
+    const sha = String(entry.sha256 ?? entry.source_sha256 ?? "");
+    return {
+      version_id: versionId,
+      id: versionId,
+      version_number: versionNumber,
+      version: versionNumber,
+      sha256: sha,
+      source_sha256: sha,
+      byte_count: Number(entry.byte_count ?? 0),
+      xsd_valid: Boolean(entry.xsd_valid === true),
+    };
+  });
+}
+
+export async function addNetworkVersion(
+  networkId: string,
+  xml: string,
+): Promise<{ version_id: string; version_number: number; sha256: string }> {
+  const response = await fetch(`/api/v1/networks/${networkId}/versions`, {
+    method: "POST",
+    credentials: "include",
+    headers: csrfHeaders({ "Idempotency-Key": idempotencyKey() }),
+    body: JSON.stringify({ xml }),
+  });
+  if (response.status === 422) {
+    throw statusError("Invalid network XML.", 422);
+  }
+  if (!response.ok) {
+    throw networkError(response.status, "Could not add the version.");
+  }
+  const body = (await response.json()) as Record<string, unknown>;
+  return {
+    version_id: String(body.version_id ?? ""),
+    version_number: Number(body.version_number ?? 0),
+    sha256: String(body.sha256 ?? body.source_sha256 ?? ""),
+  };
+}
+
+export async function getNetworkGraph(versionId: string): Promise<NetworkGraph> {
+  const response = await fetch(`/api/v1/network-versions/${versionId}/graph`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw networkError(response.status, "Could not load the graph.");
+  }
+  return (await response.json()) as NetworkGraph;
+}
+
+export async function validateNetworkVersion(
+  versionId: string,
+): Promise<NetworkValidation> {
+  const response = await fetch(
+    `/api/v1/network-versions/${versionId}/validate`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: csrfHeaders(),
+      body: JSON.stringify({}),
+    },
+  );
+  if (!response.ok) {
+    throw networkError(response.status, "Could not validate the version.");
+  }
+  return (await response.json()) as NetworkValidation;
+}
+
+export function networkVersionXmlUrl(versionId: string): string {
+  return `/api/v1/network-versions/${versionId}/xml`;
+}
+
+export async function getModelBundle(workflow: string): Promise<ModelBundle> {
+  const response = await fetch(`/api/v1/model-bundles/${workflow}`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw networkError(response.status, "Could not load the bundle.");
+  }
+  return (await response.json()) as ModelBundle;
+}
+
+export async function activateModelBundle(body: {
+  workflow: string;
+  pins: BundlePinInput[];
+  expected_revision: number;
+}): Promise<ModelBundle> {
+  const response = await fetch("/api/v1/model-bundles/activate", {
+    method: "POST",
+    credentials: "include",
+    headers: csrfHeaders({ "Idempotency-Key": idempotencyKey() }),
+    body: JSON.stringify(body),
+  });
+  if (response.status === 412) {
+    throw statusError(
+      "Bundle changed. Reload and reconcile your edits.",
+      412,
+    );
+  }
+  if (response.status === 422) {
+    let detail = "Invalid bundle.";
+    try {
+      const payload = (await response.clone().text()) as string;
+      if (payload) {
+        detail = payload.slice(0, 500);
+      }
+    } catch {
+      /* keep generic message */
+    }
+    throw statusError(detail, 422);
+  }
+  if (!response.ok) {
+    throw networkError(response.status, "Could not activate the bundle.");
+  }
+  return (await response.json()) as ModelBundle;
+}
+
+export async function rollbackModelBundle(body: {
+  workflow: string;
+  target_revision: number;
+  expected_revision: number;
+}): Promise<ModelBundle> {
+  const response = await fetch("/api/v1/model-bundles/rollback", {
+    method: "POST",
+    credentials: "include",
+    headers: csrfHeaders({ "Idempotency-Key": idempotencyKey() }),
+    body: JSON.stringify(body),
+  });
+  if (response.status === 412) {
+    throw statusError(
+      "Bundle changed. Reload and reconcile your edits.",
+      412,
+    );
+  }
+  if (!response.ok) {
+    throw networkError(response.status, "Could not roll back the bundle.");
+  }
+  return (await response.json()) as ModelBundle;
+}
 export async function login(
   username: string,
   password: string,
