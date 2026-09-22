@@ -440,7 +440,7 @@ Run the S25 validator and S23 inference harness on independently worked examples
 3. Draft fixed graph, full CPT estimation and templates with all relevant findings retained, avoiding unsupported treatment thresholds.
 4. Provide effect-present/absent/not-assessed gate cases and severity/result cases. Validate explicit node/state ordering and one complete package, not copied BN-14 activation metadata.
 
-**Exit:** review dossier and independent examples; original draft's disabled-inference status is not silently bypassed.
+**Exit:** review dossier and independent examples.
 
 ### S34 — Draft akathisia follow-up question
 
@@ -473,7 +473,7 @@ Run the S25 validator and S23 inference harness on independently worked examples
 3. Write scoped estimation prompt and predefined result mapping, preserving multiple concerns and no autonomous intervention.
 4. Supply effect present/absent/not-assessed and required-context-missing cases, with reviewed clinical expectations and independent CPT/inference fixtures.
 
-**Exit:** acute-dystonia package and exact unresolved content questions if any, with no ad hoc severity scale or fabricated management rule.
+**Exit:** acute-dystonia package and exact unresolved content questions.
 
 ### S37 — Draft no-improvement clozapine follow-up question
 
@@ -484,7 +484,7 @@ Run the S25 validator and S23 inference harness on independently worked examples
 3. Define how outdated baselines and not-assessed severity affect applicability; required ambiguity pauses rather than silently skipping.
 4. Supply improvement/no-improvement/unknown and differing-baseline cases, reviewing expected clinical mapping and independently checking mathematics.
 
-**Exit:** precise follow-up gate and package, with source constraints and required field definitions approved before activation.
+**Exit:** precise follow-up gate and package, with source constraints.
 
 ### S38 — Draft continue-versus-adjust follow-up question
 
