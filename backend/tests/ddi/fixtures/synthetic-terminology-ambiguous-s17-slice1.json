@@ -1,0 +1,24 @@
+{
+  "_synthetic_fixture": true,
+  "_notice": "SYNTHETIC S17 slice-1 AMBIGUOUS terminology fixture. Conspicuously synthetic test data only — never clinical content, never content/ddi/aliases.json. The normalized alias 'ofloxacin' is deliberately claimed by two distinct concepts (ofloxacin-a and ofloxacin-b) so resolution must yield unresolved ambiguous/collision, never the first row. No fuzzy matching, no salt/strength rules.",
+  "concepts": [
+    {
+      "id": "ofloxacin-a",
+      "canonical_name": "ofloxacin-a",
+      "concept_type": "ingredient",
+      "aliases": ["ofloxacin"]
+    },
+    {
+      "id": "ofloxacin-b",
+      "canonical_name": "ofloxacin-b",
+      "concept_type": "ingredient",
+      "aliases": ["OFLOXACIN "]
+    },
+    {
+      "id": "sitagliptin",
+      "canonical_name": "sitagliptin",
+      "concept_type": "ingredient",
+      "aliases": ["Januvia"]
+    }
+  ]
+}

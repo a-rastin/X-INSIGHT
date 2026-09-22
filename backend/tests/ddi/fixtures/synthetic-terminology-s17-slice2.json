@@ -1,0 +1,54 @@
+{
+  "_synthetic_fixture": true,
+  "_notice": "SYNTHETIC S17 slice-2 terminology fixture. Conspicuously synthetic test data only — never clinical content, never content/ddi/aliases.json. Look-alikes clozapine/clonazepam/clomipramine are 3 distinct ingredient concepts (DDI design §9 example). quetiapine/sitagliptin carry NO salt/strength aliases. The long slash string is one explicit combination_drug whole-string concept (real Ondansetron entry text, pinned literal only). ethanol is substance, cinnamon is herbal. No fuzzy matching, no salt/strength stripping, no combination splitting.",
+  "concepts": [
+    {
+      "id": "clozapine",
+      "canonical_name": "clozapine",
+      "concept_type": "ingredient",
+      "aliases": []
+    },
+    {
+      "id": "clonazepam",
+      "canonical_name": "clonazepam",
+      "concept_type": "ingredient",
+      "aliases": []
+    },
+    {
+      "id": "clomipramine",
+      "canonical_name": "clomipramine",
+      "concept_type": "ingredient",
+      "aliases": []
+    },
+    {
+      "id": "quetiapine",
+      "canonical_name": "quetiapine",
+      "concept_type": "ingredient",
+      "aliases": []
+    },
+    {
+      "id": "sitagliptin",
+      "canonical_name": "sitagliptin",
+      "concept_type": "ingredient",
+      "aliases": []
+    },
+    {
+      "id": "elvitegravir-cobicistat-emtricitabine-tenofovir-df",
+      "canonical_name": "elvitegravir/cobicistat/emtricitabine/tenofovir DF",
+      "concept_type": "combination_drug",
+      "aliases": []
+    },
+    {
+      "id": "ethanol",
+      "canonical_name": "ethanol",
+      "concept_type": "substance",
+      "aliases": []
+    },
+    {
+      "id": "cinnamon",
+      "canonical_name": "cinnamon",
+      "concept_type": "herbal",
+      "aliases": []
+    }
+  ]
+}

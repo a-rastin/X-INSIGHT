@@ -1,0 +1,146 @@
+{
+  "_notice": "DRAFT S17 controlled DDI terminology for owner review. Draft status only — not approved, not released, never clinical guidance. Source-backed facts carry source_path+span; everything else is review_status draft/pending. No salt, strength, brand (beyond the one source-backed row), or combination equivalences are asserted.",
+  "version": 2,
+  "terminology_version": "ddi-terminology-1",
+  "review_status": "draft",
+  "reviewer": null,
+  "review_date": null,
+  "concepts": [
+    {
+      "id": "sitagliptin",
+      "canonical_name": "sitagliptin",
+      "concept_type": "ingredient",
+      "review_status": "draft",
+      "aliases": [
+        {
+          "alias": "Januvia",
+          "source_path": "docs/medical-docs/DDI-text/Antidiabetic Agents/Sitagliptin.txt",
+          "span": {"start_line": 5, "end_line": 5},
+          "note": "Brand and Other Names line 5",
+          "review_status": "draft"
+        },
+        {
+          "alias": "Zituvio",
+          "source_path": "docs/medical-docs/DDI-text/Antidiabetic Agents/Sitagliptin.txt",
+          "span": {"start_line": 5, "end_line": 5},
+          "note": "Brand and Other Names line 5",
+          "review_status": "draft"
+        },
+        {
+          "alias": "Brynovin",
+          "source_path": "docs/medical-docs/DDI-text/Antidiabetic Agents/Sitagliptin.txt",
+          "span": {"start_line": 5, "end_line": 5},
+          "note": "Brand and Other Names line 5",
+          "review_status": "draft"
+        }
+      ]
+    },
+    {
+      "id": "ofloxacin",
+      "canonical_name": "ofloxacin",
+      "concept_type": "ingredient",
+      "review_status": "draft",
+      "aliases": []
+    },
+    {
+      "id": "erdafitinib",
+      "canonical_name": "erdafitinib",
+      "concept_type": "ingredient",
+      "review_status": "draft",
+      "aliases": []
+    },
+    {
+      "id": "sotorasib",
+      "canonical_name": "sotorasib",
+      "concept_type": "ingredient",
+      "review_status": "draft",
+      "aliases": []
+    },
+    {
+      "id": "tepotinib",
+      "canonical_name": "tepotinib",
+      "concept_type": "ingredient",
+      "review_status": "draft",
+      "aliases": []
+    },
+    {
+      "id": "ethanol",
+      "canonical_name": "ethanol",
+      "concept_type": "substance",
+      "review_status": "draft",
+      "aliases": []
+    },
+    {
+      "id": "quetiapine",
+      "canonical_name": "quetiapine",
+      "concept_type": "ingredient",
+      "review_status": "draft",
+      "source_path": "docs/medical-docs/DDI-text/Antidiabetic Agents/Sitagliptin.txt",
+      "span": {"start_line": 549, "end_line": 549},
+      "note": "Entry header line 549. No salt alias asserted: 'quetiapine fumarate' is not an alias of this concept.",
+      "aliases": []
+    },
+    {
+      "id": "elvitegravir-cobicistat-emtricitabine-tenofovir-df",
+      "canonical_name": "elvitegravir/cobicistat/emtricitabine/tenofovir DF",
+      "concept_type": "combination_drug",
+      "review_status": "draft",
+      "source_path": "docs/medical-docs/DDI-text/Gastrointestinal Medications/Ondansetron.txt",
+      "span": {"start_line": 1140, "end_line": 1140},
+      "note": "Whole-string entry header line 1140. Resolves only as a whole; never split into parts, no part aliases asserted.",
+      "aliases": []
+    },
+    {
+      "id": "cinnamon",
+      "canonical_name": "cinnamon",
+      "concept_type": "herbal",
+      "review_status": "draft",
+      "source_path": "docs/medical-docs/DDI-text/Antidiabetic Agents/Sitagliptin.txt",
+      "span": {"start_line": 221, "end_line": 221},
+      "note": "Entry header line 221. Herbal typing is a draft modeling assumption for owner review.",
+      "aliases": []
+    }
+  ],
+  "pending_decisions": [
+    {
+      "decision": "brand_alias_expansion",
+      "detail": "No brand aliases reviewed for ofloxacin, erdafitinib, sotorasib, tepotinib, or ethanol. Candidate brand names from outside the monograph corpus are NOT asserted here.",
+      "review_status": "pending"
+    },
+    {
+      "decision": "ethanol_synonyms",
+      "detail": "Whether source spellings such as 'alcohol' denote the ethanol concept is unreviewed; no synonym asserted.",
+      "review_status": "pending"
+    },
+    {
+      "decision": "salt_strength_combination_rules",
+      "detail": "Salt/street-salt variants, strength stripping, and combination-drug splitting have no reviewed rules and are not applied.",
+      "review_status": "pending"
+    },
+    {
+      "decision": "look_alike_review",
+      "detail": "Look-alike distinctness (e.g. clozapine/clonazepam/clomipramine class of confusions) has no reviewed ruling in this draft; resolution is exact-match only so no confusion is possible yet.",
+      "review_status": "pending"
+    },
+    {
+      "decision": "alias_collision_review",
+      "detail": "Any normalized alias claimed by two or more concepts is a collision for owner review and never resolves silently. This draft asserts no collisions.",
+      "review_status": "pending"
+    },
+    {
+      "decision": "bitter_melon_typing",
+      "detail": "Entry header docs/medical-docs/DDI-text/Antidiabetic Agents/Sitagliptin.txt line 189 ('bitter melon'). Whether this is a herbal or food concept is unreviewed; no concept asserted.",
+      "review_status": "pending"
+    },
+    {
+      "decision": "american_ginseng_typing",
+      "detail": "Entry header docs/medical-docs/DDI-text/Antidiabetic Agents/Sitagliptin.txt line 664 ('American ginseng'). Herbal candidacy is unreviewed; no concept asserted.",
+      "review_status": "pending"
+    },
+    {
+      "decision": "marijuana_typing",
+      "detail": "Entry header docs/medical-docs/DDI-text/Antidiabetic Agents/Sitagliptin.txt line 489 ('marijuana'). Whether this is a substance, other, or another type is unreviewed; no concept and no synonym (e.g. cannabis) asserted.",
+      "review_status": "pending"
+    }
+  ]
+}

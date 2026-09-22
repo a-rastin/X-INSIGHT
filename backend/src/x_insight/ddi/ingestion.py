@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 from pathlib import Path
 from typing import Any
+
+from x_insight.ddi.terminology import Terminology, load_terminology, resolve
 
 PARSER_VERSION = "ddi-ingest-1"
 
@@ -449,6 +452,24 @@ def _input_provenance(path: Path | None) -> dict[str, str] | None:
     return {"path": str(path), "sha256": _sha256_hex(path.read_bytes())}
 
 
+def _load_resolvable_terminology(path: Path | None) -> Terminology | None:
+    """Return a terminology for entry resolution, or None for provenance-only.
+
+    S15 placeholder inputs (no 'concepts' table, or unparseable bytes) stay
+    provenance-only and are never parsed. Files carrying a 'concepts' list
+    (S17 fixtures, content/ddi/aliases.json) resolve.
+    """
+    if path is None:
+        return None
+    try:
+        raw: Any = json.loads(path.read_bytes().decode("utf-8-sig"))
+    except (ValueError, UnicodeDecodeError):
+        return None
+    if not isinstance(raw, dict) or not isinstance(raw.get("concepts"), list):
+        return None
+    return load_terminology(path)
+
+
 def build(
     source_dir: Path,
     terminology: Path | None = None,
@@ -462,6 +483,35 @@ def build(
         )
         documents.append(candidate)
         reports.append(report)
+    terminology_table = _load_resolvable_terminology(terminology)
+    report_terminology: dict[str, Any] | None = None
+    if terminology_table is not None:
+        for document in documents:
+            for category in document["categories"]:
+                for entry in category["entries"]:
+                    entry["name_resolution"] = resolve(
+                        entry["name_text"], terminology_table
+                    )
+        report_terminology = {
+            "terminology_version": terminology_table.version,
+            "concept_count": len(terminology_table.concepts),
+            "collisions": [
+                {
+                    "alias": alias,
+                    "concept_ids": sorted(terminology_table.index[alias]),
+                }
+                for alias in terminology_table.collisions
+            ],
+            "unresolved_names": sorted(
+                {
+                    entry["name_text"]
+                    for document in documents
+                    for category in document["categories"]
+                    for entry in category["entries"]
+                    if entry["name_resolution"]["status"] == "unresolved"
+                }
+            ),
+        }
     return {
         "candidates": {
             "schema_version": 1,
@@ -478,5 +528,6 @@ def build(
             },
             "documents": reports,
             "ok": all(item["ok"] for item in reports),
+            "terminology": report_terminology,
         },
     }

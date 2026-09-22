@@ -1,0 +1,18 @@
+{
+  "_synthetic_fixture": true,
+  "_notice": "SYNTHETIC S17 slice-1 terminology fixture. Conspicuously synthetic test data only — never clinical content, never content/ddi/aliases.json. Unambiguous concepts for slice-1 test 1: sitagliptin (source-backed aliases Januvia/Zituvio/Brynovin from docs/medical-docs/DDI-text/Antidiabetic Agents/Sitagliptin.txt line 5 'Brand and Other Names: Januvia, Zituvio, Brynovin') plus ofloxacin. No fuzzy matching, no salt/strength rules.",
+  "concepts": [
+    {
+      "id": "sitagliptin",
+      "canonical_name": "sitagliptin",
+      "concept_type": "ingredient",
+      "aliases": ["Januvia", "Zituvio", "Brynovin"]
+    },
+    {
+      "id": "ofloxacin",
+      "canonical_name": "ofloxacin",
+      "concept_type": "ingredient",
+      "aliases": []
+    }
+  ]
+}
