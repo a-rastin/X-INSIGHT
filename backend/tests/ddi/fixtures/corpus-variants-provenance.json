@@ -1,0 +1,1014 @@
+{
+ "fixture_copy_rule": "tests build over a temp sources/ dir containing byte-identical copies at the 'Group/Name.txt' relative stems below (subject detection uses the stem \u2014 NEVER rename to x.txt); each copy's sha256 is asserted equal to the recorded original sha256. Originals under docs/medical-docs/DDI-text are READ-ONLY.",
+ "files": [
+  {
+   "category_headings": [
+    {
+     "category": "contraindicated",
+     "declared_count": 4,
+     "span": {
+      "end_line": 142,
+      "start_line": 142
+     },
+     "text": "Contraindicated (4)"
+    },
+    {
+     "category": "serious",
+     "declared_count": 164,
+     "span": {
+      "end_line": 170,
+      "start_line": 170
+     },
+     "text": "Serious (164)"
+    },
+    {
+     "category": "monitor_closely",
+     "declared_count": 101,
+     "span": {
+      "end_line": 986,
+      "start_line": 986
+     },
+     "text": "Monitor Closely (101)"
+    },
+    {
+     "category": "minor",
+     "declared_count": 28,
+     "span": {
+      "end_line": 1446,
+      "start_line": 1446
+     },
+     "text": "Minor (28)"
+    }
+   ],
+   "contra_entries": [
+    {
+     "header_line": 143,
+     "name_text": "apomorphine",
+     "paragraphs": [
+      {
+       "span": {
+        "end_line": 147,
+        "start_line": 144
+       },
+       "text": "apomorphine, ondansetron. Mechanism: unspecified interaction mechanism. Contraindicated. Profound hypotension and loss of consciousness reported when 5HT3 antagonists are coadministered with apomorphine. Additionally, ondansetron may cause additive QT prolongation with apomorphine."
+      }
+     ],
+     "span": {
+      "end_line": 147,
+      "start_line": 143
+     }
+    },
+    {
+     "header_line": 148,
+     "name_text": "dronedarone",
+     "paragraphs": [
+      {
+       "span": {
+        "end_line": 150,
+        "start_line": 149
+       },
+       "text": "dronedarone will increase the level or effect of ondansetron by affecting hepatic/intestinal enzyme CYP3A4 metabolism. Contraindicated."
+      },
+      {
+       "span": {
+        "end_line": 154,
+        "start_line": 151
+       },
+       "text": "dronedarone and ondansetron both increase QTc interval. Contraindicated. Avoid with congenital long QT syndrome; ECG monitoring recommended with concomitant medications that prolong QT interval, electrolyte abnormalities, CHF, or bradyarrhythmias."
+      }
+     ],
+     "span": {
+      "end_line": 154,
+      "start_line": 148
+     }
+    },
+    {
+     "header_line": 155,
+     "name_text": "lefamulin",
+     "paragraphs": [
+      {
+       "span": {
+        "end_line": 158,
+        "start_line": 156
+       },
+       "text": "lefamulin will increase the level or effect of ondansetron by affecting hepatic/intestinal enzyme CYP3A4 metabolism. Contraindicated. Lefamulin is contraindicated with CYP3A substrates know to prolong the QT interval."
+      }
+     ],
+     "span": {
+      "end_line": 158,
+      "start_line": 155
+     }
+    },
+    {
+     "header_line": 159,
+     "name_text": "posaconazole",
+     "paragraphs": [
+      {
+       "span": {
+        "end_line": 161,
+        "start_line": 160
+       },
+       "text": "posaconazole will increase the level or effect of ondansetron by affecting hepatic/intestinal enzyme CYP3A4 metabolism. Contraindicated."
+      }
+     ],
+     "span": {
+      "end_line": 161,
+      "start_line": 159
+     }
+    }
+   ],
+   "original": {
+    "bom": false,
+    "byte_count": 86555,
+    "cr_bytes": 0,
+    "line_endings": "LF only (0 CR bytes in the file)",
+    "path": "docs/medical-docs/DDI-text/Gastrointestinal Medications/Ondansetron.txt",
+    "read_only": true,
+    "sha256": "cf5fcef10659632064d8bc4b81657548565e8ef3414a402fbe055f090bcbf25e",
+    "splitlines": 1774
+   },
+   "page_chrome": [
+    {
+     "kind": "sponsor_ad_block",
+     "lines": [
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168
+     ],
+     "texts": [
+      "Sponsor",
+      "Luxena Pharmaceuticals, Inc; 1400 Coleman Avenue, Suite D27; Santa Clara,",
+      "California 95050",
+      "6/22/26, 5:31 PM",
+      "Zofran (ondansetron) dosing, indications, interactions, adverse effects, and more",
+      "https://reference.medscape.com/drug/ondansetron-342052",
+      "5/41"
+     ]
+    }
+   ],
+   "section_end_markers": [
+    {
+     "span": {
+      "end_line": 1550,
+      "start_line": 1550
+     },
+     "text": "Adverse Effects"
+    },
+    {
+     "span": {
+      "end_line": 1615,
+      "start_line": 1615
+     },
+     "text": "Warnings"
+    }
+   ],
+   "sponsor_block_note": "lines 162-168 (Sponsor/address/bare datetime/dosing title/bare url/bare pager) sit INSIDE the contraindicated block between the posaconazole entry (ends 161) and the Serious (164) heading (170); they are chrome, never entries, and never entry text",
+   "continuation_spans": [
+    {
+     "blank_line": 1010,
+     "category": "monitor_closely",
+     "chrome_lines": [
+      1006,
+      1007,
+      1008,
+      1009
+     ],
+     "description_lines": [
+      1004,
+      1005
+     ],
+     "entry_span": {
+      "end_line": 1011,
+      "start_line": 1003
+     },
+     "header_line": 1003,
+     "name_text": "albuterol inhaled",
+     "next_header": {
+      "line": 1012,
+      "name_text": "alfuzosin"
+     },
+     "tail_fragment": {
+      "line": 1011,
+      "text": "changes"
+     }
+    },
+    {
+     "blank_line": 1148,
+     "category": "monitor_closely",
+     "chrome_lines": [
+      1144,
+      1145,
+      1146,
+      1147
+     ],
+     "description_lines": [
+      1141,
+      1142,
+      1143
+     ],
+     "entry_span": {
+      "end_line": 1150,
+      "start_line": 1140
+     },
+     "header_line": 1140,
+     "name_text": "elvitegravir/cobicistat/emtricitabine/tenofovir DF",
+     "next_header": {
+      "line": 1151,
+      "name_text": "encorafenib"
+     },
+     "tail_fragment": {
+      "lines": [
+       1149,
+       1150
+      ],
+      "text": "for which elevated plasma concentrations are associated with serious and/or life- threatening events."
+     }
+    },
+    {
+     "blank_line": 1338,
+     "category": "monitor_closely",
+     "chrome_lines": [
+      1334,
+      1335,
+      1336,
+      1337
+     ],
+     "description_lines": [
+      1331,
+      1332,
+      1333
+     ],
+     "entry_span": {
+      "end_line": 1340,
+      "start_line": 1330
+     },
+     "header_line": 1330,
+     "name_text": "panobinostat",
+     "next_header": {
+      "line": 1341,
+      "name_text": "pasireotide"
+     },
+     "tail_fragment": {
+      "lines": [
+       1339,
+       1340
+      ],
+      "text": "recommended; however, antiemetic drugs known to prolong QTc (eg, dolasetron, granisetron, ondansetron) can be used with frequent ECG monitoring."
+     }
+    }
+   ],
+   "continuation_rule_note": "across-chrome join takes precedence over the entry-header grammar, and P2-wraps-P1 takes precedence within it: a no-period fragment after a chrome gap joins the pre-gap open entry when the pre-gap content line is an unfinished sentence. Current parser behavior (RED): the three fragments are parsed as bogus entries named changes / for which ... / recommended; however ... ."
+  },
+  {
+   "category_headings": [
+    {
+     "category": "contraindicated",
+     "declared_count": 0,
+     "span": {
+      "end_line": 56,
+      "start_line": 56
+     },
+     "text": "Contraindicated (0)"
+    },
+    {
+     "category": "serious",
+     "declared_count": 10,
+     "span": {
+      "end_line": 58,
+      "start_line": 58
+     },
+     "text": "Serious (10)"
+    },
+    {
+     "category": "monitor_closely",
+     "declared_count": 103,
+     "span": {
+      "end_line": 113,
+      "start_line": 113
+     },
+     "text": "Monitor Closely (103)"
+    },
+    {
+     "category": "minor",
+     "declared_count": 24,
+     "span": {
+      "end_line": 655,
+      "start_line": 655
+     },
+     "text": "Minor (24)"
+    }
+   ],
+   "continuation_spans": [
+    {
+     "blank_line": 72,
+     "category": "serious",
+     "chrome_lines": [
+      73,
+      75,
+      78,
+      80
+     ],
+     "description_lines": [
+      70,
+      71
+     ],
+     "entry_span": {
+      "end_line": 83,
+      "start_line": 69
+     },
+     "header_line": 69,
+     "joined_text": "Comment: Coadministration of anticholinergic drugs and glucagon increase the risk of gastrointestinal adverse reactions due to additive effects on inhibition of gastrointestinal motility. .",
+     "name_text": "glucagon intranasal",
+     "next_header": {
+      "line": 84,
+      "name_text": "glycopyrronium tosylate topical"
+     },
+     "tail_fragment": {
+      "lines": [
+       82,
+       83
+      ],
+      "text": "glucagon increase the risk of gastrointestinal adverse reactions due to additive effects on inhibition of gastrointestinal motility. ."
+     }
+    }
+   ],
+   "line_numbering_note": "spans use parser numbering: decode('utf-8-sig').splitlines() 1-based. This file carries 21 FF (0x0C) bytes, each fused to the start of a datetime chrome line (FF byte prepended to the datetime text). Heading cross-check: splitlines 56/58/113/655/757/816 vs grep -n 55/57/111/641/741/798. CORRECTION to the assignment literal 'Minor (24) L641': 641 is the grep -n number; the true splitlines (parser) number pinned here is 655.",
+   "original": {
+    "bom": false,
+    "byte_count": 36523,
+    "cr_bytes": 0,
+    "formfeed_bytes": 21,
+    "line_endings": "LF only (0 CR bytes in the file)",
+    "path": "docs/medical-docs/DDI-text/Anticholinergics & Parkinsonism Agents/Atropine.txt",
+    "read_only": true,
+    "sha256": "cb0945149c56b143bedd2dfa229fb5eb0a9f5e723edc0cc7ca604f3595469735",
+    "splitlines": 913
+   },
+   "page_chrome": [
+    {
+     "kind": "url_footer_bare",
+     "line": 73,
+     "note": "no trailing page counter on this variant",
+     "text": "https://reference.medscape.com/drug/atreza-atropine-po-342061"
+    },
+    {
+     "kind": "pager_bare",
+     "line": 75,
+     "text": "2/21"
+    },
+    {
+     "kind": "datetime_bare",
+     "line": 78,
+     "note": "raw bytes prefix this line with FF (0x0C); stripped text is the bare datetime",
+     "text": "6/22/26, 6:24 AM"
+    },
+    {
+     "kind": "dosing_title",
+     "line": 80,
+     "text": "Atreza, Atropine PO (atropine) dosing, indications, interactions, adverse effects, and more"
+    }
+   ],
+   "section_end_markers": [
+    {
+     "span": {
+      "end_line": 757,
+      "start_line": 757
+     },
+     "text": "Adverse Effects"
+    },
+    {
+     "span": {
+      "end_line": 816,
+      "start_line": 816
+     },
+     "text": "Warnings"
+    }
+   ]
+  },
+  {
+   "category_headings": [
+    {
+     "category": "contraindicated",
+     "declared_count": 7,
+     "span": {
+      "end_line": 303,
+      "start_line": 303
+     },
+     "text": "Contraindicated (7)"
+    },
+    {
+     "category": "serious",
+     "declared_count": 87,
+     "span": {
+      "end_line": 350,
+      "start_line": 350
+     },
+     "text": "Serious (87)"
+    },
+    {
+     "category": "monitor_closely",
+     "declared_count": 322,
+     "span": {
+      "end_line": 964,
+      "start_line": 964
+     },
+     "text": "Monitor Closely (322)"
+    },
+    {
+     "category": "minor",
+     "declared_count": 21,
+     "span": {
+      "end_line": 2549,
+      "start_line": 2549
+     },
+     "text": "Minor (21)"
+    }
+   ],
+   "continuation_spans": [
+    {
+     "blank_line": 1525,
+     "category": "monitor_closely",
+     "chrome_lines": [
+      1526,
+      1530
+     ],
+     "description_lines": [
+      1522,
+      1523,
+      1524
+     ],
+     "entry_span": {
+      "end_line": 1533,
+      "start_line": 1521
+     },
+     "header_line": 1521,
+     "name_text": "encorafenib",
+     "next_header": {
+      "line": 1535,
+      "name_text": "enzalutamide"
+     },
+     "tail_fragment": {
+      "lines": [
+       1532,
+       1533
+      ],
+      "text": "CYP3A4 substrates may result in increased toxicity or decreased efficacy of these agents."
+     }
+    }
+   ],
+   "original": {
+    "bom": true,
+    "byte_count": 125828,
+    "cr_bytes": 0,
+    "line_endings": "LF only (0 CR bytes in the file)",
+    "path": "docs/medical-docs/DDI-text/Analgesics and NSAIDs/Tramadol.txt",
+    "read_only": true,
+    "sha256": "f006c2932b09da37343de94dba6b69d52bd2cdfc6cf4b478cfa7f7dfc9339598",
+    "splitlines": 3454
+   },
+   "page_chrome": [
+    {
+     "kind": "url_footer",
+     "line": 1526,
+     "text": "https://reference.medscape.com/drug/ultram-conzip-tramadol-343324 26/58"
+    },
+    {
+     "kind": "timestamp_title",
+     "line": 1530,
+     "text": "6/22/26, 5:51 PM Ultram (DSC), ConZip (tramadol) dosing, indications, interactions, adverse effects, and more"
+    }
+   ],
+   "section_end_markers": [
+    {
+     "span": {
+      "end_line": 2642,
+      "start_line": 2642
+     },
+     "text": "Adverse Effects"
+    },
+    {
+     "span": {
+      "end_line": 2879,
+      "start_line": 2879
+     },
+     "text": "Warnings"
+    }
+   ]
+  },
+  {
+   "category_headings": [
+    {
+     "category": "contraindicated",
+     "declared_count": 0,
+     "span": {
+      "end_line": 251,
+      "start_line": 251
+     },
+     "text": "Contraindicated (0)"
+    },
+    {
+     "category": "serious",
+     "declared_count": 3,
+     "span": {
+      "end_line": 253,
+      "start_line": 253
+     },
+     "text": "Serious (3)"
+    },
+    {
+     "category": "monitor_closely",
+     "declared_count": 24,
+     "span": {
+      "end_line": 274,
+      "start_line": 274
+     },
+     "text": "Monitor Closely (24)"
+    },
+    {
+     "category": "minor",
+     "declared_count": 48,
+     "span": {
+      "end_line": 429,
+      "start_line": 429
+     },
+     "text": "Minor (48)"
+    }
+   ],
+   "continuation_spans": [
+    {
+     "blank_line": 337,
+     "category": "monitor_closely",
+     "chrome_lines": [
+      338,
+      342
+     ],
+     "description_lines": [
+      335,
+      336
+     ],
+     "entry_span": {
+      "end_line": 345,
+      "start_line": 334
+     },
+     "header_line": 334,
+     "name_text": "flibanserin",
+     "next_header": {
+      "line": 347,
+      "name_text": "imatinib"
+     },
+     "tail_fragment": {
+      "lines": [
+       344,
+       345
+      ],
+      "text": "flibanserin adverse effects may occur if coadministered with multiple weak CYP3A4 inhibitors."
+     }
+    },
+    {
+     "blank_line": 396,
+     "category": "monitor_closely",
+     "chrome_lines": [
+      397,
+      401
+     ],
+     "description_lines": [
+      394,
+      395
+     ],
+     "entry_span": {
+      "end_line": 404,
+      "start_line": 393
+     },
+     "header_line": 393,
+     "name_text": "midazolam intranasal",
+     "next_header": {
+      "line": 406,
+      "name_text": "mipomersen"
+     },
+     "tail_fragment": {
+      "lines": [
+       403,
+       404
+      ],
+      "text": "Coadministration of mild CYP3A4 inhibitors with midazolam intranasal may cause higher midazolam systemic exposure, which may prolong sedation."
+     }
+    }
+   ],
+   "original": {
+    "bom": true,
+    "byte_count": 25476,
+    "cr_bytes": 0,
+    "line_endings": "LF only (0 CR bytes in the file)",
+    "path": "docs/medical-docs/DDI-text/Analgesics and NSAIDs/Acetaminophen.txt",
+    "read_only": true,
+    "sha256": "1307eb381ba3b9399d30cf821f205d843e8603674de451201940a10ec2303117",
+    "splitlines": 858
+   },
+   "page_chrome": [
+    {
+     "kind": "url_footer",
+     "line": 338,
+     "text": "https://reference.medscape.com/drug/tylenol-acetaminophen-343346 6/15"
+    },
+    {
+     "kind": "timestamp_title",
+     "line": 342,
+     "text": "6/22/26, 5:49 PM Tylenol (acetaminophen) dosing, indications, interactions, adverse effects, and more"
+    },
+    {
+     "kind": "url_footer",
+     "line": 397,
+     "text": "https://reference.medscape.com/drug/tylenol-acetaminophen-343346 7/15"
+    },
+    {
+     "kind": "timestamp_title",
+     "line": 401,
+     "text": "6/22/26, 5:49 PM Tylenol (acetaminophen) dosing, indications, interactions, adverse effects, and more"
+    }
+   ],
+   "section_end_markers": [
+    {
+     "span": {
+      "end_line": 677,
+      "start_line": 677
+     },
+     "text": "Adverse Effects"
+    },
+    {
+     "span": {
+      "end_line": 731,
+      "start_line": 731
+     },
+     "text": "Warnings"
+    }
+   ]
+  },
+  {
+   "category_headings": [
+    {
+     "category": "contraindicated",
+     "declared_count": 0,
+     "span": {
+      "end_line": 157,
+      "start_line": 157
+     },
+     "text": "Contraindicated (0)"
+    },
+    {
+     "category": "serious",
+     "declared_count": 23,
+     "span": {
+      "end_line": 159,
+      "start_line": 159
+     },
+     "text": "Serious (23)"
+    },
+    {
+     "category": "monitor_closely",
+     "declared_count": 267,
+     "span": {
+      "end_line": 315,
+      "start_line": 315
+     },
+     "text": "Monitor Closely (267)"
+    },
+    {
+     "category": "minor",
+     "declared_count": 119,
+     "span": {
+      "end_line": 1879,
+      "start_line": 1879
+     },
+     "text": "Minor (119)"
+    }
+   ],
+   "continuation_spans": [
+    {
+     "blank_line": 206,
+     "category": "serious",
+     "chrome_lines": [
+      207,
+      211
+     ],
+     "description_lines": [
+      203,
+      204,
+      205
+     ],
+     "entry_span": {
+      "end_line": 214,
+      "start_line": 202
+     },
+     "header_line": 202,
+     "name_text": "fosinopril",
+     "next_header": {
+      "line": 216,
+      "name_text": "ivosidenib"
+     },
+     "note": "the serious-category fosinopril occurrence; a second fosinopril entry lives in monitor_closely",
+     "tail_fragment": {
+      "lines": [
+       213,
+       214
+      ],
+      "text": "interactions is likely related to the ability of NSAIDs to reduce the synthesis of vasodilating renal prostaglandins."
+     }
+    }
+   ],
+   "original": {
+    "bom": true,
+    "byte_count": 104953,
+    "cr_bytes": 0,
+    "line_endings": "LF only (0 CR bytes in the file)",
+    "path": "docs/medical-docs/DDI-text/Analgesics and NSAIDs/Celecoxib.txt",
+    "read_only": true,
+    "sha256": "4ad3411ce9c9b4ea16defd4a695d0d151158e9d1dcea97e804b70a27df02eae7",
+    "splitlines": 2911
+   },
+   "page_chrome": [
+    {
+     "kind": "url_footer",
+     "line": 207,
+     "text": "https://reference.medscape.com/drug/celebrex-elyxyb-celecoxib-343282 4/50"
+    },
+    {
+     "kind": "timestamp_title",
+     "line": 211,
+     "text": "6/22/26, 5:49 PM Celebrex, Elyxyb (celecoxib) dosing, indications, interactions, adverse effects, and more"
+    }
+   ],
+   "section_end_markers": [
+    {
+     "span": {
+      "end_line": 2432,
+      "start_line": 2432
+     },
+     "text": "Adverse Effects"
+    },
+    {
+     "span": {
+      "end_line": 2508,
+      "start_line": 2508
+     },
+     "text": "Warnings"
+    }
+   ]
+  },
+  {
+   "category_headings": [
+    {
+     "category": "contraindicated",
+     "declared_count": 8,
+     "span": {
+      "end_line": 267,
+      "start_line": 267
+     },
+     "text": "Contraindicated (8)"
+    },
+    {
+     "category": "serious",
+     "declared_count": 28,
+     "span": {
+      "end_line": 332,
+      "start_line": 332
+     },
+     "text": "Serious (28)"
+    },
+    {
+     "category": "monitor_closely",
+     "declared_count": 115,
+     "span": {
+      "end_line": 508,
+      "start_line": 508
+     },
+     "text": "Monitor Closely (115)"
+    },
+    {
+     "category": "minor",
+     "declared_count": 19,
+     "span": {
+      "end_line": 1233,
+      "start_line": 1233
+     },
+     "text": "Minor (19)"
+    }
+   ],
+   "continuation_spans": [
+    {
+     "blank_line": 1281,
+     "category": "minor",
+     "chrome_lines": [
+      1282,
+      1286
+     ],
+     "description_line": 1280,
+     "entry_span": {
+      "end_line": 1288,
+      "start_line": 1279
+     },
+     "header_line": 1279,
+     "name_text": "modafinil",
+     "next_header": {
+      "line": 1290,
+      "name_text": "nicotine inhaled"
+     },
+     "tail_fragment": {
+      "line": 1288,
+      "text": "levels of bupropion, but incr levels of active metabolites. ."
+     }
+    }
+   ],
+   "original": {
+    "bom": true,
+    "byte_count": 64055,
+    "cr_bytes": 0,
+    "line_endings": "LF only (0 CR bytes in the file)",
+    "path": "docs/medical-docs/DDI-text/Antidepressants/Bupropion.txt",
+    "read_only": true,
+    "sha256": "39949f078ba840b5adb67c578ef548f7795f1f07bd4be88c974a4b155072a5dd",
+    "splitlines": 1738
+   },
+   "page_chrome": [
+    {
+     "kind": "url_footer",
+     "line": 1282,
+     "text": "https://reference.medscape.com/drug/wellbutrin-aplenzin-bupropion-342954 22/30"
+    },
+    {
+     "kind": "timestamp_title",
+     "line": 1286,
+     "text": "6/22/26, 4:31 PM Wellbutrin XL, Aplenzin (bupropion) dosing, indications, interactions, adverse effects, and more"
+    }
+   ],
+   "section_end_markers": [
+    {
+     "span": {
+      "end_line": 1329,
+      "start_line": 1329
+     },
+     "text": "Adverse Effects"
+    },
+    {
+     "span": {
+      "end_line": 1457,
+      "start_line": 1457
+     },
+     "text": "Warnings"
+    }
+   ],
+   "wrapped_heading_note": "header 1279 'modafinil' + description line 1280 (ending '... Decr', unfinished sentence) + chrome gap + wrapped fragment 1288: one entry, no orphan fragment entry"
+  },
+  {
+   "category_headings": [
+    {
+     "category": "contraindicated",
+     "declared_count": 18,
+     "span": {
+      "end_line": 137,
+      "start_line": 137
+     },
+     "text": "Contraindicated (18)"
+    },
+    {
+     "category": "serious",
+     "declared_count": 159,
+     "span": {
+      "end_line": 219,
+      "start_line": 219
+     },
+     "text": "Serious (159)"
+    },
+    {
+     "category": "monitor_closely",
+     "declared_count": 399,
+     "span": {
+      "end_line": 1219,
+      "start_line": 1219
+     },
+     "text": "Monitor Closely (399)"
+    },
+    {
+     "category": "minor",
+     "declared_count": 65,
+     "span": {
+      "end_line": 3196,
+      "start_line": 3196
+     },
+     "text": "Minor (65)"
+    }
+   ],
+   "continuation_spans": [
+    {
+     "blank_line": 1209,
+     "category": "serious",
+     "chrome_lines": [
+      1210,
+      1214
+     ],
+     "description_lines": [
+      1207,
+      1208
+     ],
+     "description_tail": "Coadministration of zuranolone with other",
+     "entry_span": {
+      "end_line": 1217,
+      "start_line": 1206
+     },
+     "header_line": 1206,
+     "name_text": "zuranolone",
+     "next_heading": {
+      "line": 1219,
+      "text": "Monitor Closely (399)"
+     },
+     "tail_fragment": {
+      "lines": [
+       1216,
+       1217
+      ],
+      "text": "CNS depressants may increase impairment of psychomotor performance or CNS depressant effects. If unavoidable, consider dose reduction. ."
+     }
+    }
+   ],
+   "original": {
+    "bom": true,
+    "byte_count": 134307,
+    "cr_bytes": 0,
+    "line_endings": "LF only (0 CR bytes in the file)",
+    "path": "docs/medical-docs/DDI-text/Antidepressants/Nortriptyline.txt",
+    "read_only": true,
+    "sha256": "ad04bb2db22c5e39d30641802bf2aa5f9b3a16a6a477eb45faee9316a78b36b1",
+    "splitlines": 3803
+   },
+   "page_chrome": [
+    {
+     "kind": "url_footer",
+     "line": 1210,
+     "text": "https://reference.medscape.com/drug/pamelor-nortriptyline-342944 21/65"
+    },
+    {
+     "kind": "timestamp_title",
+     "line": 1214,
+     "text": "6/22/26, 4:27 PM Pamelor, Aventyl (nortriptyline) dosing, indications, interactions, adverse effects, and more"
+    }
+   ],
+   "section_end_markers": [
+    {
+     "span": {
+      "end_line": 3553,
+      "start_line": 3553
+     },
+     "text": "Adverse Effects"
+    },
+    {
+     "span": {
+      "end_line": 3617,
+      "start_line": 3617
+     },
+     "text": "Warnings"
+    }
+   ],
+   "wrapped_desc_note": "description ends mid-sentence at 1208 ('... with other') + chrome gap + tail 1216-1217: one entry span 1206-1217, no fragment entry; the Monitor Closely (399) heading at 1219 immediately follows"
+  },
+  {
+   "category_headings": [],
+   "category_headings_note": "no count-bearing category headings anywhere in the file (verified with grep -n -E category pattern: no matches)",
+   "missing_section": {
+    "anomaly_code": "missing_interaction_section",
+    "interaction_section": null
+   },
+   "original": {
+    "bom": false,
+    "byte_count": 3406,
+    "cr_bytes": 0,
+    "line_endings": "LF only (0 CR bytes in the file)",
+    "path": "docs/medical-docs/DDI-text/Gastrointestinal Medications/Simethicone.txt",
+    "read_only": true,
+    "sha256": "c8d07a01fc06c85eaaf234058cb0d0f394335325f52773b031c7f2f9274c49b9",
+    "splitlines": 102
+   },
+   "section_end_markers": [
+    {
+     "span": {
+      "end_line": 61,
+      "start_line": 61
+     },
+     "text": "Adverse Effects"
+    },
+    {
+     "span": {
+      "end_line": 64,
+      "start_line": 64
+     },
+     "text": "Warnings"
+    }
+   ]
+  }
+ ],
+ "record": "S16 slice 1 RED provenance: page-break/chrome/continuation variants (contract section 1)",
+ "verification_method": "every literal re-verified against the original file with sha256sum / wc -c / grep -n / sed -n / awk line-numbered dumps / byte inspection (BOM/CR/FF counts); the file is ground truth. Spans use parser numbering: decode('utf-8-sig').splitlines() 1-based, which equals grep -n numbering except in Atropine.txt (see its line_numbering_note).",
+ "verified_on": "2026-09-22"
+}

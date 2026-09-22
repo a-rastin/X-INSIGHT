@@ -18,6 +18,11 @@ def main(argv: list[str] | None = None) -> int:
     build_parser.add_argument("--terminology", type=Path)
     build_parser.add_argument("--review-manifest", type=Path)
     build_parser.add_argument("--output", required=True, type=Path)
+    report_parser = subparsers.add_parser("report")
+    report_parser.add_argument("--sources", required=True, type=Path)
+    report_parser.add_argument("--terminology", type=Path)
+    report_parser.add_argument("--review-manifest", type=Path)
+    report_parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
 
     result = build(
@@ -33,9 +38,15 @@ def main(argv: list[str] | None = None) -> int:
     (args.output / "report.json").write_text(
         json.dumps(report, indent=2), encoding="utf-8"
     )
+    if args.command == "report":
+        # report-only mode: every discovered file gets passed/failed
+        # status, category counts, checksum and diagnostic location;
+        # failures stay in the denominator (S16 slice 3)
+        return 0
     if not report["ok"]:
         print(
-            "build failed: documents did not validate; see report.json", file=sys.stderr
+            "build failed: documents did not validate; see report.json",
+            file=sys.stderr,
         )
         return 1
     return 0
