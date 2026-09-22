@@ -1,0 +1,51 @@
+{
+ "branches": {
+  "consideration_table": {
+   "body": "Recorded inputs: prior treatment {PriorTreatmentContext_state} ({PriorTreatmentContext_source}); vulnerability {VulnerabilityContext_state} ({VulnerabilityContext_source}); preference barrier {PreferenceBarrier_state} ({PreferenceBarrier_source}); exposure modifier {ExposureModifierFlag_state} ({ExposureModifierFlag_source}). Network Pharmacotherapy_R2_draft ({network_version}) consideration distribution over 22 oral Table 6 ingredients (percentages sum to 100; CPT percentages and posteriors are shown separately): {consideration_table}. Review prompt: consider these distributions alongside the pinned DDI report, Table 6 side-effect profiles, and patient preferences under local policy. No ingredient is selected by this output; the highest posterior is not a recommendation. The physician decides whether and what to initiate. {unknown_disclosure} {ddi_pointer}",
+   "heading": "Pharmacotherapy consideration (R2): initial consideration distribution for review",
+   "posterior_state": "any (branch renders the full distribution; no state selects treatment)"
+  },
+  "needs_clarification": {
+   "body": "No posterior is reported. Required input is missing, partial, or conflicting: {missing_fields}. Complete or reconcile {missing_fields} and start a new run; later questions are stopped until this is resolved. Any already-recorded caution flag below remains visible and does not wait for a model run.",
+   "heading": "Pharmacotherapy consideration (R2): clarification required"
+  },
+  "unknown_disclosure": "Inputs recorded as unknown/incomplete: {unknown_fields_or_none}. Unknown is not a negative finding; clarify as clinically indicated."
+ },
+ "description": "Predefined physician-review wording for pharmacotherapy R2. The LLM never supplies this text; the app renders the matching branch deterministically from stored posteriors, evidence, and missingness. All slots are escaped at render time. No branch selects, ranks, doses, or recommends a medication; no branch substitutes for the separate deterministic DDI report.",
+ "deterministic_caution_pointer": {
+  "conditions": [
+   {
+    "text": "CAUTION recorded context: vulnerability relevant to antipsychotic choice is recorded. Review Table 6 side-effect profiles and pharmacokinetic cautions (including age-related sensitivity) before any initiation decision. Do not await model output.",
+    "when": "VulnerabilityContext == identified_vulnerability"
+   },
+   {
+    "text": "CAUTION recorded context: a possible exposure modifier is recorded (concomitant medication presence, smoking, or organ-function flag). Review the pinned DDI report and product labeling for metabolism/interaction cautions; exposure implications are a physician judgment, not a model probability.",
+    "when": "ExposureModifierFlag == possible_modifier"
+   },
+   {
+    "text": "CAUTION recorded context: prior important difficulty (inadequate response or intolerance) is recorded. Review full treatment history and tolerability details before any initiation decision.",
+    "when": "PriorTreatmentContext == prior_difficulty"
+   }
+  ],
+  "otherwise": "No deterministic caution pointer fires; the consideration branch above still requires physician review.",
+  "rule": "Rendered directly from saved inputs WITHOUT waiting for any LLM request, inference result, or template posterior. Shown alongside (never replaced by) the posterior branch."
+ },
+ "mapping_rule": "Render consideration_table for every successful run as a review distribution only; never render any single ingredient as selected, recommended, or ranked-first. Always append unknown_disclosure and ddi_pointer. Always evaluate deterministic_caution_pointer from saved inputs first.",
+ "review_status": "awaiting_review",
+ "slots": [
+  "PriorTreatmentContext_source",
+  "PriorTreatmentContext_state",
+  "VulnerabilityContext_source",
+  "VulnerabilityContext_state",
+  "PreferenceBarrier_source",
+  "PreferenceBarrier_state",
+  "ExposureModifierFlag_source",
+  "ExposureModifierFlag_state",
+  "network_version",
+  "consideration_table",
+  "unknown_fields_or_none",
+  "ddi_pointer",
+  "missing_fields"
+ ],
+ "template_version": "pharmacotherapy-template-v0.1-draft"
+}

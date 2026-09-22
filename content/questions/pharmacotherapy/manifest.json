@@ -1,0 +1,373 @@
+{
+ "applicability": {
+  "expression": "encounter.kind == 'registration'",
+  "expression_language": "allowlisted equality on encounter.kind only",
+  "required_fields": [
+   "encounter.kind",
+   "complete (non-partial) values for all mapped nodes",
+   "absence of conflicting values for mapped nodes"
+  ],
+  "unknown_policy": "explicit unknown_incomplete states permit inference with disclosure; partial/conflicting required inputs yield needs_clarification and stop later questions; false gate does not occur (applies to all registration encounters)"
+ },
+ "context_output_resource_limits": {
+  "cpt_cells": 2389,
+  "note": "cpt_cells counts LLM-estimated percentage cells (roots 4+3+3+3=13 plus child 108x22=2376). No silent truncation: if complete CPT output cannot fit, reject admission or fail clearly.",
+  "prompt_bytes_proposed_max": 8192,
+  "response_bytes_proposed_max": 65536,
+  "xml_bytes": 19142
+ },
+ "cpt_contract": {
+  "all_nodes_mandatory": true,
+  "row_order": "child state fastest; last declared parent next; first parent slowest",
+  "rows": [
+   {
+    "node_id": "PriorTreatmentContext",
+    "parent_ids": [],
+    "row_count": 1
+   },
+   {
+    "node_id": "VulnerabilityContext",
+    "parent_ids": [],
+    "row_count": 1
+   },
+   {
+    "node_id": "PreferenceBarrier",
+    "parent_ids": [],
+    "row_count": 1
+   },
+   {
+    "node_id": "ExposureModifierFlag",
+    "parent_ids": [],
+    "row_count": 1
+   },
+   {
+    "node_id": "InitialMedicationConsideration",
+    "parent_ids": [
+     "PriorTreatmentContext",
+     "VulnerabilityContext",
+     "PreferenceBarrier",
+     "ExposureModifierFlag"
+    ],
+    "row_count": 108
+   }
+  ],
+  "units": "percentages [0,100]",
+  "validation": "one table per node in declared order; exact node/parent/state identity and order; no extra fields; finite numbers in [0,100]; each row sums to 100 within 1e-6; reject missing/duplicate/extra rows, strings/booleans/null, nonfinite, out-of-range, wrong sums; never normalize/clip/repair"
+ },
+ "declared_node_order": [
+  "PriorTreatmentContext",
+  "VulnerabilityContext",
+  "PreferenceBarrier",
+  "ExposureModifierFlag",
+  "InitialMedicationConsideration"
+ ],
+ "engine_configuration": {
+  "dtype": "float64",
+  "elimination_order": "deterministic pinned order with deterministic tie-breaking",
+  "inference": "deterministic exact inference only; fail on impossible evidence or resource exhaustion, never approximate or soften",
+  "note": "engine is pinned per run; replay reads stored effective CPTs/evidence/query without calling the provider"
+ },
+ "evidence_mappings": [
+  {
+   "evidence": "mapped state, including unknown_incomplete as an observed state",
+   "node_id": "PriorTreatmentContext"
+  },
+  {
+   "evidence": "mapped state, including unknown_incomplete as an observed state",
+   "node_id": "VulnerabilityContext"
+  },
+  {
+   "evidence": "mapped state, including unknown_incomplete as an observed state",
+   "node_id": "PreferenceBarrier"
+  },
+  {
+   "evidence": "mapped state, including unknown_incomplete as an observed state",
+   "node_id": "ExposureModifierFlag"
+  }
+ ],
+ "impossible_evidence_policy": "fail with explicit error; never soften or approximate. All declared states (including unknown_incomplete) are possible, so impossibility arises only from schema violations.",
+ "likelihood_evidence": "disabled",
+ "network_file": "network.xml",
+ "network_hash": "sha256:77dd8dd050720c7d517eb52a68ab2cf94ae48ccb54ea760d184560389fa0951d",
+ "numerical_tolerances": {
+  "percentage_row_sum_absolute": 1e-06,
+  "probability_sum_after_divide_by_100_absolute": 1e-08,
+  "replay_posterior_absolute": 1e-09
+ },
+ "output_catalog_binding": {
+  "note": "No reviewed drug catalog release exists (no content/ddi catalog; S18 pending). States below are Table 6 oral ingredients in Table 6 order with PROVISIONAL identifiers for review. They must be replaced by released catalog concept IDs before activation.",
+  "provisional_id_scheme": "ingredient-<lowercase-ingredient-name> (proposed only, not a released concept ID)",
+  "states": [
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-chlorpromazine",
+    "state": "Chlorpromazine"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-fluphenazine",
+    "state": "Fluphenazine"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-haloperidol",
+    "state": "Haloperidol"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-loxapine",
+    "state": "Loxapine"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-molindone",
+    "state": "Molindone"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-perphenazine",
+    "state": "Perphenazine"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-pimozide",
+    "state": "Pimozide"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-thioridazine",
+    "state": "Thioridazine"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-thiothixene",
+    "state": "Thiothixene"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-trifluoperazine",
+    "state": "Trifluoperazine"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-aripiprazole",
+    "state": "Aripiprazole"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-asenapine",
+    "state": "Asenapine"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-brexpiprazole",
+    "state": "Brexpiprazole"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-cariprazine",
+    "state": "Cariprazine"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-clozapine",
+    "state": "Clozapine"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-iloperidone",
+    "state": "Iloperidone"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-lurasidone",
+    "state": "Lurasidone"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-olanzapine",
+    "state": "Olanzapine"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-paliperidone",
+    "state": "Paliperidone"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-quetiapine",
+    "state": "Quetiapine"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-risperidone",
+    "state": "Risperidone"
+   },
+   {
+    "catalog_status": "proposed_pending_release",
+    "provisional_id": "ingredient-ziprasidone",
+    "state": "Ziprasidone"
+   }
+  ]
+ },
+ "patient_mappings": [
+  {
+   "allowed_source_paths": [
+    "encounters.draft_data.patient.clinical_status",
+    "encounters.draft_data.history.prior_treatment_difficulty_status",
+    "encounters.draft_data.history.prior_symptom_response",
+    "encounters.draft_data.medications (presence of prior antipsychotic entries only, drug identity only)",
+    "content/history/history-effects-v0.1-draft.json#history-effects-v0.1-draft"
+   ],
+   "missing_policy": "unknown/not_assessed/missing -> unknown_incomplete (permits inference with disclosure); partial or conflicting values -> needs_clarification (blocks)",
+   "node_id": "PriorTreatmentContext",
+   "time_window": "historical_interval for difficulty/response; registration encounter for clinical_status",
+   "typed_transform": "no_prior_trial_assessed iff clinical_status==first_time AND difficulty absent-or-not-recorded AND no prior antipsychotic in medication history; prior_course_without_difficulty iff established course without important difficulty; prior_difficulty iff difficulty present (inadequate response or intolerance); else unknown_incomplete. Never infer absence from missing documentation.",
+   "usage": "both"
+  },
+  {
+   "allowed_source_paths": [
+    "encounters.draft_data.patient.age",
+    "encounters.draft_data.history.physical_vulnerability_flags (PROPOSED, not collected)",
+    "content/history/history-effects-v0.1-draft.json#history-effects-v0.1-draft"
+   ],
+   "missing_policy": "unassessed/missing -> unknown_incomplete (permits inference with disclosure); conflicting values -> needs_clarification (blocks)",
+   "node_id": "VulnerabilityContext",
+   "time_window": "current encounter",
+   "typed_transform": "identified_vulnerability iff a reviewed comorbidity/age anchor is recorded present (anchors proposed: age>=65 pending owner, cardiac/seizure/diabetes-relevant flags pending owner); no_identified_vulnerability iff anchors explicitly assessed absent; else unknown_incomplete. Age is reported age 18-99, never an inferred birth date.",
+   "usage": "both"
+  },
+  {
+   "allowed_source_paths": [
+    "encounters.draft_data.history.treatment_preference_barrier (PROPOSED, not collected)"
+   ],
+   "missing_policy": "field absent -> unknown_incomplete with disclosure until reviewed and collected; conflicting values -> needs_clarification",
+   "node_id": "PreferenceBarrier",
+   "time_window": "current encounter",
+   "typed_transform": "present iff an unresolved objection or practical barrier is recorded; absent_assessed iff preferences discussed and none recorded; else unknown_incomplete. Not a judgment of capacity.",
+   "usage": "both"
+  },
+  {
+   "allowed_source_paths": [
+    "encounters.draft_data.medications (reconciled drug-only list, presence only)",
+    "encounters.draft_data.history.smoking_status (PROPOSED, not collected)",
+    "encounters.draft_data.history.organ_function_flags (PROPOSED, not collected)"
+   ],
+   "missing_policy": "unassessed/missing -> unknown_incomplete (permits inference with disclosure); conflicting values -> needs_clarification",
+   "node_id": "ExposureModifierFlag",
+   "time_window": "current encounter",
+   "typed_transform": "possible_modifier iff any concomitant medication presence, reported smoking change, or organ-function flag is recorded that may alter exposure (CYP relevance judged by physician, not by DDI verdict); no_identified_modifier iff medication list reconciled without such entries AND smoking absent AND organ flags absent; else unknown_incomplete. No dose, unit, route, frequency, or active/stopped values are read: excluded by FR-14 and by design, not by hidden fields.",
+   "usage": "both"
+  }
+ ],
+ "prompt_version": "pharmacotherapy-prompt-v0.1-draft (prompt.txt)",
+ "query_nodes": [
+  "InitialMedicationConsideration"
+ ],
+ "question_key": "pharmacotherapy",
+ "review": {
+  "assumptions": "see review.json unresolved_assumptions; reference tables synthetic; catalog binding provisional; both-usage rationale proposed",
+  "date": null,
+  "decision": "pending_owner_review",
+  "reviewer": null
+ },
+ "review_status": "awaiting_review",
+ "reviewed_result_mapping": "posterior over 22 consideration states rendered as a review table only; the maximum posterior is not a treatment recommendation and no branch selects a drug; deterministic caution pointer from saved inputs shown first and never waits for LLM; DDI report pointer always appended; unknown_disclosure always appended; needs_clarification branch on required missing/conflict",
+ "schema_version": "1.0-draft",
+ "source_refs": [
+  "docs/medical-docs/guideline/STATEMENT-04.md",
+  "BNs/BN-04.xml",
+  "content/history/history-effects-v0.1-draft.json",
+  "content/assessments/diagnosis.json",
+  "content/assessments/panss.json",
+  "content/assessments/cssrs.json",
+  "docs/dev/user-requirements.md",
+  "docs/dev/plan.md"
+ ],
+ "template_version": "pharmacotherapy-template-v0.1-draft (template.json)",
+ "title": "Initial pharmacotherapy consideration at registration (R2)",
+ "variables": [
+  {
+   "node_id": "PriorTreatmentContext",
+   "ordered_parents": [],
+   "patient_value_type": "enum",
+   "states": [
+    "no_prior_trial_assessed",
+    "prior_course_without_difficulty",
+    "prior_difficulty",
+    "unknown_incomplete"
+   ],
+   "xmlbif_kind": "nature"
+  },
+  {
+   "node_id": "VulnerabilityContext",
+   "ordered_parents": [],
+   "patient_value_type": "enum",
+   "states": [
+    "no_identified_vulnerability",
+    "identified_vulnerability",
+    "unknown_incomplete"
+   ],
+   "xmlbif_kind": "nature"
+  },
+  {
+   "node_id": "PreferenceBarrier",
+   "ordered_parents": [],
+   "patient_value_type": "enum",
+   "states": [
+    "absent_assessed",
+    "present",
+    "unknown_incomplete"
+   ],
+   "xmlbif_kind": "nature"
+  },
+  {
+   "node_id": "ExposureModifierFlag",
+   "ordered_parents": [],
+   "patient_value_type": "enum",
+   "states": [
+    "no_identified_modifier",
+    "possible_modifier",
+    "unknown_incomplete"
+   ],
+   "xmlbif_kind": "nature"
+  },
+  {
+   "node_id": "InitialMedicationConsideration",
+   "ordered_parents": [
+    "PriorTreatmentContext",
+    "VulnerabilityContext",
+    "PreferenceBarrier",
+    "ExposureModifierFlag"
+   ],
+   "patient_value_type": "enum",
+   "states": [
+    "Chlorpromazine",
+    "Fluphenazine",
+    "Haloperidol",
+    "Loxapine",
+    "Molindone",
+    "Perphenazine",
+    "Pimozide",
+    "Thioridazine",
+    "Thiothixene",
+    "Trifluoperazine",
+    "Aripiprazole",
+    "Asenapine",
+    "Brexpiprazole",
+    "Cariprazine",
+    "Clozapine",
+    "Iloperidone",
+    "Lurasidone",
+    "Olanzapine",
+    "Paliperidone",
+    "Quetiapine",
+    "Risperidone",
+    "Ziprasidone"
+   ],
+   "xmlbif_kind": "nature"
+  }
+ ],
+ "version": "pharmacotherapy-v0.1-draft",
+ "workflow": "registration"
+}
