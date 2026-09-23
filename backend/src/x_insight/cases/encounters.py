@@ -110,6 +110,72 @@ def _baseline_changed_for(conn: Any, row: Any) -> bool:
         return False
 
 
+def _newest_newer_signed(conn: Any, patient_id: str, baseline_id: str) -> Any:
+    """Newest signed encounter newer than the baseline (create order).
+
+    Ordering matches _has_newer_signed: newer means (created_at, id::text)
+    greater than the baseline's. Returns the full row or None.
+    """
+    return (
+        conn.execute(
+            text(
+                "SELECT s.* FROM encounters s JOIN encounters b ON b.id = :bid "
+                "WHERE s.patient_id = :pid AND s.state = 'signed' "
+                "AND s.id != b.id AND (s.created_at > b.created_at OR "
+                "(s.created_at = b.created_at AND s.id::text > b.id::text)) "
+                "ORDER BY s.created_at DESC, s.id::text DESC LIMIT 1"
+            ),
+            {"pid": str(patient_id), "bid": str(baseline_id)},
+        )
+        .mappings()
+        .first()
+    )
+
+
+def _has_fresh_review_after(conn: Any, row: Any) -> bool:
+    """Ordering-aware re-clear: explicit review after the newest sign.
+
+    When the baseline fence is tripped, allow the sign iff this draft shows
+    explicit review AFTER the newest newer-signed record N: its updated_at
+    (bumped by a PATCH re-confirm after observing N) is strictly newer than
+    both N.created_at (owner decision A signal) and N.updated_at (N's sign
+    commit; required so concurrent losers whose PATCH predates the winner's
+    sign stay fenced). Ties break by id::text, consistent with
+    _has_newer_signed. Shape/ack gates stay in signing.py; no merging.
+    """
+    try:
+        data = dict(row)
+        if data.get("kind") != "follow_up":
+            return False
+        baseline = data.get("baseline_encounter_id")
+        if not baseline:
+            return False
+        newest = _newest_newer_signed(conn, str(data["patient_id"]), str(baseline))
+        if newest is None:
+            return False
+        sibling = dict(newest)
+        draft_updated = data.get("updated_at")
+        sibling_created = sibling.get("created_at")
+        sibling_updated = sibling.get("updated_at")
+        if draft_updated is None or sibling_created is None:
+            return False
+        if sibling_updated is None:
+            return False
+        draft_id = str(data.get("id"))
+        sibling_id = str(sibling.get("id"))
+
+        def _strictly_after(a: Any, a_id: str, b: Any, b_id: str) -> bool:
+            return bool(a > b or (a == b and a_id > b_id))
+
+        if not _strictly_after(draft_updated, draft_id, sibling_created, sibling_id):
+            return False
+        return bool(
+            _strictly_after(draft_updated, draft_id, sibling_updated, sibling_id)
+        )
+    except Exception:
+        return False
+
+
 def _get_encounter(conn: Any, encounter_id: UUID) -> Any:
     row = (
         conn.execute(
@@ -523,12 +589,15 @@ def patch_encounter(
 def discard_encounter(
     encounter_id: UUID, body: DiscardRequest, request: Request
 ) -> JSONResponse:
-    """Explicit author-confirmed discard (S07 slice 4).
+    """Explicit author-confirmed discard (S07 slice 4 + S51 slice 4b).
 
     Requires If-Match current revision + {"confirm": true}. Sets
     state=discarded, bumps revision, retains the row + draft_data as an
-    audit tombstone; the patient row is untouched. No jobs exist yet, so
-    jobs cancellation is a no-op (S51 integrates real cancellation).
+    audit tombstone; the patient row is untouched. Queued work scoped to
+    this encounter is cancelled in the same transaction (runs in ACTIVE
+    states -> cancelled; queued/claimed jobs -> cancelled with leases
+    cleared; MCP grants revoked), so a discarded draft can never produce
+    an eligible late success.
     """
     body.check_confirmed()
     with db.transaction() as conn:
@@ -556,6 +625,16 @@ def discard_encounter(
             )
         if row["state"] != "draft":
             raise HTTPException(409, "Only draft encounters can be discarded.")
+        patient = (
+            conn.execute(
+                text("SELECT archived FROM patients WHERE id = :id"),
+                {"id": str(row["patient_id"])},
+            )
+            .mappings()
+            .first()
+        )
+        if patient is not None and patient["archived"]:
+            raise HTTPException(409, "Archived patient drafts are read-only.")
         discarded = (
             conn.execute(
                 text(
@@ -567,6 +646,40 @@ def discard_encounter(
             )
             .mappings()
             .one()
+        )
+        # S51 slice 4b: cancel queued work for this encounter in the same
+        # transaction, reusing the runs/jobs cancel vocabulary from
+        # identity/accounts.py _cancel_queued_work, scoped to encounter_id.
+        from x_insight.reasoning.queue import ACTIVE_RUN_STATUSES
+
+        active = ", ".join(f"'{status}'" for status in sorted(ACTIVE_RUN_STATUSES))
+        conn.execute(
+            text(
+                "UPDATE runs SET status = 'cancelled', updated_at = now() "
+                "WHERE encounter_id = CAST(:id AS uuid) "
+                f"AND status IN ({active})"
+            ),
+            {"id": str(encounter_id)},
+        )
+        conn.execute(
+            text(
+                "UPDATE reasoning_jobs SET status = 'cancelled', "
+                "lease_token = NULL, lease_deadline = NULL, "
+                "updated_at = now() "
+                "WHERE encounter_id = CAST(:id AS uuid) "
+                "AND status IN ('queued', 'claimed')"
+            ),
+            {"id": str(encounter_id)},
+        )
+        conn.execute(
+            text(
+                "UPDATE mcp_question_grants SET revoked_at = now(), "
+                "updated_at = now() WHERE revoked_at IS NULL AND "
+                "(encounter_id = CAST(:id AS uuid) OR run_id IN "
+                "(SELECT id FROM runs "
+                "WHERE encounter_id = CAST(:id AS uuid)))"
+            ),
+            {"id": str(encounter_id)},
         )
         record_audit(
             conn,

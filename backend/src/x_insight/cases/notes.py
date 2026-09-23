@@ -72,6 +72,16 @@ def create_note(encounter_id: UUID, body: NoteCreate, request: Request) -> JSONR
             raise HTTPException(403, "Only the draft author may add notes.")
         if row["state"] != "draft":
             raise HTTPException(409, "Only draft encounters can be edited.")
+        patient = (
+            conn.execute(
+                text("SELECT archived FROM patients WHERE id = :id"),
+                {"id": str(row["patient_id"])},
+            )
+            .mappings()
+            .first()
+        )
+        if patient is not None and patient["archived"]:
+            raise HTTPException(409, "Archived patient drafts are read-only.")
         actor_id = str(actor["user_id"])
         key = parse_idempotency_key(request.headers)
         scope = {

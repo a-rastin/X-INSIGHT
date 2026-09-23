@@ -148,6 +148,140 @@ def list_patients(
         )
 
 
+@router.post("/patients/{patient_id}/archive")
+def archive_patient(patient_id: UUID, request: Request) -> JSONResponse:
+    return _set_archived(
+        patient_id, request, archived=True, operation="patient.archive"
+    )
+
+
+@router.post("/patients/{patient_id}/unarchive")
+def unarchive_patient(patient_id: UUID, request: Request) -> JSONResponse:
+    return _set_archived(
+        patient_id, request, archived=False, operation="patient.unarchive"
+    )
+
+
+def _set_archived(
+    patient_id: UUID, request: Request, *, archived: bool, operation: str
+) -> JSONResponse:
+    with db.transaction() as conn:
+        denied, actor = _require_session(request, conn)
+        if denied is not None:
+            return denied
+        if actor["role"] != "admin":
+            raise HTTPException(403, "Administrator access required.")
+        csrf_denied = _check_csrf(request, actor)
+        if csrf_denied is not None:
+            return csrf_denied
+        key = parse_idempotency_key(request.headers)
+        if key is None:
+            raise HTTPException(422, "A valid Idempotency-Key is required.")
+        actor_id = str(actor["id"])
+        pid = str(patient_id)
+        scope = {
+            "actor_id": actor_id,
+            "operation": operation,
+            "idempotency_key": key,
+            "patient_id": pid,
+        }
+        conn.execute(
+            text("SELECT pg_advisory_xact_lock(hashtextextended(:scope, 0))"),
+            {"scope": canonical_json(scope).decode()},
+        )
+        fingerprint = canonical_json(
+            {"patient_id": pid, "revision": parse_if_match(request.headers)}
+        ).decode()
+        saved = (
+            conn.execute(
+                text(
+                    "SELECT request_hash, result_payload, result_status "
+                    "FROM audit_events "
+                    "WHERE actor_id = :actor_id AND operation = :operation "
+                    "AND idempotency_key = :idempotency_key "
+                    "AND result_reference = :patient_id"
+                ),
+                {
+                    "actor_id": actor_id,
+                    "operation": operation,
+                    "idempotency_key": key,
+                    "patient_id": pid,
+                },
+            )
+            .mappings()
+            .first()
+        )
+        if saved is not None:
+            if not verify_password(fingerprint, str(saved["request_hash"])):
+                raise HTTPException(
+                    409, "Idempotency key was used for another request."
+                )
+            payload = saved["result_payload"]
+            revision = None
+            if isinstance(payload, dict) and isinstance(
+                payload.get("patient"), dict
+            ):
+                revision = payload["patient"].get("revision")
+            return JSONResponse(
+                status_code=int(saved["result_status"] or 200),
+                content=payload,
+                headers={
+                    "ETag": f'"{revision}"',
+                    "Cache-Control": "private, no-store",
+                },
+            )
+        row = (
+            conn.execute(
+                text("SELECT * FROM patients WHERE id = :id FOR UPDATE"),
+                {"id": pid},
+            )
+            .mappings()
+            .first()
+        )
+        if row is None:
+            raise HTTPException(404, "Patient not found.")
+        if parse_if_match(request.headers) != str(row["revision"]):
+            raise HTTPException(
+                412, "The patient changed. Reload and reconcile your edits."
+            )
+        updated = (
+            conn.execute(
+                text(
+                    "UPDATE patients SET archived = :archived, "
+                    " revision = revision + 1, updated_at = now() "
+                    "WHERE id = :id RETURNING *"
+                ),
+                {"id": pid, "archived": archived},
+            )
+            .mappings()
+            .one()
+        )
+        result: dict[str, Any] = {
+            "schema_version": 1,
+            "patient": _patient_payload(updated),
+        }
+        record_audit(
+            conn,
+            operation=operation,
+            actor_id=actor_id,
+            idempotency_key=key,
+            request_hash=hash_password(fingerprint),
+            result_reference=pid,
+            request_id=_request_id(request),
+            target_display=str(updated["patient_id_text"]),
+            result_payload=result,
+            result_status=200,
+        )
+        return JSONResponse(
+            status_code=200,
+            content=result,
+            headers={
+                "ETag": f'"{updated["revision"]}"',
+                "Cache-Control": "private, no-store",
+            },
+        )
+
+
 @router.patch("/patients/{patient_id}")
 def patch_patient_phone(
     patient_id: UUID, body: PatientPhonePatch, request: Request

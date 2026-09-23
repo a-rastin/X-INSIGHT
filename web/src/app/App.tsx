@@ -5,15 +5,18 @@ import {
   activateModelBundle,
   addAddendum,
   addNetworkVersion,
+  archivePatient,
   changeOwnPassword,
   checkDdi,
   createFollowup,
   createPhysician,
   createPatient,
+  deactivatePhysician,
   discardEncounter,
   fetchSession,
   addNote,
   getDdiCurrent,
+  getDeactivationReview,
   getEncounter,
   getHistoryContent,
   getModelBundle,
@@ -45,11 +48,13 @@ import {
   signEncounter,
   startRun,
   testProviderSettings,
+  unarchivePatient,
   updateTheme,
   validateNetworkVersion,
   type Addendum,
   type BundlePinInput,
   type DdiReport,
+  type DeactivationReview,
   type DrugSearchResult,
   type Encounter,
   type HistoryContent,
@@ -1997,16 +2002,21 @@ function PatientChart({
   patient,
   role,
   onOpenEncounter,
+  onPatientChanged,
 }: {
   patient: Patient;
   userId: string;
   role: string;
   onOpenEncounter: (encounterId: string) => void;
+  onPatientChanged: (patient: Patient) => void;
 }) {
   const [items, setItems] = useState<Encounter[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState<string | null>(null);
   const [startError, setStartError] = useState<string | null>(null);
+  const [archiveDialog, setArchiveDialog] = useState(false);
+  const [archivePending, setArchivePending] = useState(false);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -2049,11 +2059,110 @@ function PatientChart({
   const baselineChanged =
     items !== null &&
     items.some((item) => item.kind === "follow_up" && item.baseline_changed);
+  const openDraftCount =
+    items === null
+      ? 0
+      : items.filter((item) => item.state === "draft" || item.state === "review_ready")
+          .length;
+
+  async function handleArchiveConfirm(): Promise<void> {
+    setArchivePending(true);
+    setArchiveError(null);
+    try {
+      const updated = await archivePatient(patient.id, patient.revision);
+      setArchiveDialog(false);
+      onPatientChanged(updated);
+    } catch (failure: unknown) {
+      setArchiveError(
+        failure instanceof Error ? failure.message : "Could not archive the patient.",
+      );
+    } finally {
+      setArchivePending(false);
+    }
+  }
+
+  async function handleUnarchive(): Promise<void> {
+    setArchivePending(true);
+    setArchiveError(null);
+    try {
+      const updated = await unarchivePatient(patient.id, patient.revision);
+      onPatientChanged(updated);
+    } catch (failure: unknown) {
+      setArchiveError(
+        failure instanceof Error ? failure.message : "Could not unarchive the patient.",
+      );
+    } finally {
+      setArchivePending(false);
+    }
+  }
 
   return (
     <section data-testid="chart-section" aria-label="Chart">
       <h3>Chart</h3>
       <p>Patient {patient.patient_id}</p>
+      {patient.archived ? (
+        <p data-testid="patient-archived-badge">Archived</p>
+      ) : null}
+      {role === "admin" && !patient.archived ? (
+        <button
+          type="button"
+          className="x-button"
+          data-testid="patient-archive-button"
+          onClick={() => {
+            setArchiveError(null);
+            setArchiveDialog(true);
+          }}
+        >
+          Archive
+        </button>
+      ) : null}
+      {role === "admin" && patient.archived ? (
+        <button
+          type="button"
+          className="x-button"
+          data-testid="patient-unarchive-button"
+          disabled={archivePending}
+          onClick={() => void handleUnarchive()}
+        >
+          {archivePending ? "Unarchiving…" : "Unarchive"}
+        </button>
+      ) : null}
+      {archiveDialog && !patient.archived ? (
+        <div data-testid="patient-archive-dialog" role="dialog" aria-label="Archive patient">
+          <p data-testid="patient-archive-dialog-draft-count">
+            {openDraftCount} open draft{openDraftCount === 1 ? "" : "s"}
+          </p>
+          <p>Archived patient drafts become read-only until unarchived.</p>
+          {archiveError ? (
+            <p role="alert" className="x-error">
+              {archiveError}
+            </p>
+          ) : null}
+          <button
+            type="button"
+            className="x-button"
+            data-testid="patient-archive-confirm-button"
+            disabled={archivePending}
+            onClick={() => void handleArchiveConfirm()}
+          >
+            {archivePending ? "Archiving…" : "Confirm archive"}
+          </button>{" "}
+          <button
+            type="button"
+            className="x-button"
+            data-testid="patient-archive-cancel"
+            disabled={archivePending}
+            onClick={() => setArchiveDialog(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      ) : null}
+      {archiveError && patient.archived ? (
+        <p role="alert" className="x-error">
+          {archiveError}
+        </p>
+      ) : null}
       {error ? (
         <p role="alert" className="x-error">
           {error}
@@ -2112,6 +2221,7 @@ const PATIENT_ID_RE = /^[0-9]{10}$/;
 function PatientsSection({ role, userId }: { role: string; userId: string }) {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
+  const [archivedFilter, setArchivedFilter] = useState<"active" | "archived">("active");
   const [refresh, setRefresh] = useState(0);
   const [items, setItems] = useState<Patient[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -2153,12 +2263,24 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
     }
   }
 
+  function handlePatientChanged(next: Patient): void {
+    setOpenPatient(next);
+    try {
+      localStorage.setItem("xinsight.openPatient", JSON.stringify(next));
+    } catch {
+      /* storage unavailable; chart still reflects the change this session */
+    }
+    // The directory hides/shows archived rows by filter; refresh the list.
+    setRefresh((n) => n + 1);
+  }
+
   useEffect(() => {
     let cancelled = false;
     const timer = setTimeout(() => {
       listPatients({
         q: q || undefined,
         clinical_status: status || undefined,
+        archived: archivedFilter === "archived",
       })
         .then((payload) => {
           if (!cancelled) {
@@ -2178,7 +2300,7 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [q, status, refresh]);
+  }, [q, status, refresh, archivedFilter]);
 
   return (
     <section aria-labelledby="patients-heading">
@@ -2212,6 +2334,20 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
           <option value="">All</option>
           <option value="first_time">first_time</option>
           <option value="established">established</option>
+        </select>
+      </div>
+      <div className="x-field">
+        <label htmlFor="patient-directory-archived-filter">Show archived patients</label>
+        <select
+          id="patient-directory-archived-filter"
+          data-testid="patient-directory-archived-filter"
+          value={archivedFilter}
+          onChange={(event) =>
+            setArchivedFilter(event.target.value === "archived" ? "archived" : "active")
+          }
+        >
+          <option value="active">Active</option>
+          <option value="archived">Archived</option>
         </select>
       </div>
       {error ? (
@@ -2259,6 +2395,7 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
             userId={userId}
             role={role}
             onOpenEncounter={setSelectedEncounterId}
+            onPatientChanged={handlePatientChanged}
           />
           <DraftEditor
             patient={openPatient}
@@ -5032,7 +5169,8 @@ function DraftEditor({
   }
 
   const readOnly =
-    encounter !== null && encounter.author_id !== null && encounter.author_id !== userId;
+    (encounter !== null && encounter.author_id !== null && encounter.author_id !== userId) ||
+    patient.archived;
   const discarded = encounter !== null && encounter.state !== "draft";
   const signed = encounter !== null && encounter.state === "signed";
 
@@ -5050,6 +5188,11 @@ function DraftEditor({
           Close
         </button>
       </p>
+      {patient.archived ? (
+        <p data-testid="patient-archived-notice">
+          Archived patient — drafts are read-only.
+        </p>
+      ) : null}
       {loadError ? (
         <p role="alert" className="x-error">
           {loadError}
@@ -6592,6 +6735,7 @@ function PasswordForm() {
 function PhysiciansPage() {
   const [items, setItems] = useState<PhysicianAccount[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const reload = useCallback(() => {
     setError(null);
@@ -6603,6 +6747,11 @@ function PhysiciansPage() {
   }, []);
 
   useEffect(reload, [reload]);
+
+  const selected =
+    selectedId !== null && items !== null
+      ? (items.find((item) => item.id === selectedId) ?? null)
+      : null;
 
   return (
     <>
@@ -6622,19 +6771,218 @@ function PhysiciansPage() {
             <tr>
               <th scope="col">Username</th>
               <th scope="col">Status</th>
+              <th scope="col">Review</th>
             </tr>
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id}>
+              <tr
+                key={item.id}
+                data-testid={`physician-row-${item.id}`}
+                onClick={() => setSelectedId(item.id)}
+              >
                 <td>{item.username}</td>
                 <td>{item.active ? "Active" : "Inactive"}</td>
+                <td>
+                  <button
+                    type="button"
+                    className="x-button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setSelectedId(item.id);
+                    }}
+                  >
+                    Deactivate
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+      {selected !== null ? (
+        <DeactivateReview
+          key={selected.id}
+          physicianId={selected.id}
+          username={selected.username}
+          onDeactivated={reload}
+        />
+      ) : null}
     </>
+  );
+}
+
+/**
+ * S51 deactivation review (T9): real draft-set review with explicit
+ * retain-vs-discard choice and explicit discard confirmation. The confirm
+ * action stays disabled until a choice is made and the checkbox is checked.
+ * A changed draft_set_revision surfaces 412 with a Re-review action.
+ */
+function DeactivateReview({
+  physicianId,
+  username,
+  onDeactivated,
+}: {
+  physicianId: string;
+  username: string;
+  onDeactivated: () => void;
+}) {
+  const [review, setReview] = useState<DeactivationReview | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [action, setAction] = useState<"retain" | "discard" | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [stale, setStale] = useState(false);
+  const [done, setDone] = useState<"retain" | "discard" | null>(null);
+
+  const load = useCallback(async () => {
+    setLoadError(null);
+    setStale(false);
+    try {
+      setReview(await getDeactivationReview(physicianId));
+    } catch (failure: unknown) {
+      setLoadError(
+        failure instanceof Error ? failure.message : "Could not load the draft review.",
+      );
+    }
+  }, [physicianId]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function handleConfirm(): Promise<void> {
+    if (review === null || action === null || !confirmed || pending) {
+      return;
+    }
+    setPending(true);
+    setSubmitError(null);
+    setStale(false);
+    try {
+      await deactivatePhysician(
+        physicianId,
+        {
+          draft_action: action,
+          draft_set_revision: review.draft_set_revision,
+          confirm_discard: confirmed,
+        },
+        review.account_revision,
+      );
+      setDone(action);
+      onDeactivated();
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      if (status === 412) {
+        setStale(true);
+        setSubmitError(
+          failure instanceof Error ? failure.message : "Draft review changed. Review it again.",
+        );
+      } else {
+        setSubmitError(
+          failure instanceof Error ? failure.message : "Could not deactivate the physician.",
+        );
+      }
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const drafts = review?.drafts ?? [];
+  const valid = action !== null && confirmed && !pending;
+
+  return (
+    <section data-testid="physician-deactivate-review" aria-label="Deactivation review">
+      <h2>Deactivation review — {username}</h2>
+      {loadError ? (
+        <p role="alert" className="x-error">
+          {loadError}
+        </p>
+      ) : review === null ? (
+        <p>Loading review…</p>
+      ) : (
+        <>
+          <p data-testid="physician-draft-set-count">
+            {drafts.length} draft{drafts.length === 1 ? "" : "s"}
+          </p>
+          <p data-testid="physician-draft-set-revision">
+            {review.draft_set_revision.slice(0, 16)}
+          </p>
+          <ul>
+            {drafts.map((draft) => (
+              <li key={draft.id}>
+                {draft.kind} · {draft.state} · rev {draft.revision}
+              </li>
+            ))}
+          </ul>
+          {done === null ? (
+            <>
+              <div className="x-field">
+                <label>
+                  <input
+                    type="radio"
+                    name={`deactivate-action-${physicianId}`}
+                    data-testid="physician-deactivate-retain"
+                    checked={action === "retain"}
+                    onChange={() => setAction("retain")}
+                  />{" "}
+                  Retain drafts
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name={`deactivate-action-${physicianId}`}
+                    data-testid="physician-deactivate-discard"
+                    checked={action === "discard"}
+                    onChange={() => setAction("discard")}
+                  />{" "}
+                  Discard drafts
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    data-testid="physician-deactivate-confirm-checkbox"
+                    checked={confirmed}
+                    onChange={(event) => setConfirmed(event.target.checked)}
+                  />{" "}
+                  I confirm this deactivation
+                </label>
+                <button
+                  type="button"
+                  className="x-button"
+                  data-testid="physician-deactivate-confirm-button"
+                  disabled={!valid}
+                  onClick={() => void handleConfirm()}
+                >
+                  {pending ? "Deactivating…" : "Deactivate"}
+                </button>
+              </div>
+              {submitError ? (
+                <p role="alert" className="x-error">
+                  {submitError}
+                </p>
+              ) : null}
+              {stale ? (
+                <button
+                  type="button"
+                  className="x-button"
+                  data-testid="physician-deactivate-rereview"
+                  onClick={() => void load()}
+                >
+                  Re-review
+                </button>
+              ) : null}
+            </>
+          ) : done === "discard" ? (
+            <p data-testid="physician-deactivate-tombstone">
+              Deactivated — {drafts.length} draft{drafts.length === 1 ? "" : "s"} tombstoned.
+            </p>
+          ) : (
+            <p role="status">Deactivated — drafts retained.</p>
+          )}
+        </>
+      )}
+    </section>
   );
 }
 

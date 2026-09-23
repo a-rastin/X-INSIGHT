@@ -134,17 +134,75 @@ def check_revision(request: Request, row: Mapping[str, Any]) -> None:
         raise HTTPException(412, "Account changed. Reload and reconcile.")
 
 
-def draft_review(row: Mapping[str, Any]) -> dict[str, Any]:
-    # S51 integration point: Cases must supply and lock the actual draft set,
-    # invalidate changes, cancel jobs and tombstone confirmed discards in the
-    # same transaction. No draft storage exists in S04; this set is empty.
+def draft_review(conn: Connection, row: Mapping[str, Any]) -> dict[str, Any]:
+    # S51: real non-terminal draft set for the physician, locked in the
+    # caller's transaction. Any new draft/review_ready row changes the
+    # content hash, so a stale draft_set_revision is rejected with 412.
+    rows = (
+        conn.execute(
+            text(
+                "SELECT id, kind, state, revision FROM encounters "
+                "WHERE author_id = CAST(:id AS uuid) "
+                "AND state IN ('draft', 'review_ready') "
+                "ORDER BY created_at, id"
+            ),
+            {"id": str(row["id"])},
+        )
+        .mappings()
+        .all()
+    )
+    drafts = [
+        {
+            "id": str(item["id"]),
+            "encounter_id": str(item["id"]),
+            "kind": item["kind"],
+            "state": item["state"],
+            "revision": item["revision"],
+        }
+        for item in rows
+    ]
     review = {
         "schema_version": 1,
         "physician_id": str(row["id"]),
         "account_revision": row["revision"],
-        "drafts": [],
+        "drafts": drafts,
     }
     return {**review, "draft_set_revision": content_hash(review)}
+
+
+def _cancel_queued_work(conn: Connection, author_id: UUID) -> None:
+    # S51/S47: queued work for a deactivated author is never eligible.
+    # Runs go terminal-cancelled (history preserved); queued/claimed jobs
+    # leave the claimable pool so no late commit can succeed; outstanding
+    # MCP question grants are revoked.
+    from x_insight.reasoning.queue import ACTIVE_RUN_STATUSES
+
+    active = ", ".join(f"'{status}'" for status in sorted(ACTIVE_RUN_STATUSES))
+    conn.execute(
+        text(
+            "UPDATE runs SET status = 'cancelled', updated_at = now() "
+            "WHERE author_id = CAST(:id AS uuid) "
+            f"AND status IN ({active})"
+        ),
+        {"id": str(author_id)},
+    )
+    conn.execute(
+        text(
+            "UPDATE reasoning_jobs SET status = 'cancelled', "
+            "lease_token = NULL, lease_deadline = NULL, updated_at = now() "
+            "WHERE author_id = CAST(:id AS uuid) "
+            "AND status IN ('queued', 'claimed')"
+        ),
+        {"id": str(author_id)},
+    )
+    conn.execute(
+        text(
+            "UPDATE mcp_question_grants SET revoked_at = now(), "
+            "updated_at = now() WHERE actor_id = CAST(:id AS uuid) "
+            "AND revoked_at IS NULL"
+        ),
+        {"id": str(author_id)},
+    )
 
 
 def start_command(
@@ -262,7 +320,7 @@ def review_deactivation(account_id: UUID, request: Request) -> JSONResponse:
     with db.transaction() as conn:
         require_admin(request, conn)
         return JSONResponse(
-            draft_review(physician(conn, account_id)),
+            draft_review(conn, physician(conn, account_id)),
             headers={"Cache-Control": "private, no-store"},
         )
 
@@ -372,9 +430,29 @@ def change_active(
         if (
             disposition is not None
             and disposition.draft_set_revision
-            != draft_review(current)["draft_set_revision"]
+            != draft_review(conn, current)["draft_set_revision"]
         ):
             raise HTTPException(412, "Draft review changed. Review it again.")
+        if (
+            not active
+            and disposition is not None
+            and disposition.draft_action == "discard"
+        ):
+            # Explicitly confirmed discard only: tombstone the author's
+            # non-terminal drafts in place (content + author preserved,
+            # revision bumped). Retain leaves drafts untouched. Discarded
+            # rows are terminal and never resurrected by reactivation.
+            conn.execute(
+                text(
+                    "UPDATE encounters SET state = 'discarded', "
+                    "revision = revision + 1, updated_at = now() "
+                    "WHERE author_id = CAST(:id AS uuid) "
+                    "AND state IN ('draft', 'review_ready')"
+                ),
+                {"id": str(account_id)},
+            )
+        if not active:
+            _cancel_queued_work(conn, account_id)
         row = (
             conn.execute(
                 text(

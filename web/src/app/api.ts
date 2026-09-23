@@ -154,6 +154,7 @@ export interface PatientCreate {
 export async function listPatients(params?: {
   q?: string;
   clinical_status?: string;
+  archived?: boolean;
 }): Promise<PatientList> {
   const query = new URLSearchParams({ limit: "100" });
   if (params?.q) {
@@ -162,6 +163,7 @@ export async function listPatients(params?: {
   if (params?.clinical_status) {
     query.set("clinical_status", params.clinical_status);
   }
+  query.set("archived", params?.archived ? "true" : "false");
   const response = await fetch(`/api/v1/patients?${query}`, {
     credentials: "include",
   });
@@ -367,6 +369,137 @@ export async function patchPatientPhone(
   }
   const payload = (await response.json()) as { patient: Patient };
   return payload.patient;
+}
+
+/** S51 archive client (T9): admin-only, If-Match + Idempotency-Key. */
+async function setArchived(
+  patientUuid: string,
+  revision: number,
+  archived: boolean,
+): Promise<Patient> {
+  const csrf = csrfToken();
+  const action = archived ? "archive" : "unarchive";
+  const response = await fetch(`/api/v1/patients/${patientUuid}/${action}`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(csrf ? { "X-CSRF-Token": csrf } : {}),
+      "If-Match": String(revision),
+      "Idempotency-Key": idempotencyKey(),
+    },
+    body: JSON.stringify({}),
+  });
+  if (response.status === 412) {
+    throw Object.assign(new Error("The patient changed. Reload and reconcile."), {
+      status: 412,
+    });
+  }
+  if (response.status === 403) {
+    throw Object.assign(new Error("Administrator access required."), {
+      status: 403,
+    });
+  }
+  if (!response.ok) {
+    throw Object.assign(
+      new Error(archived ? "Could not archive the patient." : "Could not unarchive the patient."),
+      { status: response.status },
+    );
+  }
+  const payload = (await response.json()) as { patient: Patient };
+  return payload.patient;
+}
+
+export async function archivePatient(
+  patientUuid: string,
+  revision: number,
+): Promise<Patient> {
+  return setArchived(patientUuid, revision, true);
+}
+
+export async function unarchivePatient(
+  patientUuid: string,
+  revision: number,
+): Promise<Patient> {
+  return setArchived(patientUuid, revision, false);
+}
+
+export interface DeactivationDraft {
+  id: string;
+  encounter_id: string;
+  kind: string;
+  state: string;
+  revision: number;
+}
+
+export interface DeactivationReview {
+  schema_version: number;
+  physician_id: string;
+  account_revision: number;
+  drafts: DeactivationDraft[];
+  draft_set_revision: string;
+}
+
+/** S51 deactivation review (T9): real non-terminal draft set + content hash. */
+export async function getDeactivationReview(
+  physicianId: string,
+): Promise<DeactivationReview> {
+  const response = await fetch(
+    `/api/v1/physicians/${physicianId}/deactivation-review`,
+    { credentials: "include" },
+  );
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (!response.ok) {
+    throw statusError("Could not load the draft review.", response.status);
+  }
+  return (await response.json()) as DeactivationReview;
+}
+
+/** S51 deactivate (T9): explicit retain/discard + draft_set_revision + If-Match. */
+export async function deactivatePhysician(
+  physicianId: string,
+  body: {
+    draft_action: "retain" | "discard";
+    draft_set_revision: string;
+    confirm_discard: boolean;
+  },
+  revision: number,
+): Promise<PhysicianAccount> {
+  const response = await fetch(`/api/v1/physicians/${physicianId}/deactivate`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      ...csrfHeaders(),
+      "If-Match": String(revision),
+      "Idempotency-Key": idempotencyKey(),
+    },
+    body: JSON.stringify(body),
+  });
+  if (
+    response.status === 403 ||
+    response.status === 409 ||
+    response.status === 412 ||
+    response.status === 422
+  ) {
+    let detail = "Could not deactivate the physician.";
+    try {
+      const payload = (await response.clone().json()) as {
+        detail?: unknown;
+      };
+      if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+        detail = payload.detail;
+      }
+    } catch {
+      /* keep fallback */
+    }
+    throw statusError(detail, response.status);
+  }
+  if (!response.ok) {
+    throw statusError("Could not deactivate the physician.", response.status);
+  }
+  return (await response.json()) as PhysicianAccount;
 }
 
 export async function discardEncounter(

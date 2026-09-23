@@ -19,7 +19,7 @@ from pydantic import BaseModel, ConfigDict, StrictInt
 from sqlalchemy import text
 
 from x_insight import db
-from x_insight.cases.encounters import _baseline_changed_for
+from x_insight.cases.encounters import _baseline_changed_for, _has_fresh_review_after
 from x_insight.cases.history import validate_history_reconciliation
 from x_insight.contracts import (
     canonical_json,
@@ -428,7 +428,7 @@ async def sign_encounter(encounter_id: UUID, request: Request) -> JSONResponse:
             raise HTTPException(403, "Only the draft author may sign.")
         patient = (
             conn.execute(
-                text("SELECT * FROM patients WHERE id = :id"),
+                text("SELECT * FROM patients WHERE id = :id FOR UPDATE"),
                 {"id": str(row["patient_id"])},
             )
             .mappings()
@@ -502,7 +502,9 @@ async def sign_encounter(encounter_id: UUID, request: Request) -> JSONResponse:
                 or reconciliation.get("status") != "confirmed"
             ):
                 raise HTTPException(409, "Baseline reconciliation is required.")
-            if _baseline_changed_for(conn, row):
+            if _baseline_changed_for(conn, row) and not _has_fresh_review_after(
+                conn, row
+            ):
                 raise HTTPException(
                     409,
                     "Baseline changed. Reconcile against the current baseline.",
@@ -592,6 +594,63 @@ async def sign_encounter(encounter_id: UUID, request: Request) -> JSONResponse:
         snapshot_hash = content_hash(snapshot_body)
         frozen: dict[str, Any] = dict(snapshot_body)
         frozen["snapshot_hash"] = snapshot_hash
+        # S51 slice 3: commit-time fence. The encounter row (FOR UPDATE) and
+        # the patient row (FOR UPDATE, encounter-then-patient order matching
+        # the archive path) are held, so a concurrent archive or a
+        # same-patient sign serializes here and the re-reads below observe
+        # the winner's commit. The session row lock serializes with a
+        # concurrent deactivation (which revokes sessions), so the
+        # author-active re-check cannot miss a deactivation that committed
+        # first. Idempotency replays return above and never reach this fence.
+        fence_patient = (
+            conn.execute(
+                text("SELECT archived FROM patients WHERE id = :id"),
+                {"id": str(row["patient_id"])},
+            )
+            .mappings()
+            .first()
+        )
+        if fence_patient is None:
+            raise HTTPException(404, "Encounter not found.")
+        if fence_patient["archived"]:
+            raise HTTPException(409, "Archived patient drafts are read-only.")
+        fence_session = (
+            conn.execute(
+                text(
+                    "SELECT revoked_at, credential_revision FROM sessions "
+                    "WHERE id = :sid FOR UPDATE"
+                ),
+                {"sid": str(actor["session_id"])},
+            )
+            .mappings()
+            .first()
+        )
+        fence_user = (
+            conn.execute(
+                text("SELECT active, credential_revision FROM users WHERE id = :uid"),
+                {"uid": actor_id},
+            )
+            .mappings()
+            .first()
+        )
+        if (
+            fence_session is None
+            or fence_session["revoked_at"] is not None
+            or fence_user is None
+            or not fence_user["active"]
+            or int(fence_session["credential_revision"])
+            != int(fence_user["credential_revision"])
+        ):
+            raise HTTPException(403, "Signing author is no longer active.")
+        if (
+            row["kind"] == "follow_up"
+            and _baseline_changed_for(conn, row)
+            and not _has_fresh_review_after(conn, row)
+        ):
+            raise HTTPException(
+                409,
+                "Baseline changed. Reconcile against the current baseline.",
+            )
         conn.execute(
             text(
                 "INSERT INTO signed_snapshots (encounter_id, run_id, snapshot, "
@@ -721,6 +780,16 @@ def create_addendum(
             )
         if row["state"] != "signed":
             raise HTTPException(409, "Only signed encounters can have addenda.")
+        patient = (
+            conn.execute(
+                text("SELECT archived FROM patients WHERE id = :id"),
+                {"id": str(row["patient_id"])},
+            )
+            .mappings()
+            .first()
+        )
+        if patient is not None and patient["archived"]:
+            raise HTTPException(409, "Archived patient drafts are read-only.")
         signed_row = (
             conn.execute(
                 text(
