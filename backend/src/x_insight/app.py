@@ -14,6 +14,7 @@ from x_insight.cases.encounters import router as encounters_router
 from x_insight.cases.history_content import router as history_content_router
 from x_insight.cases.notes import router as notes_router
 from x_insight.cases.patients import router as patients_router
+from x_insight.cases.reporting import router as reporting_router
 from x_insight.cases.signing import router as signing_router
 from x_insight.contracts import MAX_BODY_BYTES, error_body, new_request_id
 from x_insight.ddi.routes import router as ddi_router
@@ -178,6 +179,7 @@ def register_exception_handlers(app: FastAPI) -> None:
 app.include_router(identity_router, prefix="/api/v1")
 app.include_router(accounts_router, prefix="/api/v1")
 app.include_router(patients_router, prefix="/api/v1")
+app.include_router(reporting_router, prefix="/api/v1")
 app.include_router(notes_router, prefix="/api/v1")
 app.include_router(signing_router, prefix="/api/v1")
 app.include_router(encounters_router, prefix="/api/v1")

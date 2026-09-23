@@ -13,6 +13,8 @@ import {
   createPatient,
   deactivatePhysician,
   discardEncounter,
+  downloadCsv,
+  fetchPatientReportHtml,
   fetchSession,
   addNote,
   getAuditEvent,
@@ -42,6 +44,8 @@ import {
   newIdempotencyKey,
   patchEncounter,
   patchPatientPhone,
+  patientsCsvUrl,
+  physiciansCsvUrl,
   retryRun,
   rollbackModelBundle,
   saveProviderSettings,
@@ -2031,6 +2035,9 @@ function PatientChart({
   const [archiveDialog, setArchiveDialog] = useState(false);
   const [archivePending, setArchivePending] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
+  const [reportHtml, setReportHtml] = useState<string | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -2110,6 +2117,27 @@ function PatientChart({
     }
   }
 
+  /**
+   * S53 printable report: authenticated fetch of the server-escaped report
+   * HTML, embedded only in a sandboxed srcdoc iframe (scripts stay inert;
+   * never dangerouslySetInnerHTML). The research notice renders as plain JSX
+   * beside the frame so it is visible and printable in both themes.
+   */
+  async function handlePrintReport(): Promise<void> {
+    setReportLoading(true);
+    setReportError(null);
+    try {
+      const html = await fetchPatientReportHtml(patient.id);
+      setReportHtml(html);
+    } catch (failure: unknown) {
+      setReportError(
+        failure instanceof Error ? failure.message : "Could not load the report.",
+      );
+    } finally {
+      setReportLoading(false);
+    }
+  }
+
   return (
     <section data-testid="chart-section" aria-label="Chart">
       <h3>Chart</h3>
@@ -2176,6 +2204,49 @@ function PatientChart({
         <p role="alert" className="x-error">
           {archiveError}
         </p>
+      ) : null}
+      {(role === "physician" || role === "admin") ? (
+        <div>
+          <button
+            type="button"
+            className="x-button"
+            data-testid="print-report-button"
+            disabled={reportLoading}
+            onClick={() => void handlePrintReport()}
+          >
+            {reportLoading ? "Loading report…" : "Print report"}
+          </button>
+          {reportError ? (
+            <p role="alert" className="x-error">
+              {reportError}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+      {reportHtml !== null ? (
+        <section
+          data-testid="print-report"
+          className="print-report"
+          aria-label="Printable patient report"
+        >
+          <h4>Printable report</h4>
+          <p data-testid="print-research-notice">{RESEARCH_NOTICE}</p>
+          <iframe
+            data-testid="print-report-frame"
+            className="print-report-frame print-major"
+            title="Patient report"
+            sandbox=""
+            srcDoc={reportHtml}
+          />
+          <button
+            type="button"
+            className="x-button"
+            data-testid="print-report-print"
+            onClick={() => window.print()}
+          >
+            Print
+          </button>
+        </section>
       ) : null}
       {error ? (
         <p role="alert" className="x-error">
@@ -2249,6 +2320,31 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
     }
   });
   const [selectedEncounterId, setSelectedEncounterId] = useState<string | null>(null);
+  const [exportStatus, setExportStatus] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportPending, setExportPending] = useState<string | null>(null);
+
+  /**
+   * S53 admin-only list CSV exports. Physicians never see these buttons;
+   * the server also denies them with 403. Column typing is a spreadsheet
+   * text-import step (see the note beside the buttons), never a CSV promise.
+   */
+  async function handleExport(kind: "patients" | "physicians"): Promise<void> {
+    setExportPending(kind);
+    setExportError(null);
+    try {
+      const url = kind === "patients" ? patientsCsvUrl() : physiciansCsvUrl();
+      const saved = await downloadCsv(url, `${kind}.csv`);
+      setExportStatus(`Export ready: ${saved}`);
+    } catch (failure: unknown) {
+      setExportStatus(null);
+      setExportError(
+        failure instanceof Error ? failure.message : "Could not export the list.",
+      );
+    } finally {
+      setExportPending(null);
+    }
+  }
 
   function openDraft(item: Patient): void {
     // Warn when switching drafts with pending local edits.
@@ -2364,6 +2460,42 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
           <option value="archived">Archived</option>
         </select>
       </div>
+      {role === "admin" ? (
+        <div>
+          <button
+            type="button"
+            className="x-button"
+            data-testid="export-patients-csv"
+            disabled={exportPending !== null}
+            onClick={() => void handleExport("patients")}
+          >
+            {exportPending === "patients" ? "Exporting…" : "Export patients CSV"}
+          </button>{" "}
+          <button
+            type="button"
+            className="x-button"
+            data-testid="export-physicians-csv"
+            disabled={exportPending !== null}
+            onClick={() => void handleExport("physicians")}
+          >
+            {exportPending === "physicians" ? "Exporting…" : "Export physicians CSV"}
+          </button>
+          <p data-testid="export-text-import-note">
+            Spreadsheet tip: open the downloaded file with a text import and
+            set the patient ID column type to text so leading zeros are preserved.
+          </p>
+          {exportStatus ? (
+            <p role="status" data-testid="export-status">
+              {exportStatus}
+            </p>
+          ) : null}
+          {exportError ? (
+            <p role="alert" className="x-error">
+              {exportError}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       {error ? (
         <p role="alert" className="x-error">
           {error}

@@ -159,3 +159,40 @@ body {
     transition: none !important;
   }
 }
+
+/* S53 printable report: readable page breaks, no inversion. Theme tokens
+ * carry both themes (never filter: invert), so the research labeling stays
+ * visible in print under light and dark.
+ */
+.print-report-frame {
+  width: 100%;
+  min-height: 60vh;
+  border: 1px solid var(--border);
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+@media print {
+  .x-nav {
+    display: none !important;
+  }
+  .print-report {
+    display: block !important;
+    background: var(--canvas);
+    color: var(--ink);
+  }
+  .print-report section {
+    page-break-inside: avoid;
+  }
+  .print-report h4,
+  .print-report p {
+    page-break-after: avoid;
+  }
+  .print-report .print-major {
+    page-break-before: always;
+  }
+  .print-report-frame {
+    border: 0;
+    page-break-inside: auto;
+  }
+}

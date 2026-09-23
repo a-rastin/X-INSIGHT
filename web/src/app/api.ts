@@ -1540,6 +1540,62 @@ export async function getAuditEvent(id: string): Promise<AuditEventDetail> {
   }
   return (await response.json()) as AuditEventDetail;
 }
+/** S53 printable report + CSV exports (T9): escaped server HTML + admin CSVs.
+ * The report body is server-escaped HTML; the caller must embed it sandboxed
+ * (iframe srcdoc) and never via dangerouslySetInnerHTML.
+ */
+export async function fetchPatientReportHtml(
+  patientUuid: string,
+): Promise<string> {
+  const response = await fetch(`/api/v1/patients/${patientUuid}/report`, {
+    credentials: "include",
+  });
+  if (response.status === 401) {
+    throw statusError("Log in to continue.", 401);
+  }
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (!response.ok) {
+    throw statusError("Could not load the report.", response.status);
+  }
+  return response.text();
+}
+
+export function patientsCsvUrl(): string {
+  return "/api/v1/exports/patients.csv";
+}
+
+export function physiciansCsvUrl(): string {
+  return "/api/v1/exports/physicians.csv";
+}
+
+/** Authenticated CSV download via a blob anchor (cookies ride the fetch). */
+export async function downloadCsv(url: string, filename: string): Promise<string> {
+  const response = await fetch(url, { credentials: "include" });
+  if (response.status === 401) {
+    throw statusError("Log in to continue.", 401);
+  }
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (!response.ok) {
+    throw statusError("Could not export the list.", response.status);
+  }
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const anchor = document.createElement("a");
+    anchor.href = objectUrl;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
+  }
+  return filename;
+}
 export async function checkDdi(
   dataset_version: string,
   medications: Array<Record<string, string>>,
