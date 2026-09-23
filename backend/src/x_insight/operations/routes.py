@@ -1,4 +1,4 @@
-"""Backup HTTP routes (S54 slice 1, seams T10+T1)."""
+"""Backup + restore-validation HTTP routes (S54 slice 1, S55 slice 1, T10+T1)."""
 
 from __future__ import annotations
 
@@ -8,15 +8,19 @@ import threading
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import text
 
 from x_insight import db
-from x_insight.contracts import canonical_json, parse_idempotency_key
+from x_insight.contracts import (
+    canonical_json,
+    error_body,
+    parse_idempotency_key,
+)
 from x_insight.identity.accounts import require_admin
 from x_insight.identity.routes import _request_id
-from x_insight.operations import backup
+from x_insight.operations import backup, restore
 
 router = APIRouter()
 
@@ -126,3 +130,77 @@ def download_backup(job_id: UUID, request: Request) -> FileResponse:
         filename=f"backup-{job_id}.zip",
         headers=_PRIVATE_NO_STORE,
     )
+
+
+@router.post("/restores/validate")
+async def validate_restore(
+    request: Request, archive: UploadFile = File(...)
+) -> JSONResponse:
+    with db.transaction() as conn:
+        actor = require_admin(request, conn)
+        key = parse_idempotency_key(request.headers)
+        if key is None:
+            raise HTTPException(422, "A valid Idempotency-Key is required.")
+        actor_id = str(actor["id"])
+        request_id = _request_id(request)
+    upload_bytes = await archive.read()
+    request_hash = hashlib.sha256(upload_bytes).hexdigest()
+    try:
+        result = restore.validate_and_stage(
+            upload_bytes=upload_bytes,
+            filename=archive.filename or "backup.zip",
+            actor_id=actor_id,
+            idempotency_key=key,
+            request_hash=request_hash,
+            request_id=request_id,
+            database_url=db.database_url_for("app"),
+        )
+    except restore.RestoreConflict as exc:
+        raise HTTPException(
+            409, "Idempotency key was used for another request."
+        ) from exc
+    if result["status"] != "staged":
+        code = str(result.get("code") or "invalid_archive")
+        return JSONResponse(
+            status_code=422,
+            content=error_body(
+                "INVALID_CONTENT",
+                f"Backup archive failed validation ({code}).",
+                request_id,
+                field_errors={"archive": code},
+            ),
+            headers=_PRIVATE_NO_STORE,
+        )
+    return JSONResponse(
+        status_code=200,
+        content={
+            "schema_version": 1,
+            "restore_id": result["restore_id"],
+            "status": "staged",
+            "confirmation_digest": result["confirmation_digest"],
+            "report": result["report"],
+        },
+        headers=_PRIVATE_NO_STORE,
+    )
+
+
+@router.get("/restores/{restore_id}")
+def read_restore(restore_id: UUID, request: Request) -> JSONResponse:
+    with db.transaction() as conn:
+        require_admin(request, conn)
+        row = restore.get_restore(conn, str(restore_id))
+        if row is None:
+            raise HTTPException(404, "Restore job not found.")
+        return JSONResponse(
+            {
+                "schema_version": 1,
+                "restore_id": row["restore_id"],
+                "status": row["status"],
+                "confirmation_digest": row["confirmation_digest"],
+                "expired": row["expired"],
+                "superseded": row["superseded"],
+                "report": row["report"],
+                "error": row["error"],
+            },
+            headers=_PRIVATE_NO_STORE,
+        )

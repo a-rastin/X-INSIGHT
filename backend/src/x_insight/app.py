@@ -66,7 +66,14 @@ class RequestContextMiddleware:
         scope["request_id"] = request_id
 
         content_length = headers.get("content-length", "")
-        if content_length.isdigit() and int(content_length) > MAX_BODY_BYTES:
+        # Restore validation accepts backup archives larger than the generic
+        # JSON body cap; restore.py enforces its own MAX_RESTORE_UPLOAD_BYTES.
+        is_restore_upload = scope.get("path") == "/api/v1/restores/validate"
+        if (
+            content_length.isdigit()
+            and int(content_length) > MAX_BODY_BYTES
+            and not is_restore_upload
+        ):
             body = json.dumps(
                 error_body(
                     "PAYLOAD_TOO_LARGE",

@@ -1667,3 +1667,115 @@ export async function getBackup(jobId: string): Promise<BackupJob> {
 export function backupDownloadUrl(jobId: string): string {
   return `/api/v1/backups/${jobId}/download`;
 }
+
+/** S55 staged-restore validation client (T1 routes): validate + read.
+ * Payloads carry inventory/checksums only — no secret values. Errors carry
+ * safe server text; 403 maps to the shared guard message. There is no commit
+ * route (S56 owns it); the UI never fires one. */
+export interface RestoreReport {
+  schema_version: number;
+  backup_id: string;
+  backup_timestamp: string | null;
+  db_schema_revision: string;
+  app_version: string;
+  archive_sha256: string;
+  tables: Record<string, number>;
+  files: Array<{ path: string; sha256: string; bytes: number }>;
+  coverage?: unknown;
+  impact: {
+    live: Record<string, number>;
+    staged: Record<string, number>;
+  };
+  key_reentry_note: string;
+  staged_at: string;
+  expires_at: string;
+}
+
+export interface RestoreValidation {
+  schema_version: number;
+  restore_id: string;
+  status: string;
+  confirmation_digest: string;
+  report: RestoreReport;
+}
+
+export interface RestoreStatus {
+  schema_version: number;
+  restore_id: string;
+  status: string;
+  confirmation_digest: string | null;
+  expired: boolean;
+  superseded: boolean;
+  report: RestoreReport | null;
+  error: string | null;
+}
+
+export async function validateRestore(file: File): Promise<RestoreValidation> {
+  const form = new FormData();
+  form.append("archive", file, file.name);
+  const csrf = csrfToken();
+  const response = await fetch("/api/v1/restores/validate", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      ...(csrf ? { "X-CSRF-Token": csrf } : {}),
+      "Idempotency-Key": idempotencyKey(),
+    },
+    body: form,
+  });
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (response.status === 409) {
+    let detail = "Idempotency key was used for another request.";
+    try {
+      const payload = (await response.clone().json()) as { detail?: unknown };
+      if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+        detail = payload.detail;
+      }
+    } catch {
+      /* keep fallback */
+    }
+    throw statusError(detail, 409);
+  }
+  if (response.status === 422) {
+    let detail = "Backup archive failed validation.";
+    let fieldCode = "";
+    try {
+      const payload = (await response.clone().json()) as {
+        message?: unknown;
+        field_errors?: unknown;
+      };
+      if (typeof payload.message === "string" && payload.message.trim() !== "") {
+        detail = payload.message;
+      }
+      const fields = payload.field_errors as Record<string, unknown> | undefined;
+      if (fields !== undefined && typeof fields.archive === "string") {
+        fieldCode = fields.archive;
+      }
+    } catch {
+      /* keep fallback */
+    }
+    throw statusError(
+      fieldCode !== "" ? `${detail} (archive: ${fieldCode})` : detail,
+      422,
+    );
+  }
+  if (!response.ok) {
+    throw statusError("Could not validate the archive.", response.status);
+  }
+  return (await response.json()) as RestoreValidation;
+}
+
+export async function getRestore(restoreId: string): Promise<RestoreStatus> {
+  const response = await fetch(`/api/v1/restores/${restoreId}`, {
+    credentials: "include",
+  });
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (!response.ok) {
+    throw statusError("Could not load the staged restore.", response.status);
+  }
+  return (await response.json()) as RestoreStatus;
+}

@@ -28,6 +28,7 @@ import {
   getModelBundle,
   getNetworkGraph,
   getProviderSettings,
+  getRestore,
   getRun,
   getSecondaryPlan,
   getSignedSnapshot,
@@ -60,6 +61,7 @@ import {
   unarchivePatient,
   updateTheme,
   validateNetworkVersion,
+  validateRestore,
   type Addendum,
   type AuditEvent,
   type AuditEventDetail,
@@ -78,6 +80,8 @@ import {
   type Patient,
   type PhysicianAccount,
   type ProviderSettings,
+  type RestoreReport,
+  type RestoreStatus,
   type RunDetail,
   type SessionUser,
   type ThemeName,
@@ -6513,6 +6517,182 @@ function BackupsSection() {
             </ul>
           ) : null}
           {files !== null ? <p>files: {files.length} checksums recorded</p> : null}
+        </div>
+      ) : null}
+      <RestoresSection />
+    </section>
+  );
+}
+
+/** S55 staged-restore validation (T1): validate-only, commit stays disabled
+ * until S56. Lives inside the admin Backups page so the existing admin guard
+ * covers it; there is no separate restores route. */
+function RestoresSection() {
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [chosen, setChosen] = useState<File | null>(null);
+  const [phase, setPhase] = useState<"idle" | "validating" | "staged" | "failed">(
+    "idle",
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [report, setReport] = useState<RestoreReport | null>(null);
+  const [digest, setDigest] = useState<string | null>(null);
+  const [flags, setFlags] = useState<{ expired: boolean; superseded: boolean }>({
+    expired: false,
+    superseded: false,
+  });
+
+  function handleFile(event: React.ChangeEvent<HTMLInputElement>): void {
+    const next = event.target.files?.[0] ?? null;
+    setChosen(next);
+    setFileName(next?.name ?? null);
+    setReport(null);
+    setDigest(null);
+    setError(null);
+    setFlags({ expired: false, superseded: false });
+    if (phase !== "validating") {
+      setPhase("idle");
+    }
+  }
+
+  async function handleValidate(): Promise<void> {
+    if (chosen === null || phase === "validating") {
+      return;
+    }
+    setPhase("validating");
+    setError(null);
+    setReport(null);
+    setDigest(null);
+    setFlags({ expired: false, superseded: false });
+    try {
+      const result = await validateRestore(chosen);
+      setReport(result.report);
+      setDigest(result.confirmation_digest);
+      setPhase("staged");
+      // Best-effort freshness flags (read-time expired/superseded); a read
+      // failure never clears a successful stage.
+      try {
+        const detail: RestoreStatus = await getRestore(result.restore_id);
+        setFlags({
+          expired: detail.expired === true,
+          superseded: detail.superseded === true,
+        });
+      } catch {
+        /* keep staged result without flags */
+      }
+    } catch (err) {
+      // validateRestore only throws safe client/server messages (including
+      // the 422 archive field code), never secret or record values.
+      setError(
+        err instanceof Error && err.message !== ""
+          ? err.message
+          : "Could not validate the archive.",
+      );
+      setPhase("failed");
+    }
+  }
+
+  const validating = phase === "validating";
+  const tableEntries = report !== null ? Object.entries(report.tables ?? {}) : [];
+  const fileEntries = report !== null && Array.isArray(report.files) ? report.files : [];
+  const liveEntries =
+    report !== null && report.impact !== undefined && report.impact !== null
+      ? Object.entries(report.impact.live ?? {})
+      : [];
+  const stagedEntries =
+    report !== null && report.impact !== undefined && report.impact !== null
+      ? Object.entries(report.impact.staged ?? {})
+      : [];
+
+  return (
+    <section data-testid="restores-section" aria-label="Staged restores">
+      <h2>Staged restores</h2>
+      <p>
+        Validate a backup archive before staging it. Validation never changes
+        live data and never exposes secret values.
+      </p>
+      <label htmlFor="restores-file-input">Backup archive (.zip)</label>{" "}
+      <input
+        id="restores-file-input"
+        type="file"
+        data-testid="restores-file"
+        accept=".zip,application/zip"
+        onChange={handleFile}
+      />
+      {fileName !== null ? <p>Selected: {fileName}</p> : null}
+      <button
+        type="button"
+        className="x-button"
+        data-testid="restores-validate"
+        disabled={chosen === null || validating}
+        onClick={() => void handleValidate()}
+      >
+        Validate staged restore
+      </button>
+      <p data-testid="restores-status">
+        {phase === "idle" && report === null
+          ? "No staged restore yet."
+          : `Status: ${phase}`}
+      </p>
+      {error ? (
+        <p role="alert" className="x-error" data-testid="restores-error">
+          {error}
+        </p>
+      ) : null}
+      {report !== null && phase === "staged" ? (
+        <div data-testid="restores-report" aria-label="Staged restore report">
+          <p>Backup id: {report.backup_id}</p>
+          <p>Backup date: {report.backup_timestamp ?? ""}</p>
+          <p>Schema revision: {report.db_schema_revision}</p>
+          <p>
+            Tables: {tableEntries.length}; files: {fileEntries.length}
+          </p>
+          {tableEntries.length > 0 ? (
+            <ul>
+              {tableEntries.map(([name, rows]) => (
+                <li key={name}>
+                  {name}: {rows} rows
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <p>Archive sha256: {report.archive_sha256}</p>
+          {fileEntries.slice(0, 5).map((entry) => (
+            <p key={entry.path}>
+              {entry.path}: {entry.sha256}
+            </p>
+          ))}
+          {liveEntries.length > 0 || stagedEntries.length > 0 ? (
+            <>
+              <p>
+                Live counts:{" "}
+                {liveEntries.map(([name, count]) => `${name}: ${count}`).join("; ") || "none"}
+              </p>
+              <p>
+                Staged counts:{" "}
+                {stagedEntries.map(([name, count]) => `${name}: ${count}`).join("; ") || "none"}
+              </p>
+            </>
+          ) : null}
+          <p>
+            Confirmation digest:{" "}
+            <span data-testid="restores-digest">{digest ?? ""}</span>
+          </p>
+          {flags.expired ? <p>Staged restore expired.</p> : null}
+          {flags.superseded ? <p>Staged restore superseded.</p> : null}
+          <p data-testid="restores-key-note">{report.key_reentry_note}</p>
+          <button
+            type="button"
+            className="x-button"
+            data-testid="restores-commit"
+            disabled
+            title="Restore commit is unavailable until S56."
+            aria-describedby="restores-commit-note"
+          >
+            Commit restore
+          </button>
+          <p id="restores-commit-note">
+            Restore commit is unavailable until S56.
+          </p>
         </div>
       ) : null}
     </section>
