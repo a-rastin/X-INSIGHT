@@ -3,6 +3,7 @@ import "../shared/theme.css";
 import {
   RESEARCH_NOTICE,
   activateModelBundle,
+  addAddendum,
   addNetworkVersion,
   changeOwnPassword,
   checkDdi,
@@ -19,7 +20,10 @@ import {
   getNetworkGraph,
   getProviderSettings,
   getRun,
+  getSecondaryPlan,
+  getSignedSnapshot,
   importNetwork,
+  listAddenda,
   listNetworks,
   listNetworkVersions,
   listNotes,
@@ -36,11 +40,14 @@ import {
   retryRun,
   rollbackModelBundle,
   saveProviderSettings,
+  saveSecondaryPlan,
   searchDrugs,
+  signEncounter,
   startRun,
   testProviderSettings,
   updateTheme,
   validateNetworkVersion,
+  type Addendum,
   type BundlePinInput,
   type DdiReport,
   type DrugSearchResult,
@@ -3203,6 +3210,728 @@ function ProposalReviewSection({
   );
 }
 
+/**
+ * S50 signing (T9 journey contract): immutable proposal beside a
+ * server-backed secondary plan, explicit sign, signed view, addenda.
+ *
+ * Data sources: run detail comes from the S48 remembered run (same
+ * sessionStorage key ProposalReviewSection writes; this section never POSTs
+ * a run, so entry stays single-flight). The proposal text, run status, and
+ * run_id are read from that detail; the signed record comes from
+ * GET signed-snapshot (readable by any role). The secondary plan persists
+ * through PATCH/GET secondary-plan only — never draft_data.
+ *
+ * No role="status" nodes here: DraftEditor keeps the single live saveState
+ * node (S13/S20/S48 precedent). Secondary save + sign status stay
+ * addressable via their testids; errors use role="alert".
+ */
+function signerCacheKey(encounterId: string): string {
+  return `xinsight.signer:${encounterId}`;
+}
+
+function readCachedSigner(encounterId: string): string | null {
+  try {
+    const raw = localStorage.getItem(signerCacheKey(encounterId));
+    return raw !== null && raw !== "" ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+function cacheSigner(encounterId: string, username: string): void {
+  try {
+    localStorage.setItem(signerCacheKey(encounterId), username);
+  } catch {
+    /* storage unavailable; signed view still shows the signer id */
+  }
+}
+
+function snapshotText(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (value === null || value === undefined) {
+    return "";
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "";
+  }
+}
+
+function proposalFullText(proposal: Record<string, unknown> | null): string {
+  if (proposal === null) {
+    return "";
+  }
+  const parts: string[] = [];
+  if (typeof proposal.title === "string" && proposal.title !== "") {
+    parts.push(proposal.title);
+  }
+  const sections = proposalSectionEntries(proposal.sections);
+  for (const entry of sections) {
+    parts.push(entry.text !== "" ? `${entry.key}: ${entry.text}` : entry.key);
+  }
+  const skipped = proposalSkippedEntries(proposal.skipped);
+  for (const reason of skipped) {
+    parts.push(reason);
+  }
+  if (typeof proposal.coverage_note === "string" && proposal.coverage_note !== "") {
+    parts.push(proposal.coverage_note);
+  }
+  for (const item of proposalStringEntries(proposal.limitations)) {
+    parts.push(item);
+  }
+  return parts.join("\n");
+}
+
+function SigningSection({
+  encounter,
+  userId,
+  getRevision,
+  onSigned,
+}: {
+  encounter: Encounter;
+  userId: string;
+  getRevision: () => number;
+  onSigned: (next: Encounter) => void;
+}) {
+  const encounterId = encounter.id;
+  const isAuthor = encounter.author_id === null || encounter.author_id === userId;
+  const [runDetail, setRunDetail] = useState<RunDetail | null>(null);
+  const runDetailRef = useRef<RunDetail | null>(null);
+  runDetailRef.current = runDetail;
+  const [snapshot, setSnapshot] = useState<Record<string, unknown> | null>(null);
+  const [signedView, setSignedView] = useState(encounter.state === "signed");
+  const [secondaryText, setSecondaryText] = useState("");
+  const secondaryTextRef = useRef("");
+  const [secondaryRev, setSecondaryRev] = useState(0);
+  const secondaryRevRef = useRef(0);
+  const [secondaryStatus, setSecondaryStatus] = useState("");
+  const secondaryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const secondarySavingRef = useRef(false);
+  const [reviewAck, setReviewAck] = useState(false);
+  const [baselineAck, setBaselineAck] = useState(false);
+  const [signStatus, setSignStatus] = useState("");
+  const [signing, setSigning] = useState(false);
+  const signingRef = useRef(false);
+  const [sessionUsername, setSessionUsername] = useState<string | null>(null);
+  const [addenda, setAddenda] = useState<Addendum[]>([]);
+  const [addReason, setAddReason] = useState("");
+  const [addText, setAddText] = useState("");
+  const [addStatus, setAddStatus] = useState("");
+  const [adding, setAdding] = useState(false);
+  const addingRef = useRef(false);
+
+  const draftActive = encounter.state === "draft" && !signedView;
+  const secondaryEditable = draftActive && isAuthor;
+
+  useEffect(() => {
+    setSignedView(encounter.state === "signed");
+  }, [encounter.state]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchSession()
+      .then((session) => {
+        if (!cancelled && session) {
+          setSessionUsername(session.username);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Cache the author's username while viewing the own draft so a later
+  // cross-physician signed view can attribute the signature without a
+  // backend lookup (physician directory is admin-only).
+  useEffect(() => {
+    if (sessionUsername !== null && isAuthor) {
+      cacheSigner(encounterId, sessionUsername);
+    }
+  }, [sessionUsername, isAuthor, encounterId]);
+
+  // Secondary plan: server truth on mount/encounter change.
+  useEffect(() => {
+    let cancelled = false;
+    setSecondaryStatus("");
+    if (secondaryTimerRef.current !== null) {
+      clearTimeout(secondaryTimerRef.current);
+      secondaryTimerRef.current = null;
+    }
+    getSecondaryPlan(encounterId)
+      .then((plan) => {
+        if (cancelled) {
+          return;
+        }
+        if (plan !== null) {
+          setSecondaryText(plan.text ?? "");
+          secondaryTextRef.current = plan.text ?? "";
+          setSecondaryRev(plan.revision ?? 0);
+          secondaryRevRef.current = plan.revision ?? 0;
+        } else {
+          setSecondaryText("");
+          secondaryTextRef.current = "";
+          setSecondaryRev(0);
+          secondaryRevRef.current = 0;
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSecondaryStatus("Could not load the secondary plan.");
+        }
+      });
+    return () => {
+      cancelled = true;
+      if (secondaryTimerRef.current !== null) {
+        clearTimeout(secondaryTimerRef.current);
+        secondaryTimerRef.current = null;
+      }
+    };
+  }, [encounterId]);
+
+  // Run detail: observe the S48 remembered run (never POST here). Poll for
+  // its appearance and for status while non-terminal; 403 (non-author)
+  // falls back to the snapshot below.
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchRemembered(): Promise<void> {
+      const remembered = readRememberedRunId(encounterId);
+      if (remembered === null) {
+        return;
+      }
+      if (runDetailRef.current !== null && runDetailRef.current.run.id === remembered) {
+        return;
+      }
+      try {
+        const data = await getRun(remembered);
+        if (!cancelled) {
+          setRunDetail(data);
+        }
+      } catch {
+        /* non-author or transient: snapshot covers the signed view */
+      }
+    }
+    async function refresh(): Promise<void> {
+      const current = runDetailRef.current;
+      if (current === null || isProposalRunTerminal(current)) {
+        return;
+      }
+      try {
+        const data = await getRun(current.run.id);
+        if (!cancelled) {
+          setRunDetail(data);
+        }
+      } catch {
+        /* transient read failure: keep polling on schedule */
+      }
+    }
+    void fetchRemembered();
+    const timer = setInterval(() => {
+      if (cancelled) {
+        return;
+      }
+      if (runDetailRef.current === null) {
+        void fetchRemembered();
+      } else {
+        void refresh();
+      }
+    }, 2000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [encounterId]);
+
+  // Signed snapshot: any authenticated role may read; drives the signed
+  // view when the encounter is signed or a sign raced to 409.
+  useEffect(() => {
+    let cancelled = false;
+    getSignedSnapshot(encounterId)
+      .then((snap) => {
+        if (cancelled || snap === null) {
+          return;
+        }
+        setSnapshot(snap);
+        setSignedView(true);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [encounterId]);
+
+  // Addenda list: session-only read, shown read-only to non-signers.
+  useEffect(() => {
+    let cancelled = false;
+    if (!signedView) {
+      return;
+    }
+    listAddenda(encounterId)
+      .then((items) => {
+        if (!cancelled) {
+          setAddenda(items);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [encounterId, signedView]);
+
+  async function saveSecondaryNow(): Promise<void> {
+    if (secondaryTimerRef.current !== null) {
+      clearTimeout(secondaryTimerRef.current);
+      secondaryTimerRef.current = null;
+    }
+    const text = secondaryTextRef.current;
+    if (text.trim() === "" || !isAuthor || encounter.state !== "draft" || signedView) {
+      return;
+    }
+    if (secondarySavingRef.current) {
+      return;
+    }
+    secondarySavingRef.current = true;
+    setSecondaryStatus("Saving…");
+    try {
+      const saved = await saveSecondaryPlan(
+        encounterId,
+        text,
+        secondaryRevRef.current,
+        newIdempotencyKey(),
+      );
+      secondaryRevRef.current = saved.revision;
+      setSecondaryRev(saved.revision);
+      setSecondaryStatus("Saved");
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      const message =
+        failure instanceof Error ? failure.message : "Could not save the secondary plan.";
+      if (status === 412) {
+        // Reload the server revision but keep the physician's text so an
+        // edit is never silently dropped; the next edit saves cleanly.
+        try {
+          const server = await getSecondaryPlan(encounterId);
+          if (server !== null) {
+            secondaryRevRef.current = server.revision;
+            setSecondaryRev(server.revision);
+          } else {
+            secondaryRevRef.current = 0;
+            setSecondaryRev(0);
+          }
+        } catch {
+          /* keep the local revision; the message still guides reload */
+        }
+      }
+      if (status === 409) {
+        try {
+          const snap = await getSignedSnapshot(encounterId);
+          if (snap !== null) {
+            setSnapshot(snap);
+            setSignedView(true);
+          }
+        } catch {
+          /* keep the read-only message */
+        }
+      }
+      setSecondaryStatus(message);
+    } finally {
+      secondarySavingRef.current = false;
+    }
+  }
+
+  function handleSecondaryChange(value: string): void {
+    if (!secondaryEditable) {
+      return;
+    }
+    setSecondaryText(value);
+    secondaryTextRef.current = value;
+    setSecondaryStatus("Saving…");
+    if (secondaryTimerRef.current !== null) {
+      clearTimeout(secondaryTimerRef.current);
+    }
+    secondaryTimerRef.current = setTimeout(() => {
+      secondaryTimerRef.current = null;
+      void saveSecondaryNow();
+    }, 1000);
+  }
+
+  const proposalRecord =
+    runDetail !== null &&
+    typeof runDetail.proposal === "object" &&
+    runDetail.proposal !== null
+      ? (runDetail.proposal as Record<string, unknown>)
+      : null;
+  const snapshotProposal =
+    snapshot !== null &&
+    typeof snapshot.initial_proposal === "object" &&
+    snapshot.initial_proposal !== null
+      ? (snapshot.initial_proposal as Record<string, unknown>)
+      : null;
+  // Signed view prefers the frozen snapshot; drafts read the live run.
+  const activeProposal = signedView && snapshotProposal !== null ? snapshotProposal : proposalRecord;
+  const proposalText = proposalFullText(activeProposal);
+  const snapshotSecondary =
+    snapshot !== null &&
+    typeof snapshot.secondary_plan === "object" &&
+    snapshot.secondary_plan !== null
+      ? String(
+          (snapshot.secondary_plan as Record<string, unknown>).text ?? "",
+        )
+      : "";
+  const displaySecondary = signedView && snapshotSecondary !== "" ? snapshotSecondary : secondaryText;
+  const showComparison =
+    proposalText !== "" &&
+    displaySecondary.trim() !== "" &&
+    displaySecondary !== proposalText;
+
+  const runFailed =
+    runDetail !== null &&
+    (runDetail.run.status === "failed" ||
+      runDetail.jobs.some((item) => item.status === "failed"));
+  const runNeedsClarification =
+    runDetail !== null &&
+    (runDetail.run.status === "needs_clarification" ||
+      runDetail.projections.some((item) => item.applicability === "needs_clarification"));
+  const proposalSucceeded =
+    proposalRecord !== null &&
+    runDetail !== null &&
+    runDetail.run.status === "succeeded" &&
+    !runDetail.stale &&
+    !runFailed &&
+    !runNeedsClarification;
+
+  function blockedMessage(): string {
+    if (runDetail === null) {
+      return "Signing is blocked — the proposal is incomplete; the run is still in progress.";
+    }
+    if (runFailed) {
+      return "Signing is blocked — the run failed; no proposal is available to sign.";
+    }
+    if (runNeedsClarification) {
+      return "Signing is blocked — clarification is needed before signing.";
+    }
+    if (runDetail.stale) {
+      return "Signing is blocked — the run is stale; analytical inputs changed since the snapshot.";
+    }
+    return "Signing is blocked — the proposal is incomplete; the run is still in progress.";
+  }
+
+  const effectiveSignStatus =
+    signStatus !== "" ? signStatus : !proposalSucceeded && !signedView ? blockedMessage() : "";
+
+  async function handleSign(): Promise<void> {
+    if (signingRef.current) {
+      return;
+    }
+    const detail = runDetailRef.current;
+    if (detail === null || !proposalSucceeded) {
+      setSignStatus(blockedMessage());
+      return;
+    }
+    if (!reviewAck) {
+      setSignStatus("Review acknowledgment is required before signing.");
+      return;
+    }
+    if (encounter.kind === "follow_up" && !baselineAck) {
+      setSignStatus("Baseline reconciliation is required.");
+      return;
+    }
+    signingRef.current = true;
+    setSigning(true);
+    // One Idempotency-Key per click-attempt: a double-click on the same
+    // attempt reuses the guard above, so the server never sees a duplicate.
+    const attemptKey = newIdempotencyKey();
+    try {
+      // Flush any pending secondary autosave first so the sign carries it.
+      await saveSecondaryNow();
+      const encRev = getRevision();
+      const body = {
+        encounter_revision: encRev,
+        run_id: detail.run.id,
+        secondary_plan_revision: secondaryRevRef.current,
+        review_acknowledgments: [
+          "Physician reviewed the initial proposal and secondary plan.",
+        ],
+        baseline_acknowledgment: encounter.kind === "follow_up",
+      };
+      const result = await signEncounter(encounterId, body, encRev, attemptKey);
+      if (sessionUsername !== null) {
+        cacheSigner(encounterId, sessionUsername);
+      }
+      onSigned(result.encounter as Encounter);
+      try {
+        const snap = await getSignedSnapshot(encounterId);
+        if (snap !== null) {
+          setSnapshot(snap);
+        } else if (
+          typeof result.signed_snapshot === "object" &&
+          result.signed_snapshot !== null
+        ) {
+          setSnapshot(result.signed_snapshot as Record<string, unknown>);
+        }
+      } catch {
+        if (
+          typeof result.signed_snapshot === "object" &&
+          result.signed_snapshot !== null
+        ) {
+          setSnapshot(result.signed_snapshot as Record<string, unknown>);
+        }
+      }
+      try {
+        setAddenda(await listAddenda(encounterId));
+      } catch {
+        /* empty until the first correction */
+      }
+      setSignedView(true);
+      setSignStatus("");
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      const message = failure instanceof Error ? failure.message : "Could not sign the plan.";
+      if (
+        status === 409 &&
+        /only draft encounters can be signed/i.test(message)
+      ) {
+        // A retried attempt raced a completed sign: adopt the record.
+        try {
+          const fresh = await getEncounter(encounterId);
+          onSigned(fresh);
+        } catch {
+          /* snapshot below still drives the view */
+        }
+        try {
+          const snap = await getSignedSnapshot(encounterId);
+          if (snap !== null) {
+            setSnapshot(snap);
+            setSignedView(true);
+            setSignStatus("");
+            return;
+          }
+        } catch {
+          /* fall through to the message */
+        }
+      }
+      // Edited secondary text is never cleared here.
+      setSignStatus(message);
+    } finally {
+      signingRef.current = false;
+      setSigning(false);
+    }
+  }
+
+  const signerId =
+    snapshot !== null && typeof snapshot.signer_id === "string"
+      ? String(snapshot.signer_id)
+      : null;
+  const signedAt =
+    snapshot !== null && typeof snapshot.signed_at === "string"
+      ? String(snapshot.signed_at)
+      : "";
+  const snapshotHash =
+    snapshot !== null && typeof snapshot.snapshot_hash === "string"
+      ? String(snapshot.snapshot_hash)
+      : "";
+  let signerDisplay = signerId ?? "";
+  if (signerId !== null && signerId === userId && sessionUsername !== null) {
+    signerDisplay = sessionUsername;
+  } else {
+    const cached = readCachedSigner(encounterId);
+    if (cached !== null) {
+      signerDisplay = signerId !== null ? `${cached} (${signerId})` : cached;
+    }
+  }
+  const isOriginalSigner = signerId !== null && signerId === userId;
+
+  async function handleAddendum(): Promise<void> {
+    if (addingRef.current) {
+      return;
+    }
+    if (!isOriginalSigner || !signedView) {
+      return;
+    }
+    const reason = addReason.trim();
+    const correction = addText.trim();
+    if (reason === "" || correction === "") {
+      setAddStatus("Reason and correction text are required.");
+      return;
+    }
+    addingRef.current = true;
+    setAdding(true);
+    setAddStatus("");
+    const attemptKey = newIdempotencyKey();
+    try {
+      const created = await addAddendum(encounterId, reason, correction, attemptKey);
+      setAddenda((prev) =>
+        prev.some((item) => item.id === created.id) ? prev : [...prev, created],
+      );
+      setAddReason("");
+      setAddText("");
+      setAddStatus("Addendum saved.");
+    } catch (failure: unknown) {
+      setAddStatus(
+        failure instanceof Error ? failure.message : "Could not save the addendum.",
+      );
+    } finally {
+      addingRef.current = false;
+      setAdding(false);
+    }
+  }
+
+  return (
+    <section data-testid="signing-section" aria-label="Signing">
+      <h3>Signing</h3>
+      <div data-testid="signing-proposal">
+        {proposalText !== "" ? (
+          <p>{proposalText}</p>
+        ) : (
+          <p>No proposal yet — the run has not succeeded.</p>
+        )}
+      </div>
+      <div className="x-field">
+        <label htmlFor={`signing-secondary-${encounterId}`}>
+          Secondary plan (physician edit; the initial proposal above is immutable)
+        </label>
+        <textarea
+          id={`signing-secondary-${encounterId}`}
+          data-testid="signing-secondary-plan"
+          value={signedView && snapshotSecondary !== "" ? snapshotSecondary : secondaryText}
+          disabled={!secondaryEditable}
+          readOnly={!secondaryEditable}
+          onChange={(event) => handleSecondaryChange(event.target.value)}
+        />
+      </div>
+      {secondaryStatus !== "" ? <p>{secondaryStatus}</p> : null}
+      {showComparison ? (
+        <div data-testid="signing-comparison">
+          <div>
+            <h4>Initial proposal</h4>
+            <p>{proposalText.slice(0, 2000)}</p>
+          </div>
+          <div>
+            <h4>Physician edits</h4>
+            <p>{displaySecondary.slice(0, 2000)}</p>
+          </div>
+        </div>
+      ) : null}
+      {signedView ? (
+        <div data-testid="signing-signed-view">
+          <p>
+            Signer: <span data-testid="signing-signer">{signerDisplay}</span>
+          </p>
+          <p>
+            Signed at: <span data-testid="signing-time">{signedAt}</span>
+          </p>
+          {snapshotHash !== "" ? <p>Snapshot hash: {snapshotHash}</p> : null}
+          {proposalText !== "" ? <p>{proposalText}</p> : null}
+          {snapshotSecondary !== "" ? <p>{snapshotSecondary}</p> : null}
+          <button
+            type="button"
+            className="x-button"
+            data-testid="signing-print"
+            onClick={() => window.print()}
+          >
+            Print signed record
+          </button>
+        </div>
+      ) : null}
+      {!signedView && draftActive && isAuthor ? (
+        <div>
+          <div className="x-field">
+            <label htmlFor={`signing-review-ack-${encounterId}`}>
+              <input
+                id={`signing-review-ack-${encounterId}`}
+                type="checkbox"
+                data-testid="signing-review-ack"
+                checked={reviewAck}
+                onChange={(event) => setReviewAck(event.target.checked)}
+              />{" "}
+              I reviewed the initial proposal and the secondary plan
+            </label>
+          </div>
+          {encounter.kind === "follow_up" ? (
+            <div className="x-field">
+              <label htmlFor={`signing-baseline-ack-${encounterId}`}>
+                <input
+                  id={`signing-baseline-ack-${encounterId}`}
+                  type="checkbox"
+                  data-testid="signing-baseline-ack"
+                  checked={baselineAck}
+                  onChange={(event) => setBaselineAck(event.target.checked)}
+                />{" "}
+                I reconciled against the baseline record
+              </label>
+            </div>
+          ) : null}
+          <button
+            type="button"
+            className="x-button"
+            data-testid="signing-sign-button"
+            disabled={signing}
+            onClick={() => void handleSign()}
+          >
+            {signing ? "Signing…" : "Sign plan"}
+          </button>
+        </div>
+      ) : null}
+      <p data-testid="signing-status" role="alert">
+        {effectiveSignStatus}
+      </p>
+      {signedView ? (
+        <div>
+          {isOriginalSigner ? (
+            <div>
+              <div className="x-field">
+                <label htmlFor={`signing-addendum-reason-${encounterId}`}>
+                  Correction reason
+                </label>
+                <input
+                  id={`signing-addendum-reason-${encounterId}`}
+                  data-testid="signing-addendum-reason"
+                  autoComplete="off"
+                  value={addReason}
+                  onChange={(event) => setAddReason(event.target.value)}
+                />
+              </div>
+              <div className="x-field">
+                <label htmlFor={`signing-addendum-text-${encounterId}`}>
+                  Correction text
+                </label>
+                <textarea
+                  id={`signing-addendum-text-${encounterId}`}
+                  data-testid="signing-addendum-text"
+                  value={addText}
+                  onChange={(event) => setAddText(event.target.value)}
+                />
+              </div>
+              <button
+                type="button"
+                className="x-button"
+                data-testid="signing-addendum-submit"
+                disabled={adding}
+                onClick={() => void handleAddendum()}
+              >
+                {adding ? "Saving…" : "Add addendum"}
+              </button>
+              {addStatus !== "" ? <p>{addStatus}</p> : null}
+            </div>
+          ) : null}
+          <div data-testid="signing-addenda-list">
+            {addenda.map((item) => (
+              <article key={item.id} data-testid="signing-addendum-item">
+                <p>{item.reason}</p>
+                <p>{item.correction_text}</p>
+                <p>{item.created_at}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function DraftEditor({
   patient,
   userId,
@@ -4305,6 +5034,12 @@ function DraftEditor({
   const readOnly =
     encounter !== null && encounter.author_id !== null && encounter.author_id !== userId;
   const discarded = encounter !== null && encounter.state !== "draft";
+  const signed = encounter !== null && encounter.state === "signed";
+
+  function handleSigned(next: Encounter): void {
+    revisionRef.current = next.revision;
+    setEncounter(next);
+  }
 
   return (
     <section aria-labelledby="draft-heading">
@@ -4322,6 +5057,17 @@ function DraftEditor({
       ) : encounter === null ? (
         <p role="status">Loading…</p>
       ) : discarded ? (
+        signed && encounter !== null ? (
+          <>
+            <p role="status">Signed.</p>
+            <SigningSection
+              encounter={encounter}
+              userId={userId}
+              getRevision={() => revisionRef.current}
+              onSigned={handleSigned}
+            />
+          </>
+        ) : (
         <>
           <div className="x-field">
             <label htmlFor={`draft-note-${encounter.id}`}>Draft note</label>
@@ -4334,7 +5080,7 @@ function DraftEditor({
           </div>
           <p role="status">Draft discarded.</p>
         </>
-
+        )
       ) : (
         <>
           {encounter.kind === "follow_up" ? (
@@ -4449,6 +5195,12 @@ function DraftEditor({
             flushSave={() => flushDraftSave()}
             secondaryPlan={secondaryPlan}
             onSecondaryPlanChange={handleSecondaryPlan}
+          />
+          <SigningSection
+            encounter={encounter}
+            userId={userId}
+            getRevision={() => revisionRef.current}
+            onSigned={handleSigned}
           />
           <div className="x-field">
             <label htmlFor={`draft-phone-${encounter.id}`}>Phone (optional)</label>

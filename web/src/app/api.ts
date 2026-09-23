@@ -1061,6 +1061,172 @@ export async function retryRun(
   });
   return runResponseOrThrow(response, "Could not retry the question.");
 }
+/** S50 signing client (T1 routes): secondary plan, sign, snapshot, addenda.
+ * Errors carry server detail for 403/409/412/422; 401 maps to a login
+ * prompt. No secrets ever enter state/errors.
+ */
+export interface SecondaryPlanState {
+  revision: number;
+  text: string;
+}
+
+export async function getSecondaryPlan(
+  encounterId: string,
+): Promise<SecondaryPlanState | null> {
+  const response = await fetch(`/api/v1/encounters/${encounterId}/secondary-plan`, {
+    credentials: "include",
+  });
+  if (response.status === 401) {
+    throw statusError("Log in to continue.", 401);
+  }
+  if (!response.ok) {
+    throw statusError("Could not load the secondary plan.", response.status);
+  }
+  const payload = (await response.json()) as {
+    secondary_plan?: { revision: number; text: string } | null;
+    current?: { revision: number; text: string } | null;
+  };
+  const current = payload.secondary_plan ?? payload.current ?? null;
+  if (current === null) {
+    return null;
+  }
+  return { revision: current.revision ?? 0, text: current.text ?? "" };
+}
+
+export async function saveSecondaryPlan(
+  encounterId: string,
+  text: string,
+  revision: number,
+  key: string,
+): Promise<SecondaryPlanState> {
+  const response = await fetch(`/api/v1/encounters/${encounterId}/secondary-plan`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: {
+      ...csrfHeaders(),
+      "If-Match": String(revision),
+      "Idempotency-Key": key,
+    },
+    body: JSON.stringify({ text }),
+  });
+  const payload = (await runResponseOrThrow(
+    response,
+    "Could not save the secondary plan.",
+  )) as { secondary_plan?: { revision: number; text: string } };
+  const plan = payload.secondary_plan;
+  if (plan === undefined || typeof plan.revision !== "number") {
+    throw statusError("Could not save the secondary plan.", 500);
+  }
+  return { revision: plan.revision, text: plan.text ?? "" };
+}
+
+export interface SignBody {
+  encounter_revision: number;
+  run_id: string;
+  secondary_plan_revision: number;
+  review_acknowledgments: string[];
+  baseline_acknowledgment: boolean;
+}
+
+export interface SignResult {
+  encounter: {
+    id: string;
+    kind: string;
+    state: string;
+    revision: number;
+    author_id: string | null;
+  };
+  signed_snapshot: Record<string, unknown>;
+  signature?: string;
+  snapshot_hash?: string;
+}
+
+export async function signEncounter(
+  encounterId: string,
+  body: SignBody,
+  encounterRevision: number,
+  key: string,
+): Promise<SignResult> {
+  const response = await fetch(`/api/v1/encounters/${encounterId}/sign`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      ...csrfHeaders(),
+      "If-Match": String(encounterRevision),
+      "Idempotency-Key": key,
+    },
+    body: JSON.stringify(body),
+  });
+  return (await runResponseOrThrow(
+    response,
+    "Could not sign the plan.",
+  )) as SignResult;
+}
+
+export async function getSignedSnapshot(
+  encounterId: string,
+): Promise<Record<string, unknown> | null> {
+  const response = await fetch(`/api/v1/encounters/${encounterId}/signed-snapshot`, {
+    credentials: "include",
+  });
+  if (response.status === 401) {
+    throw statusError("Log in to continue.", 401);
+  }
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw statusError("Could not load the signed record.", response.status);
+  }
+  const payload = (await response.json()) as {
+    signed_snapshot?: Record<string, unknown>;
+  };
+  return payload.signed_snapshot ?? null;
+}
+
+export interface Addendum {
+  id: string;
+  reason: string;
+  correction_text: string;
+  author_id: string | null;
+  created_at: string;
+}
+
+export async function listAddenda(encounterId: string): Promise<Addendum[]> {
+  const response = await fetch(`/api/v1/encounters/${encounterId}/addenda`, {
+    credentials: "include",
+  });
+  if (response.status === 401) {
+    throw statusError("Log in to continue.", 401);
+  }
+  if (!response.ok) {
+    throw statusError("Could not load addenda.", response.status);
+  }
+  const payload = (await response.json()) as { items: Addendum[] };
+  return payload.items ?? [];
+}
+
+export async function addAddendum(
+  encounterId: string,
+  reason: string,
+  correctionText: string,
+  key: string,
+): Promise<Addendum> {
+  const response = await fetch(`/api/v1/encounters/${encounterId}/addenda`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      ...csrfHeaders(),
+      "Idempotency-Key": key,
+    },
+    body: JSON.stringify({ reason, correction_text: correctionText }),
+  });
+  const payload = (await runResponseOrThrow(
+    response,
+    "Could not save the addendum.",
+  )) as { addendum: Addendum };
+  return payload.addendum;
+}
 export async function login(
   username: string,
   password: string,
