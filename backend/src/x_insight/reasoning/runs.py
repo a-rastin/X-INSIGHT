@@ -64,7 +64,11 @@ def _active_status_list() -> str:
 
 
 def _run_payload(
-    run: Any, projections: list[dict[str, Any]], stale: bool, jobs: list[dict[str, Any]]
+    run: Any,
+    projections: list[dict[str, Any]],
+    stale: bool,
+    jobs: list[dict[str, Any]],
+    sections: list[dict[str, Any]],
 ) -> dict[str, Any]:
     snapshot = run["snapshot"]
     pinned = snapshot.get("pinned") if isinstance(snapshot, dict) else None
@@ -86,6 +90,62 @@ def _run_payload(
         "projections": projections,
         "pinned": dict(pinned) if isinstance(pinned, dict) else {},
         "jobs": jobs,
+        "sections": sections,
+    }
+
+
+def _section_payload(item: Any) -> dict[str, Any]:
+    """Build one transparency section from the persisted artifact row only.
+
+    Never recomputes from live chart values and never includes notes,
+    names, IDs, phone numbers, secrets, or LLM prose: patient inputs are
+    the frozen analytical facts, percentages are the accepted provider
+    tables, and the result is the stored posterior.
+    """
+    accepted = item["accepted"] if isinstance(item["accepted"], dict) else {}
+    projection = item["projection"] if isinstance(item["projection"], dict) else {}
+    facts = projection.get("facts")
+    patient_inputs = facts if isinstance(facts, dict) else {}
+    tables = accepted.get("tables")
+    result = item["result"] if isinstance(item["result"], dict) else {}
+    query = item["query"] if isinstance(item["query"], dict) else {}
+    model = item["model"] if isinstance(item["model"], dict) else {}
+    provenance = item["provenance"] if isinstance(item["provenance"], dict) else {}
+    variables = projection.get("variables")
+    variable_list = variables if isinstance(variables, list) else []
+    source_paths = sorted(
+        {
+            str(entry["source_path"])
+            for entry in variable_list
+            if isinstance(entry, dict) and entry.get("source_path")
+        }
+    )
+    missingness = {
+        str(entry["node_id"]): str(entry.get("status"))
+        for entry in variable_list
+        if isinstance(entry, dict) and entry.get("node_id")
+    }
+    network_version = accepted.get("network_version")
+    if not isinstance(network_version, str):
+        network_version = provenance.get("network_version")
+    engine = provenance.get("engine")
+    rendered = item["rendered_section"]
+    return {
+        "question_key": str(item["question_key"]),
+        "network_version": network_version,
+        "patient_inputs": patient_inputs,
+        "cpt_percentages": tables if isinstance(tables, list) else [],
+        "result": result,
+        "prompt": item["prompt"],
+        "model": model,
+        "effective_hash": item["effective_hash"],
+        "query": query,
+        "rendered_text": rendered if isinstance(rendered, str) else "",
+        "engine": engine if isinstance(engine, dict) else {},
+        "template_version": item["template_version"],
+        "source_paths": provenance.get("source_paths", source_paths),
+        "missingness": provenance.get("missingness", missingness),
+        "status": str(item["status"]),
     }
 
 
@@ -468,7 +528,22 @@ def get_run(run_id: UUID, request: Request) -> JSONResponse:
             }
             for item in job_rows
         ]
+        section_rows = (
+            conn.execute(
+                text(
+                    "SELECT question_key, status, accepted, projection, prompt, "
+                    "model, effective_hash, query, result, rendered_section, "
+                    "template_version, provenance "
+                    "FROM run_question_artifacts WHERE run_id = :run_id "
+                    "ORDER BY ordinal, question_key"
+                ),
+                {"run_id": str(run_id)},
+            )
+            .mappings()
+            .all()
+        )
+        sections = [_section_payload(item) for item in section_rows]
         return JSONResponse(
-            _run_payload(run, projections, stale, jobs),
+            _run_payload(run, projections, stale, jobs, sections),
             headers={"Cache-Control": "private, no-store"},
         )

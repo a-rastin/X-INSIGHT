@@ -166,7 +166,12 @@ def _lookup_bound_projection(grant: str) -> dict[str, Any]:
         if not isinstance(projection, dict):
             raise LookupError("stored projection is unavailable")
         try:
-            network_version = projection["network_version"]
+            network_version = projection.get("network_version")
+            if network_version is None:
+                # Run-start projections (S40) pin the bundle entry version
+                # under "question_version"; either name carries the pinned
+                # network version for the single bound question.
+                network_version = projection["question_version"]
             variables = projection["variables"]
         except KeyError as exc:
             raise LookupError("stored projection is unavailable") from exc
