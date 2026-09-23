@@ -20,6 +20,11 @@ from x_insight.contracts import (
 from x_insight.identity.hashing import hash_password, verify_password
 from x_insight.identity.routes import _check_csrf, _request_id, _require_session
 from x_insight.operations.audit import record_audit
+from x_insight.reasoning.queue import (
+    ACTIVE_RUN_STATUSES,
+    MAX_QUEUED_RUNS,
+    first_eligible_question,
+)
 from x_insight.reasoning.snapshots import (
     build_projections,
     build_snapshot,
@@ -54,8 +59,12 @@ def _projection_applicability(projection: Any, question_key: str) -> tuple[str, 
     return (str(status), str(reason))
 
 
+def _active_status_list() -> str:
+    return ", ".join(f"'{status}'" for status in sorted(ACTIVE_RUN_STATUSES))
+
+
 def _run_payload(
-    run: Any, projections: list[dict[str, Any]], stale: bool
+    run: Any, projections: list[dict[str, Any]], stale: bool, jobs: list[dict[str, Any]]
 ) -> dict[str, Any]:
     snapshot = run["snapshot"]
     pinned = snapshot.get("pinned") if isinstance(snapshot, dict) else None
@@ -76,6 +85,7 @@ def _run_payload(
         "stale": stale,
         "projections": projections,
         "pinned": dict(pinned) if isinstance(pinned, dict) else {},
+        "jobs": jobs,
     }
 
 
@@ -205,6 +215,54 @@ async def start_run(encounter_id: UUID, request: Request) -> JSONResponse:
         if find_invalid_source_path(pins_dict) is not None:
             raise HTTPException(422, "INVALID_CONTENT: disallowed source path.")
         actor_id = str(actor["user_id"])
+        draft = row["draft_data"] if isinstance(row["draft_data"], dict) else {}
+        snapshot, fingerprint, snapshot_hash = build_snapshot(
+            dict(row), dict(patient), draft, dict(pointer)
+        )
+        pins = dict(pointer["pins"])
+        triples = build_projections(snapshot["facts"], pins, current_revision)
+        conn.execute(
+            text("SELECT pg_advisory_xact_lock(hashtextextended(:eid, 0))"),
+            {"eid": str(encounter_id)},
+        )
+        active_sql = _active_status_list()
+        existing = (
+            conn.execute(
+                text(
+                    "SELECT * FROM runs WHERE encounter_id = :eid "
+                    f"AND fingerprint = :fp AND status IN ({active_sql}) "
+                    "ORDER BY created_at, id LIMIT 1"
+                ),
+                {"eid": str(encounter_id), "fp": fingerprint},
+            )
+            .mappings()
+            .first()
+        )
+        if existing is not None:
+            existing_rows = (
+                conn.execute(
+                    text(
+                        "SELECT question_key FROM run_questions "
+                        "WHERE run_id = :rid ORDER BY ordinal, id"
+                    ),
+                    {"rid": str(existing["id"])},
+                )
+                .mappings()
+                .all()
+            )
+            reuse_result: dict[str, Any] = {
+                "schema_version": 1,
+                "run_id": str(existing["id"]),
+                "revision": current_revision,
+                "status": str(existing["status"]),
+                "questions": [item["question_key"] for item in existing_rows],
+            }
+            return JSONResponse(status_code=202, content=reuse_result)
+        active_count = conn.execute(
+            text(f"SELECT COUNT(*) FROM runs WHERE status IN ({active_sql})")
+        ).scalar()
+        if active_count is not None and int(active_count) >= int(MAX_QUEUED_RUNS):
+            raise HTTPException(429, "Queue is saturated. Retry later.")
         scope = {
             "actor_id": actor_id,
             "operation": _RUN_OPERATION,
@@ -242,12 +300,14 @@ async def start_run(encounter_id: UUID, request: Request) -> JSONResponse:
                 status_code=int(saved["result_status"] or 202),
                 content=saved["result_payload"],
             )
-        draft = row["draft_data"] if isinstance(row["draft_data"], dict) else {}
-        snapshot, fingerprint, snapshot_hash = build_snapshot(
-            dict(row), dict(patient), draft, dict(pointer)
+        conn.execute(
+            text(
+                "UPDATE runs SET status = 'stale', updated_at = now() "
+                "WHERE encounter_id = :eid "
+                f"AND status IN ({active_sql}) AND fingerprint != :fp"
+            ),
+            {"eid": str(encounter_id), "fp": fingerprint},
         )
-        pins = dict(pointer["pins"])
-        triples = build_projections(snapshot["facts"], pins, current_revision)
         created = (
             conn.execute(
                 text(
@@ -299,6 +359,24 @@ async def start_run(encounter_id: UUID, request: Request) -> JSONResponse:
                     "applicability": projection.get("applicability"),
                     "applicability_reason": projection.get("applicability_reason"),
                 }
+            )
+        eligible = first_eligible_question(pins, triples)
+        if eligible is not None:
+            eligible_key, eligible_ordinal = eligible
+            conn.execute(
+                text(
+                    "INSERT INTO reasoning_jobs (run_id, encounter_id, author_id, "
+                    " question_key, ordinal, stage, status) VALUES (:run_id, "
+                    " :encounter_id, :author_id, :question_key, :ordinal, "
+                    " 'preparing_question', 'queued')"
+                ),
+                {
+                    "run_id": run_id,
+                    "encounter_id": str(encounter_id),
+                    "author_id": actor_id,
+                    "question_key": eligible_key,
+                    "ordinal": eligible_ordinal,
+                },
             )
         result: dict[str, Any] = {
             "schema_version": 1,
@@ -366,7 +444,31 @@ def get_run(run_id: UUID, request: Request) -> JSONResponse:
                 }
             )
         stale = _compute_stale(conn, run)
+        job_rows = (
+            conn.execute(
+                text(
+                    "SELECT question_key, ordinal, stage, status, "
+                    "attempt_count, fencing_generation "
+                    "FROM reasoning_jobs WHERE run_id = :run_id "
+                    "ORDER BY ordinal, id"
+                ),
+                {"run_id": str(run_id)},
+            )
+            .mappings()
+            .all()
+        )
+        jobs = [
+            {
+                "question_key": str(item["question_key"]),
+                "ordinal": int(item["ordinal"]),
+                "stage": str(item["stage"]),
+                "status": str(item["status"]),
+                "attempt_count": int(item["attempt_count"] or 0),
+                "fencing_generation": int(item["fencing_generation"] or 0),
+            }
+            for item in job_rows
+        ]
         return JSONResponse(
-            _run_payload(run, projections, stale),
+            _run_payload(run, projections, stale, jobs),
             headers={"Cache-Control": "private, no-store"},
         )
