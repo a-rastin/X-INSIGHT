@@ -1,0 +1,25 @@
+# Dev Testing Openai
+
+> 1 nodes · cohesion 1.00
+
+## Key Concepts
+
+- **Dev testing OpenAI agent interface** (0 connections) — `.agents/skills/dev-testing/agents/openai.yaml`
+
+## Relationships
+
+- No strong cross-community connections detected
+
+## Source Files
+
+- `.agents/skills/dev-testing/agents/openai.yaml`
+
+## Audit Trail
+
+- EXTRACTED: 0 (0%)
+- INFERRED: 0 (0%)
+- AMBIGUOUS: 0 (0%)
+
+---
+
+*Part of the graphify knowledge wiki. See [index](index.md) to navigate.*
