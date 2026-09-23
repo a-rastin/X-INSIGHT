@@ -158,6 +158,18 @@ def render_section(
         f"P({query.get('target')}={query.get('state')}|{evidence_text})"
         f"={posterior:.9f}. CPTs: {'; '.join(parts)}."
     )
+    # S46 slice 4: one combined LAI step renders both branch outputs under
+    # its mapping. Append sorted branch keys plus the deterministic
+    # branches JSON (stored template only, never LLM prose) so both
+    # indication+choice markers are present alongside CPTs/posterior.
+    if isinstance(template, dict):
+        branches = template.get("branches")
+        if isinstance(branches, dict) and branches:
+            keys = sorted(str(k) for k in branches)
+            text_out += (
+                f" branches:{','.join(keys)} "
+                f"{json.dumps(branches, sort_keys=True, default=str)}."
+            )
     return text_out, version
 
 
@@ -500,6 +512,138 @@ def _persist_artifact(
         )
 
 
+def _read_applicability(projection: Any) -> str:
+    """Return persisted gate status, defaulting to ready (pre-gate rows)."""
+    if isinstance(projection, dict):
+        status = projection.get("applicability")
+        if status in ("ready", "not_applicable", "needs_clarification"):
+            return str(status)
+    return "ready"
+
+
+def _has_pending_clarification(q_rows: Any, succeeded: set[str]) -> bool:
+    """True when any question needs clarification and has no success yet.
+
+    A needs_clarification gate never produces an artifact, so any such
+    projection blocks later ready work (S46 slice 2). Skipped
+    not_applicable rows never block.
+    """
+    for item in q_rows:
+        key = str(item["question_key"])
+        if key in succeeded:
+            continue
+        if _read_applicability(item["projection"]) == "needs_clarification":
+            return True
+    return False
+
+
+def _enqueue_next_ready(run_id: str, database_url: str | None) -> bool:
+    """Enqueue the next ready question for one run (S46 slices 1-2).
+
+    Next means the smallest ordinal whose persisted projection is ready,
+    with no succeeded artifact yet and no existing job row for that
+    question. not_applicable rows are skipped silently (no job, no call);
+    any pending needs_clarification stops progression: no further jobs
+    and the run becomes needs_clarification (terminal). At most one
+    queued/claimed job per run is ever visible: refuse when any
+    queued/claimed job already exists for the run.
+    Returns True when a successor job was inserted.
+    """
+    with db.transaction(database_url) as conn:
+        run = (
+            conn.execute(
+                text("SELECT encounter_id, author_id FROM runs WHERE id = :id"),
+                {"id": run_id},
+            )
+            .mappings()
+            .first()
+        )
+        if run is None:
+            return False
+        q_rows = (
+            conn.execute(
+                text(
+                    "SELECT question_key, ordinal, projection FROM run_questions "
+                    "WHERE run_id = :run_id ORDER BY ordinal, id"
+                ),
+                {"run_id": run_id},
+            )
+            .mappings()
+            .all()
+        )
+        if not q_rows:
+            return False
+        art_rows = (
+            conn.execute(
+                text(
+                    "SELECT question_key FROM run_question_artifacts "
+                    "WHERE run_id = :run_id AND status = 'succeeded'"
+                ),
+                {"run_id": run_id},
+            )
+            .mappings()
+            .all()
+        )
+        succeeded = {str(item["question_key"]) for item in art_rows}
+        # S46 slice 2: required-unknown stops progression before any
+        # later ready work. Terminal clarification, never success.
+        if _has_pending_clarification(q_rows, succeeded):
+            conn.execute(
+                text(
+                    "UPDATE runs SET status = 'needs_clarification', "
+                    "updated_at = now() WHERE id = :id AND status NOT IN "
+                    "('succeeded', 'failed', 'needs_clarification', "
+                    "'stale', 'cancelled')"
+                ),
+                {"id": run_id},
+            )
+            return False
+        job_rows = (
+            conn.execute(
+                text(
+                    "SELECT question_key, status FROM reasoning_jobs "
+                    "WHERE run_id = :run_id"
+                ),
+                {"run_id": run_id},
+            )
+            .mappings()
+            .all()
+        )
+        for item in job_rows:
+            if str(item["status"]) in ("queued", "claimed"):
+                return False
+        existing = {str(item["question_key"]) for item in job_rows}
+        for item in q_rows:
+            key = str(item["question_key"])
+            if key in succeeded or key in existing:
+                continue
+            if _read_applicability(item["projection"]) != "ready":
+                continue
+            try:
+                conn.execute(
+                    text(
+                        "INSERT INTO reasoning_jobs (run_id, encounter_id, "
+                        "author_id, question_key, ordinal, stage, status) "
+                        "VALUES (:run_id, :encounter_id, :author_id, "
+                        ":question_key, :ordinal, 'preparing_question', "
+                        "'queued')"
+                    ),
+                    {
+                        "run_id": run_id,
+                        "encounter_id": str(run["encounter_id"]),
+                        "author_id": (
+                            str(run["author_id"]) if run["author_id"] else None
+                        ),
+                        "question_key": key,
+                        "ordinal": int(item["ordinal"]),
+                    },
+                )
+            except Exception:
+                return False
+            return True
+        return False
+
+
 def execute_claimed_question(
     claim: dict[str, Any], database_url: str | None = None
 ) -> dict[str, Any]:
@@ -544,14 +688,16 @@ def execute_claimed_question(
                 "Stale lease token, expired lease, or rotated deployment; "
                 "the stored section was kept but the job was not committed."
             )
-        with db.transaction(database_url) as conn:
-            conn.execute(
-                text(
-                    "UPDATE runs SET status = 'succeeded', updated_at = now() "
-                    "WHERE id = :id"
-                ),
-                {"id": run_id},
-            )
+        # S46 slices 1-3: chain the next ready question instead of
+        # succeeding. The proposal gate decides terminal status; keep the
+        # run non-terminal here so sequential progression can continue.
+        _enqueue_next_ready(run_id, database_url)
+        try:
+            from x_insight.reasoning.proposal import try_assemble_proposal
+
+            try_assemble_proposal(run_id, database_url)
+        except Exception:
+            pass
         return {
             "ok": True,
             "question_key": question_key,
@@ -702,12 +848,14 @@ def execute_claimed_question(
             "Stale lease token, expired lease, or rotated deployment; "
             "the section was stored but the job was not committed."
         )
-    with db.transaction(database_url) as conn:
-        conn.execute(
-            text(
-                "UPDATE runs SET status = 'succeeded', updated_at = now() "
-                "WHERE id = :id"
-            ),
-            {"id": run_id},
-        )
+    # S46 slices 1-3: chain the next ready question instead of succeeding.
+    # Only one queued/claimed job per run; the run stays non-terminal
+    # until the proposal gate decides terminal status.
+    _enqueue_next_ready(run_id, database_url)
+    try:
+        from x_insight.reasoning.proposal import try_assemble_proposal
+
+        try_assemble_proposal(run_id, database_url)
+    except Exception:
+        pass
     return {"ok": True, "question_key": question_key, "posterior": float(posterior)}

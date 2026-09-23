@@ -69,10 +69,11 @@ def _run_payload(
     stale: bool,
     jobs: list[dict[str, Any]],
     sections: list[dict[str, Any]],
+    proposal: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     snapshot = run["snapshot"]
     pinned = snapshot.get("pinned") if isinstance(snapshot, dict) else None
-    return {
+    payload: dict[str, Any] = {
         "schema_version": 1,
         "run": {
             "id": str(run["id"]),
@@ -92,6 +93,37 @@ def _run_payload(
         "jobs": jobs,
         "sections": sections,
     }
+    # S46 slice 3: top-level proposal mirrors persisted per-question
+    # sections plus the pinned DDI report. Partial runs expose an absent
+    # (None) proposal while sections stay readable.
+    if proposal is not None:
+        payload["proposal"] = proposal
+    else:
+        payload["proposal"] = None
+    return payload
+
+
+def _fetch_proposal(conn: Any, run_id: str) -> dict[str, Any] | None:
+    """Return the persisted succeeded proposal dict, else None."""
+    try:
+        row = (
+            conn.execute(
+                text(
+                    "SELECT status, proposal FROM run_proposals WHERE run_id = :run_id"
+                ),
+                {"run_id": str(run_id)},
+            )
+            .mappings()
+            .first()
+        )
+    except Exception:
+        return None
+    if row is None:
+        return None
+    if str(row["status"]) != "succeeded":
+        return None
+    proposal = row["proposal"]
+    return dict(proposal) if isinstance(proposal, dict) else None
 
 
 def _section_payload(item: Any) -> dict[str, Any]:
@@ -159,6 +191,14 @@ def _compute_stale(conn: Any, run: Any) -> bool:
     stales old runs. Pure read: frozen rows are never mutated. Equality
     is fingerprint equality, so note-only edits stay fresh even if they
     ever bumped the encounter revision.
+
+    No frozen flag: ``stale`` is ALWAYS recomputed as live fingerprint
+    inequality, including for succeeded runs. A succeeded run's persisted
+    proposal/sections/pinned rows stay immutable and byte-identical after
+    later edits/rotations (handled in proposal.py + coordinator pins),
+    but the read-time ``stale`` flag flips True after an analytical
+    medications/facts change. Signing compares fingerprints directly and
+    must reject stale runs; the flag never authorizes signing by itself.
     """
     try:
         encounter = (
@@ -438,6 +478,24 @@ async def start_run(encounter_id: UUID, request: Request) -> JSONResponse:
                     "ordinal": eligible_ordinal,
                 },
             )
+        else:
+            # S46 slice 3: run start with zero ready still resolves gates.
+            # A pending needs_clarification becomes terminal immediately;
+            # all-skipped DDI assembly completes via the worker path once
+            # jobs exist, otherwise the run stays readable with sections.
+            needs_stop = any(
+                isinstance(proj, dict)
+                and proj.get("applicability") == "needs_clarification"
+                for _, proj, _ in triples
+            )
+            if needs_stop:
+                conn.execute(
+                    text(
+                        "UPDATE runs SET status = 'needs_clarification', "
+                        "updated_at = now() WHERE id = :id"
+                    ),
+                    {"id": run_id},
+                )
         result: dict[str, Any] = {
             "schema_version": 1,
             "run_id": run_id,
@@ -543,7 +601,8 @@ def get_run(run_id: UUID, request: Request) -> JSONResponse:
             .all()
         )
         sections = [_section_payload(item) for item in section_rows]
+        proposal = _fetch_proposal(conn, str(run_id))
         return JSONResponse(
-            _run_payload(run, projections, stale, jobs, sections),
+            _run_payload(run, projections, stale, jobs, sections, proposal),
             headers={"Cache-Control": "private, no-store"},
         )
