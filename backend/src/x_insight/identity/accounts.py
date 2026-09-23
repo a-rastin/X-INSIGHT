@@ -1,6 +1,7 @@
 """Admin-only physician commands and safe account reads."""
 
 from collections.abc import Mapping
+from datetime import datetime
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
@@ -500,6 +501,10 @@ def list_audit_events(
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     cursor: UUID | None = None,
     operation: str | None = None,
+    actor_id: str | None = None,
+    since: datetime | None = None,
+    until: datetime | None = None,
+    target: str | None = None,
 ) -> JSONResponse:
     # S04 safe account-audit read; S52 completes filters, views and DB grants.
     with db.transaction() as conn:
@@ -511,11 +516,29 @@ def list_audit_events(
                     "result_reference, target_display, details, request_id "
                     "FROM audit_events WHERE "
                     "(CAST(:operation AS text) IS NULL OR operation = :operation) "
+                    "AND (CAST(:actor_id AS text) IS NULL "
+                    "OR actor_id = :actor_id) "
+                    "AND (CAST(:since AS timestamptz) IS NULL "
+                    "OR occurred_at >= CAST(:since AS timestamptz)) "
+                    "AND (CAST(:until AS timestamptz) IS NULL "
+                    "OR occurred_at <= CAST(:until AS timestamptz)) "
+                    "AND (CAST(:target AS text) IS NULL "
+                    "OR result_reference = :target "
+                    "OR target_display ILIKE "
+                    "'%' || CAST(:target AS text) || '%') "
                     "AND (CAST(:cursor AS uuid) IS NULL OR (occurred_at, id) > "
                     "(SELECT occurred_at, id FROM audit_events WHERE id = :cursor)) "
                     "ORDER BY occurred_at, id LIMIT :limit"
                 ),
-                {"operation": operation, "cursor": cursor, "limit": limit + 1},
+                {
+                    "operation": operation,
+                    "actor_id": actor_id,
+                    "since": since,
+                    "until": until,
+                    "target": target,
+                    "cursor": cursor,
+                    "limit": limit + 1,
+                },
             )
             .mappings()
             .all()
@@ -530,6 +553,39 @@ def list_audit_events(
                 "next_cursor": str(rows[limit - 1]["id"])
                 if len(rows) > limit
                 else None,
+            },
+            headers={"Cache-Control": "private, no-store"},
+        )
+
+
+@router.get("/audit-events/{event_id}")
+def get_audit_event(event_id: UUID, request: Request) -> JSONResponse:
+    # S52 slice 3: admin-only single-event view. Same safe columns as the
+    # list plus the details object and result_status (never result_payload
+    # bodies); the stored details snapshots here are small, so truncation
+    # never triggers and the flag is honestly False.
+    with db.transaction() as conn:
+        require_admin(request, conn)
+        row = (
+            conn.execute(
+                text(
+                    "SELECT id, occurred_at, actor_id, actor_display, operation, "
+                    "result_reference, target_display, details, request_id, "
+                    "result_status FROM audit_events WHERE id = :id"
+                ),
+                {"id": event_id},
+            )
+            .mappings()
+            .first()
+        )
+        if row is None:
+            raise HTTPException(404, "Audit event not found.")
+        return JSONResponse(
+            {
+                **row,
+                "id": str(row["id"]),
+                "occurred_at": to_utc_z(row["occurred_at"]),
+                "truncated": False,
             },
             headers={"Cache-Control": "private, no-store"},
         )

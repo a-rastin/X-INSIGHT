@@ -15,6 +15,7 @@ import {
   discardEncounter,
   fetchSession,
   addNote,
+  getAuditEvent,
   getDdiCurrent,
   getDeactivationReview,
   getEncounter,
@@ -30,6 +31,7 @@ import {
   listNetworks,
   listNetworkVersions,
   listNotes,
+  listAuditEvents,
   listEncounters,
   listPhysicians,
   listProviderVersions,
@@ -52,6 +54,8 @@ import {
   updateTheme,
   validateNetworkVersion,
   type Addendum,
+  type AuditEvent,
+  type AuditEventDetail,
   type BundlePinInput,
   type DdiReport,
   type DeactivationReview,
@@ -71,7 +75,7 @@ import {
   type ThemeName,
 } from "./api";
 
-type Route = "/" | "/register" | "/physicians" | "/provider-settings" | "/networks";
+type Route = "/" | "/register" | "/physicians" | "/provider-settings" | "/networks" | "/audit";
 
 /** S09 diagnosis preview (mirrors backend evaluate_diagnosis, no I/O). */
 type DiagAnswers = {
@@ -1822,6 +1826,9 @@ function currentRoute(): Route {
   if (window.location.pathname === "/networks") {
     return "/networks";
   }
+  if (window.location.pathname === "/audit") {
+    return "/audit";
+  }
   return "/";
 }
 
@@ -1918,6 +1925,11 @@ export function App() {
             Networks
           </NavLink>
         ) : null}
+        {user?.role === "admin" ? (
+          <NavLink route="/audit" current={route}>
+            Audit
+          </NavLink>
+        ) : null}
         {!user ? (
           <NavLink route="/register" current={route}>
             Register
@@ -1941,6 +1953,8 @@ export function App() {
         <ProviderSettingsGate user={user} />
       ) : route === "/networks" ? (
         <NetworksGate user={user} />
+      ) : route === "/audit" ? (
+        <AuditGate user={user} />
       ) : user ? (
         <Dashboard user={user} />
       ) : (
@@ -5891,6 +5905,297 @@ function NetworksGate({ user }: { user: SessionUser | null }) {
     return <p role="alert">Access denied.</p>;
   }
   return <NetworksSection />;
+}
+
+/** S52 audit trail (T9): admin-only read view. References only — the API
+ * never sends record bodies, and this view has no edit/delete buttons. */
+function AuditGate({ user }: { user: SessionUser | null }) {
+  if (!user) {
+    return <LoginHint />;
+  }
+  if (user.role !== "admin") {
+    return <p role="alert">Access denied.</p>;
+  }
+  return <AuditSection />;
+}
+
+/** Client-side display bound for audit metadata (~8 KiB). */
+const AUDIT_DETAIL_CHAR_LIMIT = 8192;
+
+function auditDetailText(details: unknown): { text: string; capped: boolean } {
+  let raw: string;
+  if (typeof details === "string") {
+    raw = details;
+  } else if (details === null || details === undefined) {
+    raw = "";
+  } else {
+    try {
+      raw = JSON.stringify(details, null, 2) ?? "";
+    } catch {
+      raw = "";
+    }
+  }
+  if (raw.length > AUDIT_DETAIL_CHAR_LIMIT) {
+    return { text: raw.slice(0, AUDIT_DETAIL_CHAR_LIMIT), capped: true };
+  }
+  return { text: raw, capped: false };
+}
+
+function AuditSection() {
+  const [actor, setActor] = useState("");
+  const [operation, setOperation] = useState("");
+  const [since, setSince] = useState("");
+  const [until, setUntil] = useState("");
+  const [target, setTarget] = useState("");
+  const [items, setItems] = useState<AuditEvent[] | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<AuditEventDetail | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  const load = useCallback(
+    async (cursor?: string) => {
+      setError(null);
+      if (!cursor) {
+        setLoading(true);
+        setItems(null);
+        setSelectedId(null);
+        setDetail(null);
+        setDetailError(null);
+      }
+      try {
+        const payload = await listAuditEvents({
+          actor_id: actor.trim() || undefined,
+          operation: operation.trim() || undefined,
+          since: since.trim() || undefined,
+          until: until.trim() || undefined,
+          target: target.trim() || undefined,
+          cursor,
+        });
+        setItems((prev) =>
+          cursor && prev !== null ? [...prev, ...payload.items] : payload.items,
+        );
+        setNextCursor(payload.next_cursor);
+      } catch (failure: unknown) {
+        const status = (failure as { status?: number }).status;
+        setError(
+          status === 403
+            ? "Access denied."
+            : failure instanceof Error
+              ? failure.message
+              : "Could not load audit events.",
+        );
+        if (!cursor) {
+          setItems([]);
+        }
+      } finally {
+        if (!cursor) {
+          setLoading(false);
+        }
+      }
+    },
+    [actor, operation, since, until, target],
+  );
+
+  useEffect(() => {
+    void load(undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleSelect(id: string): Promise<void> {
+    setSelectedId(id);
+    setDetail(null);
+    setDetailError(null);
+    setDetailLoading(true);
+    try {
+      setDetail(await getAuditEvent(id));
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      setDetailError(
+        status === 403
+          ? "Access denied."
+          : failure instanceof Error
+            ? failure.message
+            : "Could not load the audit event.",
+      );
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  const timeZone =
+    Intl.DateTimeFormat().resolvedOptions().timeZone ?? "local time";
+
+  function localTime(iso: string): string {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+    try {
+      return new Intl.DateTimeFormat(undefined, {
+        dateStyle: "medium",
+        timeStyle: "long",
+        timeZoneName: "short",
+      }).format(date);
+    } catch {
+      return date.toString();
+    }
+  }
+
+  const renderedDetail =
+    detail !== null ? auditDetailText(detail.details) : null;
+  const detailTruncated =
+    detail !== null && (detail.truncated || (renderedDetail?.capped ?? false));
+
+  return (
+    <section data-testid="audit-section" aria-label="Audit trail">
+      <h1>Audit trail</h1>
+      <p>Admin only. References only — record bodies are never shown.</p>
+      <div className="x-field">
+        <label htmlFor="audit-filter-actor">Actor</label>
+        <input
+          id="audit-filter-actor"
+          data-testid="audit-filter-actor"
+          autoComplete="off"
+          value={actor}
+          onChange={(event) => setActor(event.target.value)}
+        />
+      </div>
+      <div className="x-field">
+        <label htmlFor="audit-filter-operation">Action (operation)</label>
+        <input
+          id="audit-filter-operation"
+          data-testid="audit-filter-operation"
+          autoComplete="off"
+          value={operation}
+          onChange={(event) => setOperation(event.target.value)}
+        />
+      </div>
+      <div className="x-field">
+        <label htmlFor="audit-filter-since">Since</label>
+        <input
+          id="audit-filter-since"
+          data-testid="audit-filter-since"
+          autoComplete="off"
+          placeholder="2026-01-01T00:00:00Z"
+          value={since}
+          onChange={(event) => setSince(event.target.value)}
+        />
+      </div>
+      <div className="x-field">
+        <label htmlFor="audit-filter-until">Until</label>
+        <input
+          id="audit-filter-until"
+          data-testid="audit-filter-until"
+          autoComplete="off"
+          placeholder="2026-12-31T23:59:59Z"
+          value={until}
+          onChange={(event) => setUntil(event.target.value)}
+        />
+      </div>
+      <div className="x-field">
+        <label htmlFor="audit-filter-target">Target</label>
+        <input
+          id="audit-filter-target"
+          data-testid="audit-filter-target"
+          autoComplete="off"
+          value={target}
+          onChange={(event) => setTarget(event.target.value)}
+        />
+      </div>
+      <button
+        type="button"
+        className="x-button"
+        data-testid="audit-apply"
+        onClick={() => void load(undefined)}
+      >
+        Apply filters
+      </button>
+      {error ? (
+        <p role="alert" className="x-error">
+          {error}
+        </p>
+      ) : loading || items === null ? (
+        <p>Loading…</p>
+      ) : items.length === 0 ? (
+        <p data-testid="audit-empty">No audit events.</p>
+      ) : (
+        <>
+          <table data-testid="audit-table">
+            <thead>
+              <tr>
+                <th scope="col">Time (UTC)</th>
+                <th scope="col">Actor</th>
+                <th scope="col">Action</th>
+                <th scope="col">Target</th>
+                <th scope="col">Correlation (request_id)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr
+                  key={item.id}
+                  data-testid="audit-row"
+                  onClick={() => void handleSelect(item.id)}
+                >
+                  <td>{item.occurred_at}</td>
+                  <td>{item.actor_display}</td>
+                  <td>{item.operation}</td>
+                  <td>{item.target_display ?? item.result_reference ?? ""}</td>
+                  <td data-testid="audit-request-id">{item.request_id}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {nextCursor !== null ? (
+            <button
+              type="button"
+              className="x-button"
+              data-testid="audit-next"
+              onClick={() => void load(nextCursor)}
+            >
+              Next
+            </button>
+          ) : null}
+        </>
+      )}
+      {selectedId !== null ? (
+        <div data-testid="audit-detail" aria-label="Audit event detail">
+          <h2>Event detail</h2>
+          {detailLoading ? (
+            <p>Loading event…</p>
+          ) : detailError ? (
+            <p role="alert" className="x-error">
+              {detailError}
+            </p>
+          ) : detail !== null ? (
+            <>
+              <p data-testid="audit-detail-time">
+                UTC {detail.occurred_at} (UTC) · Local ({timeZone}){" "}
+                {localTime(detail.occurred_at)}
+              </p>
+              <p>
+                {detail.operation} · {detail.actor_display} ·{" "}
+                {detail.target_display ?? detail.result_reference ?? ""}
+              </p>
+              <p data-testid="audit-detail-request">{detail.request_id}</p>
+              <pre data-testid="audit-detail-body">
+                {renderedDetail?.text ?? ""}
+              </pre>
+              {detailTruncated ? (
+                <p data-testid="audit-detail-truncated">
+                  Metadata truncated to 8 KiB for display.
+                </p>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
 }
 
 const REGISTRATION_ORDER = [

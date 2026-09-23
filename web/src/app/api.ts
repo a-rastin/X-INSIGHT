@@ -1458,6 +1458,88 @@ export interface DdiReport {
   limitations?: string[];
 }
 
+/** S52 audit trail client (T9): admin-only, references only, never bodies.
+ * List items carry id, occurred_at (UTC-Z), actor_id, actor_display,
+ * operation, result_reference, target_display, details, request_id plus
+ * next_cursor. Detail adds result_status + truncated (never result_payload).
+ */
+export interface AuditEvent {
+  id: string;
+  occurred_at: string;
+  actor_id: string | null;
+  actor_display: string;
+  operation: string;
+  result_reference: string | null;
+  target_display: string | null;
+  details: unknown;
+  request_id: string;
+}
+
+export interface AuditEventDetail extends AuditEvent {
+  result_status: number | null;
+  truncated: boolean;
+}
+
+export interface AuditList {
+  schema_version: number;
+  items: AuditEvent[];
+  next_cursor: string | null;
+}
+
+export async function listAuditEvents(params?: {
+  actor_id?: string;
+  operation?: string;
+  since?: string;
+  until?: string;
+  target?: string;
+  cursor?: string;
+  limit?: number;
+}): Promise<AuditList> {
+  const query = new URLSearchParams({
+    limit: String(params?.limit ?? 25),
+  });
+  if (params?.actor_id) {
+    query.set("actor_id", params.actor_id);
+  }
+  if (params?.operation) {
+    query.set("operation", params.operation);
+  }
+  if (params?.since) {
+    query.set("since", params.since);
+  }
+  if (params?.until) {
+    query.set("until", params.until);
+  }
+  if (params?.target) {
+    query.set("target", params.target);
+  }
+  if (params?.cursor) {
+    query.set("cursor", params.cursor);
+  }
+  const response = await fetch(`/api/v1/audit-events?${query}`, {
+    credentials: "include",
+  });
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (!response.ok) {
+    throw statusError("Could not load audit events.", response.status);
+  }
+  return (await response.json()) as AuditList;
+}
+
+export async function getAuditEvent(id: string): Promise<AuditEventDetail> {
+  const response = await fetch(`/api/v1/audit-events/${id}`, {
+    credentials: "include",
+  });
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (!response.ok) {
+    throw statusError("Could not load the audit event.", response.status);
+  }
+  return (await response.json()) as AuditEventDetail;
+}
 export async function checkDdi(
   dataset_version: string,
   medications: Array<Record<string, string>>,
