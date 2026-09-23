@@ -884,6 +884,183 @@ export async function rollbackModelBundle(body: {
   }
   return (await response.json()) as ModelBundle;
 }
+/** S48 run client: proposal-review entry, read, and precise retry (T1 routes).
+ * Errors carry server detail for 403/409/412/422 (author-only and revision
+ * messages); 401 maps to a login prompt. No secrets ever enter state/errors.
+ */
+export interface RunStartResult {
+  schema_version: number;
+  run_id: string;
+  revision: number;
+  status: string;
+  questions: string[];
+}
+
+export interface RunProjection {
+  question_key: string;
+  projection_hash: string;
+  projection: Record<string, unknown>;
+  applicability: string;
+  applicability_reason: string;
+}
+
+export interface RunJob {
+  question_key: string;
+  ordinal: number;
+  stage: string;
+  status: string;
+  attempt_count: number;
+  fencing_generation: number;
+  failure_details: Record<string, unknown> | null;
+}
+
+export interface RunSection {
+  question_key: string;
+  network_version: unknown;
+  patient_inputs: unknown;
+  cpt_percentages: unknown;
+  result: unknown;
+  prompt: unknown;
+  model: unknown;
+  effective_hash: unknown;
+  query: unknown;
+  rendered_text: string;
+  engine: unknown;
+  template_version: unknown;
+  source_paths: unknown;
+  missingness: unknown;
+  status: string;
+}
+
+export interface RunInfo {
+  id: string;
+  encounter_id: string;
+  encounter_revision: number;
+  workflow: string;
+  status: string;
+  revision: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RunDetail {
+  schema_version: number;
+  run: RunInfo;
+  snapshot_hash: string;
+  fingerprint: string;
+  stale: boolean;
+  projections: RunProjection[];
+  pinned: Record<string, unknown>;
+  jobs: RunJob[];
+  sections: RunSection[];
+  proposal: Record<string, unknown> | null;
+}
+
+export interface RunRetryBody {
+  question_key: string;
+  failed_stage: string;
+  expected_run_revision: number;
+}
+
+export function newIdempotencyKey(): string {
+  return idempotencyKey();
+}
+
+async function runResponseOrThrow(
+  response: Response,
+  fallback: string,
+): Promise<unknown> {
+  if (response.status === 401) {
+    throw statusError("Log in to continue.", 401);
+  }
+  if (
+    response.status === 403 ||
+    response.status === 409 ||
+    response.status === 412 ||
+    response.status === 422
+  ) {
+    let detail = fallback;
+    try {
+      const payload = (await response.clone().json()) as {
+        detail?: unknown;
+      };
+      if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+        detail = payload.detail;
+      }
+    } catch {
+      /* keep fallback; never leak transport internals */
+    }
+    throw statusError(detail, response.status);
+  }
+  if (!response.ok) {
+    throw statusError(fallback, response.status);
+  }
+  return response.json();
+}
+
+/** S48 entry: flush first (caller-owned), then POST once with live revision. */
+export async function startRun(
+  encounterId: string,
+  revision: number,
+  key: string,
+): Promise<RunStartResult> {
+  const response = await fetch(`/api/v1/encounters/${encounterId}/runs`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      ...csrfHeaders(),
+      "If-Match": String(revision),
+      "Idempotency-Key": key,
+    },
+    body: JSON.stringify({ encounter_revision: revision }),
+  });
+  return (await runResponseOrThrow(
+    response,
+    "Could not start the run.",
+  )) as RunStartResult;
+}
+
+/** S48 read: persisted run detail (projections/jobs/sections/proposal). */
+export async function getRun(runId: string): Promise<RunDetail> {
+  const response = await fetch(`/api/v1/runs/${runId}`, {
+    credentials: "include",
+  });
+  if (response.status === 401) {
+    throw statusError("Log in to continue.", 401);
+  }
+  if (response.status === 403) {
+    let detail = "Only the run author may read it.";
+    try {
+      const payload = (await response.clone().json()) as {
+        detail?: unknown;
+      };
+      if (typeof payload.detail === "string" && payload.detail.trim() !== "") {
+        detail = payload.detail;
+      }
+    } catch {
+      /* keep fallback */
+    }
+    throw statusError(detail, 403);
+  }
+  if (!response.ok) {
+    throw statusError("Could not load the run.", response.status);
+  }
+  return (await response.json()) as RunDetail;
+}
+
+/** S48 precise retry: one failed question, live run revision, failed stage. */
+export async function retryRun(
+  runId: string,
+  body: RunRetryBody,
+): Promise<unknown> {
+  const response = await fetch(`/api/v1/runs/${runId}/retry`, {
+    method: "POST",
+    credentials: "include",
+    headers: csrfHeaders(),
+    body: JSON.stringify(body),
+  });
+  return runResponseOrThrow(response, "Could not retry the question.");
+}
 export async function login(
   username: string,
   password: string,

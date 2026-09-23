@@ -18,6 +18,7 @@ import {
   getModelBundle,
   getNetworkGraph,
   getProviderSettings,
+  getRun,
   importNetwork,
   listNetworks,
   listNetworkVersions,
@@ -29,11 +30,14 @@ import {
   logout,
   listPatients,
   networkVersionXmlUrl,
+  newIdempotencyKey,
   patchEncounter,
   patchPatientPhone,
+  retryRun,
   rollbackModelBundle,
   saveProviderSettings,
   searchDrugs,
+  startRun,
   testProviderSettings,
   updateTheme,
   validateNetworkVersion,
@@ -50,6 +54,7 @@ import {
   type Patient,
   type PhysicianAccount,
   type ProviderSettings,
+  type RunDetail,
   type SessionUser,
   type ThemeName,
 } from "./api";
@@ -2319,6 +2324,885 @@ function FollowupExtras({
     </>
   );
 }
+/**
+ * S48 proposal review: automatic run entry + run status (slice 1).
+ * States/retry/polling (slice 2), transparency (slice 3), and proposal +
+ * secondary plan + sign gate (slice 4) extend this section.
+ *
+ * Entry contract: flush the shared autosave first, then POST start once per
+ * mount when prerequisites hold (author-owned draft, no unsaved edits, save
+ * state clean). Never POSTs per keystroke: the effect below fires on mount /
+ * encounter change and on save completion only, never on edits. Same
+ * fingerprint re-entry reuses the run server-side (same run_id). A
+ * remembered terminal run is shown as-is with no new POST. There is no
+ * Generate button: entry is automatic when prerequisites hold.
+ *
+ * No role="status" here: DraftEditor keeps the single live saveState node
+ * (S13/S20 precedent); run status stays addressable via its testid.
+ * Everything renders as plain JSX text (React escapes by default; never
+ * dangerouslySetInnerHTML), and notes state is never read here.
+ */
+const PROPOSAL_TERMINAL_STATUSES = new Set([
+  "succeeded",
+  "failed",
+  "needs_clarification",
+  "cancelled",
+]);
+
+function isProposalRunTerminal(detail: RunDetail): boolean {
+  if (PROPOSAL_TERMINAL_STATUSES.has(detail.run.status)) {
+    return true;
+  }
+  if (detail.stale) {
+    const active = detail.jobs.some(
+      (job) => job.status === "queued" || job.status === "claimed" || job.status === "running",
+    );
+    if (!active) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function rememberedRunStorageKey(encounterId: string): string {
+  return `xinsight.proposalRun:${encounterId}`;
+}
+
+function readRememberedRunId(encounterId: string): string | null {
+  try {
+    const raw = sessionStorage.getItem(rememberedRunStorageKey(encounterId));
+    return raw !== null && /^[0-9a-f-]{36}$/i.test(raw) ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+function rememberRunId(encounterId: string, runId: string): void {
+  try {
+    sessionStorage.setItem(rememberedRunStorageKey(encounterId), runId);
+  } catch {
+    /* storage unavailable; entry still works for this mount */
+  }
+}
+
+function proposalPrereqMessage(state: {
+  saveState: string;
+  dirty: boolean;
+  readOnly: boolean;
+}): string | null {  if (state.readOnly) {
+    return "Only the draft author may start a run.";
+  }
+  if (state.dirty) {
+    return "Unsaved edits pending — waiting for save before starting the run.";
+  }
+  if (state.saveState === "Saving…" || state.saveState === "Loading…") {
+    return "Run prerequisites pending — waiting for the draft to save.";
+  }  if (
+    state.saveState === "Stale revision" ||
+    state.saveState === "Save failed" ||
+    state.saveState === "Read-only draft." ||
+    state.saveState === "Draft discarded."
+  ) {
+    return `Run prerequisites pending — resolve the save state (${state.saveState}) before starting the run.`;
+  }
+  return null;
+}
+
+/**
+ * S48 per-question state label (slice 2): combines the persisted
+ * applicability gate with the live job stage/status. Text-only status, never
+ * color-only.
+ */
+function proposalQuestionStateText(
+  applicability: string,
+  reason: string,
+  job: { stage: string; status: string } | undefined,
+  hasSucceededSection: boolean,
+): string {
+  if (job !== undefined) {
+    if (job.status === "failed") {
+      return `Failed — ${job.stage}`;
+    }
+    if (job.status === "running") {
+      return `Running — ${job.stage}`;
+    }
+    if (job.status === "queued" || job.status === "claimed") {
+      return `Pending — ${job.stage} (${job.status})`;
+    }
+    if (job.status === "succeeded") {
+      return "Completed (succeeded)";
+    }
+  }
+  if (applicability === "not_applicable") {
+    return `Skipped — not applicable: ${reason}`;
+  }
+  if (applicability === "needs_clarification") {
+    return `Needs clarification: ${reason}`;
+  }
+  if (hasSucceededSection) {
+    return "Completed (succeeded)";
+  }
+  return "Pending — awaiting worker";
+}
+
+/**
+ * S48 transparency details (slice 3): persisted section payload only —
+ * network version, exact patient inputs, provider-estimated CPT percentages,
+ * deterministic posterior result, and provenance. Rendered from the
+ * already-fetched GET payload on expansion; never recomputed from chart
+ * state, never notes (only patient_inputs/projection facts, rendered text,
+ * and DDI raw text ever render here). Plain JSX text throughout.
+ */
+function proposalText(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (value === null || value === undefined) {
+    return "";
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * S48 proposal/DDI shaping (slice 4): the succeeded proposal lists section
+ * keys (+ rendered texts when present) and skipped reasons — patient inputs
+ * are never duplicated here. DDI renders from proposal.ddi_report (the only
+ * production read path); a missing report renders an honest unavailable
+ * message. Plain JSX text throughout.
+ */
+function proposalSectionEntries(
+  sections: unknown,
+): Array<{ key: string; text: string }> {
+  if (!Array.isArray(sections)) {
+    return [];
+  }
+  const out: Array<{ key: string; text: string }> = [];
+  for (const entry of sections) {
+    if (typeof entry === "string") {
+      if (entry !== "") {
+        out.push({ key: entry, text: "" });
+      }
+    } else if (typeof entry === "object" && entry !== null) {
+      const rec = entry as Record<string, unknown>;
+      const key =
+        typeof rec.question_key === "string" ? rec.question_key : "";
+      const text = typeof rec.text === "string" ? rec.text : "";
+      if (key !== "") {
+        out.push({ key, text });
+      }
+    }
+  }
+  return out;
+}
+
+function proposalSkippedEntries(skipped: unknown): string[] {
+  if (!Array.isArray(skipped)) {
+    return [];
+  }
+  const out: string[] = [];
+  for (const entry of skipped) {
+    if (typeof entry === "string") {
+      if (entry !== "") {
+        out.push(entry);
+      }
+    } else if (typeof entry === "object" && entry !== null) {
+      const rec = entry as Record<string, unknown>;
+      const key =
+        typeof rec.question_key === "string" ? rec.question_key : "";
+      const reason =
+        typeof rec.reason === "string"
+          ? rec.reason
+          : typeof rec.applicability_reason === "string"
+            ? String(rec.applicability_reason)
+            : "";
+      const label =
+        key !== "" && reason !== "" ? `${key}: ${reason}` : `${key}${reason}`;
+      if (label !== "") {
+        out.push(label);
+      }
+    }
+  }
+  return out;
+}
+
+function proposalStringEntries(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter(
+    (entry): entry is string => typeof entry === "string" && entry !== "",
+  );
+}
+
+interface ProposalDdiEvidence {
+  source_severity: string;
+  raw_text: string;
+  source_path: string;
+}
+
+interface ProposalDdiPair {
+  pair_key: string;
+  drug_a: string;
+  drug_b: string;
+  status: string;
+  highest_known_severity: string | null;
+  coverage_basis: string;
+  evidence: ProposalDdiEvidence[];
+  conflicts: ProposalDdiEvidence[];
+}
+
+function proposalDdiPairs(ddi: Record<string, unknown>): ProposalDdiPair[] {
+  const raw = ddi.pairs;
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const out: ProposalDdiPair[] = [];
+  for (const entry of raw) {
+    if (typeof entry !== "object" || entry === null) {
+      continue;
+    }
+    const rec = entry as Record<string, unknown>;
+    const evidence: ProposalDdiEvidence[] = [];
+    if (Array.isArray(rec.evidence)) {
+      for (const item of rec.evidence) {
+        if (typeof item !== "object" || item === null) {
+          continue;
+        }
+        const ev = item as Record<string, unknown>;
+        evidence.push({
+          source_severity:
+            typeof ev.source_severity === "string"
+              ? ev.source_severity
+              : "unknown",
+          raw_text: typeof ev.raw_text === "string" ? ev.raw_text : "",
+          source_path:
+            typeof ev.source_path === "string" ? ev.source_path : "",
+        });
+      }
+    }
+    const conflicts: ProposalDdiEvidence[] = [];
+    if (Array.isArray(rec.conflicts)) {
+      for (const item of rec.conflicts) {
+        if (typeof item !== "object" || item === null) {
+          continue;
+        }
+        const ev = item as Record<string, unknown>;
+        conflicts.push({
+          source_severity:
+            typeof ev.source_severity === "string"
+              ? ev.source_severity
+              : "unknown",
+          raw_text: typeof ev.raw_text === "string" ? ev.raw_text : "",
+          source_path:
+            typeof ev.source_path === "string" ? ev.source_path : "",
+        });
+      }
+    }
+    out.push({
+      pair_key: typeof rec.pair_key === "string" ? rec.pair_key : "",
+      drug_a: typeof rec.drug_a === "string" ? rec.drug_a : "",
+      drug_b: typeof rec.drug_b === "string" ? rec.drug_b : "",
+      status: typeof rec.status === "string" ? rec.status : "",
+      highest_known_severity:
+        typeof rec.highest_known_severity === "string"
+          ? rec.highest_known_severity
+          : null,
+      coverage_basis:
+        typeof rec.coverage_basis === "string" ? rec.coverage_basis : "",
+      evidence,
+      conflicts,
+    });
+  }
+  return out;
+}
+
+function ProposalReviewSection({
+  encounterId,
+  readOnly,
+  saveState,
+  dirty,
+  getRevision,
+  flushSave,
+  secondaryPlan,
+  onSecondaryPlanChange,
+}: {
+  encounterId: string;
+  readOnly: boolean;
+  saveState: string;
+  dirty: boolean;
+  getRevision: () => number;
+  flushSave: () => Promise<void>;
+  secondaryPlan: string;
+  onSecondaryPlanChange: (value: string) => void;
+}) {
+  const [detail, setDetail] = useState<RunDetail | null>(null);
+  const [entryError, setEntryError] = useState<string | null>(null);
+  const [retryError, setRetryError] = useState<{
+    key: string;
+    message: string;
+  } | null>(null);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const cancelledRef = useRef(false);
+  const postedRef = useRef<string | null>(null);
+  const postingRef = useRef(false);
+  const fallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const entryKeyRef = useRef<string | null>(null);
+  const detailRef = useRef<RunDetail | null>(null);
+  detailRef.current = detail;
+  const liveRef = useRef({ saveState, dirty, readOnly });
+  liveRef.current = { saveState, dirty, readOnly };
+
+  function clearFallback(): void {
+    if (fallbackRef.current !== null) {
+      clearTimeout(fallbackRef.current);
+      fallbackRef.current = null;
+    }
+  }
+
+  async function doEntryPost(): Promise<void> {
+    if (postingRef.current || postedRef.current !== null) {
+      return;
+    }
+    const live = liveRef.current;
+    if (
+      proposalPrereqMessage(live) !== null ||
+      (detailRef.current !== null && isProposalRunTerminal(detailRef.current))
+    ) {
+      return;
+    }
+    postingRef.current = true;
+    setEntryError(null);
+    try {
+      // Flush first so the POST always carries acknowledged edits.
+      await flushSave();
+      if (cancelledRef.current) {
+        return;
+      }
+      const afterFlush = liveRef.current;
+      if (
+        proposalPrereqMessage(afterFlush) !== null ||
+        (detailRef.current !== null && isProposalRunTerminal(detailRef.current))
+      ) {
+        return;
+      }
+      if (entryKeyRef.current === null) {
+        entryKeyRef.current = newIdempotencyKey();
+      }
+      const started = await startRun(
+        encounterId,
+        getRevision(),
+        entryKeyRef.current,
+      );
+      if (cancelledRef.current) {
+        return;
+      }
+      postedRef.current = started.run_id;
+      rememberRunId(encounterId, started.run_id);
+      clearFallback();
+      const data = await getRun(started.run_id);
+      if (cancelledRef.current) {
+        return;
+      }
+      setDetail(data);
+    } catch (failure: unknown) {
+      if (!cancelledRef.current) {
+        setEntryError(
+          failure instanceof Error ? failure.message : "Could not start the run.",
+        );
+      }
+    } finally {
+      postingRef.current = false;
+    }
+  }
+
+  function fireFallback(): void {
+    fallbackRef.current = null;
+    if (
+      cancelledRef.current ||
+      postingRef.current ||
+      postedRef.current !== null
+    ) {
+      return;
+    }
+    if (detailRef.current !== null && isProposalRunTerminal(detailRef.current)) {
+      return;
+    }
+    if (proposalPrereqMessage(liveRef.current) !== null) {
+      // Still settling (a save in flight save-triggers instead); rearm.
+      fallbackRef.current = setTimeout(fireFallback, 2000);
+      return;
+    }
+    void doEntryPost();
+  }
+
+  function armFallback(): void {
+    clearFallback();
+    fallbackRef.current = setTimeout(fireFallback, 4000);
+  }
+
+  // Entry (mount + encounter change): show a remembered run, then POST once
+  // when prerequisites hold. Terminal remembered runs never re-POST.
+  useEffect(() => {
+    cancelledRef.current = false;
+    postedRef.current = null;
+    postingRef.current = false;
+    entryKeyRef.current = null;
+    setDetail(null);
+    detailRef.current = null;
+    setEntryError(null);
+    async function enter(): Promise<void> {
+      const remembered = readRememberedRunId(encounterId);
+      if (remembered !== null) {
+        try {
+          const data = await getRun(remembered);
+          if (cancelledRef.current) {
+            return;
+          }
+          setDetail(data);
+          detailRef.current = data;
+          if (isProposalRunTerminal(data)) {
+            return;
+          }
+        } catch {
+          /* fall through to a fresh entry below */
+        }
+      }
+      if (!cancelledRef.current) {
+        armFallback();
+      }
+    }
+    void enter();
+    return () => {
+      cancelledRef.current = true;
+      clearFallback();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [encounterId]);
+
+  // Save completion trigger: the first acknowledged save after mount starts
+  // the run (post-edit fingerprint), so re-entry reuses it. Later saves
+  // never POST (postedRef set); terminal runs never re-POST.
+  useEffect(() => {
+    if (
+      postedRef.current !== null ||
+      postingRef.current ||
+      cancelledRef.current
+    ) {
+      return;
+    }
+    if (detailRef.current !== null && isProposalRunTerminal(detailRef.current)) {
+      return;
+    }
+    if (readOnly || dirty) {
+      return;
+    }
+    if (!/^Saved \(rev \d+\)$/.test(saveState)) {
+      return;
+    }
+    void doEntryPost();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [encounterId, saveState, dirty, readOnly]);
+
+  // Polling (slice 2): GET every ~2s while the displayed run is
+  // non-terminal (~10s backoff while the document is hidden); stops entirely
+  // at terminal. Timers are cleared on unmount.
+  useEffect(() => {
+    if (detail === null || isProposalRunTerminal(detail)) {
+      return;
+    }
+    const runId = detail.run.id;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    function schedule(): void {
+      timer = setTimeout(() => {
+        timer = null;
+        void poll();
+      }, document.hidden ? 10000 : 2000);
+    }
+    async function poll(): Promise<void> {
+      try {
+        const data = await getRun(runId);
+        if (!cancelled) {
+          setDetail(data);
+        }
+      } catch {
+        /* transient read failure: keep polling on schedule */
+      }
+      if (!cancelled) {
+        schedule();
+      }
+    }
+    schedule();
+    return () => {
+      cancelled = true;
+      if (timer !== null) {
+        clearTimeout(timer);
+      }
+    };
+  }, [detail]);
+
+  // Precise retry (slice 2): one failed question with the failed job's stage
+  // and the live run revision. 409/412 surfaces the server message inline;
+  // editing stays enabled (nothing here ever disables the editor).
+  async function handleRetry(questionKey: string, stage: string): Promise<void> {
+    const current = detailRef.current;
+    if (current === null) {
+      return;
+    }
+    setRetryError(null);
+    try {
+      await retryRun(current.run.id, {
+        question_key: questionKey,
+        failed_stage: stage,
+        expected_run_revision: current.run.revision,
+      });
+      setDetail((prev) => {
+        if (prev === null) {
+          return prev;
+        }
+        return {
+          ...prev,
+          jobs: prev.jobs.map((item) =>
+            item.question_key === questionKey
+              ? { ...item, status: "queued", failure_details: null }
+              : item,
+          ),
+        };
+      });
+      const fresh = await getRun(current.run.id);
+      if (!cancelledRef.current) {
+        setDetail(fresh);
+      }
+    } catch (failure: unknown) {
+      if (!cancelledRef.current) {
+        setRetryError({
+          key: questionKey,
+          message:
+            failure instanceof Error
+              ? failure.message
+              : "Could not retry the question.",
+        });
+      }
+    }
+  }
+
+  const blocked = proposalPrereqMessage({ saveState, dirty, readOnly });
+
+  // Slice 4: succeeded proposal + pinned DDI + sign gate. The proposal is
+  // immutable (keys/reasons/texts only, inputs never duplicated); the
+  // secondary plan is the separate physician-editable control below.
+  const proposal =
+    detail !== null &&
+    typeof detail.proposal === "object" &&
+    detail.proposal !== null
+      ? (detail.proposal as Record<string, unknown>)
+      : null;
+  const ddi =
+    proposal !== null &&
+    typeof proposal.ddi_report === "object" &&
+    proposal.ddi_report !== null
+      ? (proposal.ddi_report as Record<string, unknown>)
+      : null;
+  const proposalTitle =
+    proposal !== null && typeof proposal.title === "string"
+      ? proposal.title
+      : "";
+  const proposalSections = proposalSectionEntries(
+    proposal !== null ? proposal.sections : null,
+  );
+  const proposalSkipped = proposalSkippedEntries(
+    proposal !== null ? proposal.skipped : null,
+  );
+  const proposalCoverageNote =
+    proposal !== null && typeof proposal.coverage_note === "string"
+      ? proposal.coverage_note
+      : "";
+  const proposalLimitations = proposalStringEntries(
+    proposal !== null ? proposal.limitations : null,
+  );
+  const ddiPairs = ddi !== null ? proposalDdiPairs(ddi) : [];
+  const ddiLimitations = proposalStringEntries(
+    ddi !== null ? ddi.limitations : null,
+  );
+  const ddiDatasetVersion =
+    ddi !== null && typeof ddi.dataset_version === "string"
+      ? ddi.dataset_version
+      : "";
+  const runFailed = detail !== null && detail.run.status === "failed";
+  const runNeedsClarification =
+    detail !== null &&
+    (detail.run.status === "needs_clarification" ||
+      detail.projections.some(
+        (item) => item.applicability === "needs_clarification",
+      ));
+  const anyJobFailed =
+    detail !== null &&
+    detail.jobs.some((item) => item.status === "failed");
+  const proposalSucceeded =
+    proposal !== null &&
+    detail !== null &&
+    detail.run.status === "succeeded" &&
+    !detail.stale &&
+    !anyJobFailed &&
+    !runNeedsClarification;
+  let signBlocked: string | null = null;
+  if (!proposalSucceeded) {
+    if (runFailed || anyJobFailed) {
+      signBlocked =
+        "Signing is blocked — the run failed; no proposal is available to sign.";
+    } else if (runNeedsClarification) {
+      signBlocked =
+        "Signing is blocked — clarification is needed before signing.";
+    } else if (detail !== null && detail.stale) {
+      signBlocked =
+        "Signing is blocked — the run is stale; analytical inputs changed since the snapshot.";
+    } else {
+      signBlocked =
+        "Signing is blocked — the proposal is incomplete; the run is still in progress.";
+    }
+  }
+
+  let runStatusText: string;
+  if (blocked !== null) {
+    runStatusText = blocked;
+  } else if (entryError !== null) {
+    runStatusText = entryError;
+  } else if (detail === null) {
+    runStatusText =
+      "Run prerequisites pending — waiting for a clean save to start the run.";
+  } else {
+    runStatusText = `Run ${detail.run.status}`;
+    if (detail.stale) {
+      runStatusText += " (stale — analytical inputs changed since the snapshot)";
+    }
+  }
+
+  return (
+    <section data-testid="proposal-review-section" aria-label="Proposal review">
+      <h3>Proposal review</h3>
+      <p data-testid="proposal-run-status">{runStatusText}</p>
+      {(detail?.projections ?? []).map((proj) => {
+        const job = detail?.jobs.find(
+          (item) => item.question_key === proj.question_key,
+        );
+        const section = detail?.sections.find(
+          (item) => item.question_key === proj.question_key,
+        );
+        const failed = job !== undefined && job.status === "failed";
+        return (
+          <div
+            key={proj.question_key}
+            data-testid={`proposal-question-${proj.question_key}`}
+          >
+            <p data-testid={`proposal-question-state-${proj.question_key}`}>
+              {proposalQuestionStateText(
+                proj.applicability,
+                proj.applicability_reason,
+                job === undefined
+                  ? undefined
+                  : { stage: job.stage, status: job.status },
+                section !== undefined,
+              )}
+            </p>
+            {failed && job !== undefined ? (
+              <button
+                type="button"
+                className="x-button"
+                data-testid={`proposal-retry-${proj.question_key}`}
+                onClick={() => void handleRetry(proj.question_key, job.stage)}
+              >
+                Retry {proj.question_key}
+              </button>
+            ) : null}
+            {retryError !== null && retryError.key === proj.question_key ? (
+              <p>{retryError.message}</p>
+            ) : null}
+          </div>
+        );
+      })}
+      {(detail?.sections ?? []).map((section) => {
+        const key = section.question_key;
+        const open = expanded[key] === true;
+        const detailsId = `proposal-details-${encounterId}-${key}`;
+        function toggle(): void {
+          setExpanded((prev) => ({ ...prev, [key]: !(prev[key] === true) }));
+        }
+        return (
+          <article
+            key={key}
+            data-testid={`proposal-section-${key}`}
+            onClick={toggle}
+          >
+            <h4>{key}</h4>
+            <p>
+              {typeof section.rendered_text === "string"
+                ? section.rendered_text
+                : ""}
+            </p>
+            <button
+              type="button"
+              className="x-button"
+              aria-expanded={open}
+              aria-controls={detailsId}
+              onClick={(event) => {
+                event.stopPropagation();
+                toggle();
+              }}
+            >
+              {open
+                ? `Hide transparency details for ${key}`
+                : `Show transparency details for ${key}`}
+            </button>
+            {open ? (
+              <div id={detailsId}>
+                <p>Network version: {proposalText(section.network_version)}</p>
+                <div data-testid={`proposal-inputs-${key}`}>
+                  <p>Patient inputs (persisted snapshot)</p>
+                  <pre>{proposalText(section.patient_inputs)}</pre>
+                </div>
+                <div data-testid={`proposal-cpt-${key}`}>
+                  <p>CPT percentages (provider-estimated inputs)</p>
+                  <pre>{proposalText(section.cpt_percentages)}</pre>
+                </div>
+                <div data-testid={`proposal-result-${key}`}>
+                  <p>Posterior probabilities (deterministic inference result)</p>
+                  <pre>{proposalText(section.result)}</pre>
+                </div>
+                <p>Prompt: {proposalText(section.prompt)}</p>
+                <p>Template version: {proposalText(section.template_version)}</p>
+                <p>Engine: {proposalText(section.engine)}</p>
+                <p>Source paths: {proposalText(section.source_paths)}</p>
+                <p>Missingness: {proposalText(section.missingness)}</p>
+                <p>Effective hash: {proposalText(section.effective_hash)}</p>
+                <p>Model: {proposalText(section.model)}</p>
+                <p>Query: {proposalText(section.query)}</p>
+              </div>
+            ) : null}
+          </article>
+        );
+      })}
+      {proposal !== null ? (
+        <section data-testid="proposal-proposal" aria-label="Initial proposal">
+          <h4>Initial proposal (immutable)</h4>
+          {proposalTitle !== "" ? <p>{proposalTitle}</p> : null}
+          {proposalSections.length > 0 ? (
+            <ul>
+              {proposalSections.map((entry) => (
+                <li key={entry.key}>
+                  {entry.key}
+                  {entry.text !== "" ? `: ${entry.text}` : null}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {proposalSkipped.length > 0 ? (
+            <div>
+              <p>Skipped questions:</p>
+              <ul>
+                {proposalSkipped.map((reason, index) => (
+                  <li key={index}>{reason}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {proposalCoverageNote !== "" ? <p>{proposalCoverageNote}</p> : null}
+          {proposalLimitations.length > 0 ? (
+            <div>
+              <p>Limitations:</p>
+              <ul>
+                {proposalLimitations.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+      <section data-testid="proposal-ddi" aria-label="Proposal drug interactions">
+        <h4>Drug interactions (pinned to the proposal)</h4>
+        {ddi === null ? (
+          <p>DDI coverage unavailable for this run (no pinned DDI report).</p>
+        ) : (
+          <>
+            {ddiDatasetVersion !== "" ? (
+              <p>Dataset version: {ddiDatasetVersion}</p>
+            ) : null}
+            {ddiPairs.length === 0 ? <p>No pairs evaluated.</p> : null}
+            {ddiPairs.map((pair) => (
+              <article key={pair.pair_key || `${pair.drug_a}-${pair.drug_b}`}>
+                <p>
+                  {pair.pair_key !== ""
+                    ? pair.pair_key
+                    : `${pair.drug_a} + ${pair.drug_b}`}
+                  : {pair.drug_a} + {pair.drug_b}
+                </p>
+                <p>
+                  Severity: {pair.highest_known_severity ?? "unknown"}
+                </p>
+                <p>Status: {pair.status}</p>
+                {pair.coverage_basis !== "" ? (
+                  <p>Coverage: {pair.coverage_basis}</p>
+                ) : null}
+                {pair.evidence.length > 0 ? (
+                  <ul>
+                    {pair.evidence.map((item, index) => (
+                      <li key={index}>
+                        {item.source_severity}: {item.raw_text} (
+                        {item.source_path})
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No listed evidence.</p>
+                )}
+                {pair.conflicts.length > 0 ? (
+                  <ul>
+                    {pair.conflicts.map((item, index) => (
+                      <li key={index}>
+                        {item.source_severity} ({item.source_path})
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </article>
+            ))}
+            {ddiLimitations.length > 0 ? (
+              <div>
+                <p>Limitations:</p>
+                <ul>
+                  {ddiLimitations.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </>
+        )}
+      </section>
+      <div className="x-field">
+        <label htmlFor={`proposal-secondary-plan-${encounterId}`}>
+          Secondary plan (physician edit; the initial proposal above is
+          immutable)
+        </label>
+        <textarea
+          id={`proposal-secondary-plan-${encounterId}`}
+          data-testid="proposal-secondary-plan"
+          value={secondaryPlan}
+          disabled={readOnly}
+          onChange={(event) => onSecondaryPlanChange(event.target.value)}
+        />
+      </div>
+      {signBlocked !== null ? (
+        <p data-testid="proposal-sign-blocked">{signBlocked}</p>
+      ) : null}
+    </section>
+  );
+}
+
 function DraftEditor({
   patient,
   userId,
@@ -2382,6 +3266,12 @@ function DraftEditor({
     "idle",
   );
   const [ddiError, setDdiError] = useState<string | null>(null);
+  // S48 secondary plan: physician-editable draft text persisted into
+  // draft_data.secondary_plan through the shared autosave path. Unknown keys
+  // pass through verbatim and stay out of snapshots/fingerprints.
+  const [secondaryPlan, setSecondaryPlan] = useState("");
+  const secondaryPlanRef = useRef("");
+  const savedSecondaryRef = useRef("");
   const [lastCheckedKey, setLastCheckedKey] = useState<string | null>(null);
   const lastCheckedKeyRef = useRef<string | null>(null);
   const [phone, setPhone] = useState("");
@@ -2419,6 +3309,10 @@ function DraftEditor({
 
   function isDdiDirty(): boolean {
     return JSON.stringify(ddiReportRef.current) !== savedDdiRef.current;
+  }
+
+  function isSecondaryDirty(): boolean {
+    return secondaryPlanRef.current !== savedSecondaryRef.current;
   }
 
   async function reloadPreservingEdits(): Promise<void> {
@@ -2542,6 +3436,13 @@ function DraftEditor({
         setDdiReport(initialDdi);
         ddiReportRef.current = initialDdi;
         savedDdiRef.current = JSON.stringify(initialDdi);
+        const initialSecondary =
+          typeof full.draft_data?.secondary_plan === "string"
+            ? (full.draft_data.secondary_plan as string)
+            : "";
+        setSecondaryPlan(initialSecondary);
+        secondaryPlanRef.current = initialSecondary;
+        savedSecondaryRef.current = initialSecondary;
         lastCheckedKeyRef.current = null;
         setLastCheckedKey(null);
         if (initialDdi === null && initialMeds.length === 0) {
@@ -2694,7 +3595,7 @@ function DraftEditor({
   useEffect(() => {
     function onBeforeUnload(event: BeforeUnloadEvent): void {
       if (
-        (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty() || isMedsDirty() || isDdiDirty()) &&
+        (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty() || isMedsDirty() || isDdiDirty() || isSecondaryDirty()) &&
         encounter !== null
       ) {
         event.preventDefault();
@@ -2707,13 +3608,13 @@ function DraftEditor({
   // Shared dirty flag so in-app navigation (open another draft) can warn.
   useEffect(() => {
     (window as unknown as { __xinsight_dirty?: boolean }).__xinsight_dirty =
-      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty() || isMedsDirty() || isDdiDirty()) &&
+      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty() || isMedsDirty() || isDdiDirty() || isSecondaryDirty()) &&
       encounter !== null;
   });
 
   function handleClose(): void {
     if (
-      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty() || isMedsDirty() || isDdiDirty()) &&
+      (noteRef.current !== savedNoteRef.current || isDiagDirty() || isPanssDirty() || isCssrsDirty() || isHistoryDirty() || isEffectsDirty() || isReconDirty() || isMedsDirty() || isDdiDirty() || isSecondaryDirty()) &&
       encounter !== null
     ) {
       // Warn while local edits remain; dismiss keeps the editor + edits.
@@ -2792,6 +3693,7 @@ function DraftEditor({
         : { unknown_label: entry.unknown_label as string },
     );
     const ddiSnapshot = ddiReportRef.current;
+    const secondarySnapshot = secondaryPlanRef.current;
     const historyVersionSnapshot = historyDefRef.current?.definition_version ?? null;
     const effectsBlock = serializeEffects(effectsSnapshot, historyVersionSnapshot);
     const historyBlock = serializeHistory(historySnapshot, historyVersionSnapshot);
@@ -2809,7 +3711,9 @@ function DraftEditor({
         reconSnapshot === null ? withHistory : { ...withHistory, history_reconciliation: reconSnapshot };
       const withMeds = { ...withRecon, medications: medsSnapshot };
       const payload =
-        ddiSnapshot === null ? withMeds : { ...withMeds, ddi_report: ddiSnapshot };
+        ddiSnapshot === null
+          ? { ...withMeds, secondary_plan: secondarySnapshot }
+          : { ...withMeds, ddi_report: ddiSnapshot, secondary_plan: secondarySnapshot };
       const updated = await patchEncounter(
         encounter.id,
         payload,
@@ -2831,6 +3735,7 @@ function DraftEditor({
       savedMedsRef.current = medsDirtyKey(medsSnapshot);
       savedDdiRef.current = JSON.stringify(ddiSnapshot);
       savedReconRef.current = JSON.stringify(reconSnapshot);
+      savedSecondaryRef.current = secondarySnapshot;
       setEncounter(updated);
       const storedDiag =
         typeof updated.draft_data?.diagnosis === "object" &&
@@ -2859,7 +3764,8 @@ function DraftEditor({
         historyDirtyKey(historyRef.current) === historyDirtyKey(historySnapshot) &&
         medsDirtyKey(medsRef.current) === medsDirtyKey(medsSnapshot) &&
         JSON.stringify(ddiReportRef.current) === JSON.stringify(ddiSnapshot) &&
-        JSON.stringify(reconRef.current) === JSON.stringify(reconSnapshot)
+        JSON.stringify(reconRef.current) === JSON.stringify(reconSnapshot) &&
+        secondaryPlanRef.current === secondarySnapshot
       ) {
         setSaveState(`Saved (rev ${updated.revision})`);
       }
@@ -3300,6 +4206,47 @@ function DraftEditor({
     }
   }
 
+  // S48 entry flush: await the pending debounced save so a run POST
+  // always carries acknowledged edits. No-op while clean (no revision churn).
+  async function flushDraftSave(): Promise<void> {
+    if (!encounter || encounter.state !== "draft" || staleRef.current) {
+      return;
+    }
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (
+      noteRef.current === savedNoteRef.current &&
+      !isDiagDirty() &&
+      !isPanssDirty() &&
+      !isCssrsDirty() &&
+      !isHistoryDirty() &&
+      !isEffectsDirty() &&
+      !isReconDirty() &&
+      !isMedsDirty() &&
+      !isDdiDirty() &&
+      !isSecondaryDirty()
+    ) {
+      return;
+    }
+    await saveNow(noteRef.current, diagAnswersRef.current, undefined, revisionRef.current);
+  }
+
+  // S48 secondary plan: physician edit through the shared autosave path.
+  function handleSecondaryPlan(value: string): void {
+    if (encounter?.state !== "draft" || readOnly) {
+      return;
+    }
+    setSecondaryPlan(value);
+    secondaryPlanRef.current = value;
+    if (staleRef.current) {
+      setSaveState("Stale revision");
+      return;
+    }
+    scheduleSave(noteRef.current, diagAnswersRef.current);
+  }
+
   async function handlePhoneSave(): Promise<void> {
     if (role !== "physician") {
       return;
@@ -3346,6 +4293,7 @@ function DraftEditor({
       savedReconRef.current = JSON.stringify(reconRef.current);
       savedMedsRef.current = medsDirtyKey(medsRef.current);
       savedDdiRef.current = JSON.stringify(ddiReportRef.current);
+      savedSecondaryRef.current = secondaryPlanRef.current;
       staleRef.current = false;
       setEncounter(discarded);
       setSaveState("Draft discarded.");
@@ -3480,6 +4428,27 @@ function DraftEditor({
             }
             readOnly={readOnly}
             onCheck={() => void handleDdiCheck()}
+          />
+          <ProposalReviewSection
+            encounterId={encounter.id}
+            readOnly={readOnly}
+            saveState={saveState}
+            dirty={
+              noteRef.current !== savedNoteRef.current ||
+              isDiagDirty() ||
+              isPanssDirty() ||
+              isCssrsDirty() ||
+              isHistoryDirty() ||
+              isEffectsDirty() ||
+              isReconDirty() ||
+              isMedsDirty() ||
+              isDdiDirty() ||
+              isSecondaryDirty()
+            }
+            getRevision={() => revisionRef.current}
+            flushSave={() => flushDraftSave()}
+            secondaryPlan={secondaryPlan}
+            onSecondaryPlanChange={handleSecondaryPlan}
           />
           <div className="x-field">
             <label htmlFor={`draft-phone-${encounter.id}`}>Phone (optional)</label>
