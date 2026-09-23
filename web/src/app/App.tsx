@@ -6,8 +6,10 @@ import {
   addAddendum,
   addNetworkVersion,
   archivePatient,
+  backupDownloadUrl,
   changeOwnPassword,
   checkDdi,
+  createBackup,
   createFollowup,
   createPhysician,
   createPatient,
@@ -18,6 +20,7 @@ import {
   fetchSession,
   addNote,
   getAuditEvent,
+  getBackup,
   getDdiCurrent,
   getDeactivationReview,
   getEncounter,
@@ -60,6 +63,7 @@ import {
   type Addendum,
   type AuditEvent,
   type AuditEventDetail,
+  type BackupJob,
   type BundlePinInput,
   type DdiReport,
   type DeactivationReview,
@@ -79,7 +83,7 @@ import {
   type ThemeName,
 } from "./api";
 
-type Route = "/" | "/register" | "/physicians" | "/provider-settings" | "/networks" | "/audit";
+type Route = "/" | "/register" | "/physicians" | "/provider-settings" | "/networks" | "/audit" | "/backups";
 
 /** S09 diagnosis preview (mirrors backend evaluate_diagnosis, no I/O). */
 type DiagAnswers = {
@@ -1833,6 +1837,9 @@ function currentRoute(): Route {
   if (window.location.pathname === "/audit") {
     return "/audit";
   }
+  if (window.location.pathname === "/backups") {
+    return "/backups";
+  }
   return "/";
 }
 
@@ -1934,6 +1941,11 @@ export function App() {
             Audit
           </NavLink>
         ) : null}
+        {user?.role === "admin" ? (
+          <NavLink route="/backups" current={route}>
+            Backups
+          </NavLink>
+        ) : null}
         {!user ? (
           <NavLink route="/register" current={route}>
             Register
@@ -1959,6 +1971,8 @@ export function App() {
         <NetworksGate user={user} />
       ) : route === "/audit" ? (
         <AuditGate user={user} />
+      ) : route === "/backups" ? (
+        <BackupsGate user={user} />
       ) : user ? (
         <Dashboard user={user} />
       ) : (
@@ -6324,6 +6338,181 @@ function AuditSection() {
               ) : null}
             </>
           ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+/** S54 admin backup view (T9): create, poll, download, manifest summary.
+ * Server JSON fields render verbatim as plain JSX text (React escapes by
+ * default). The manifest carries inventory/checksums only — no secrets. */
+function BackupsGate({ user }: { user: SessionUser | null }) {
+  if (!user) {
+    return <LoginHint />;
+  }
+  if (user.role !== "admin") {
+    return <p role="alert">Access denied.</p>;
+  }
+  return <BackupsSection />;
+}
+
+function BackupsSection() {
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [manifest, setManifest] = useState<Record<string, unknown> | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  async function handleCreate(): Promise<void> {
+    if (creating) {
+      return;
+    }
+    setCreating(true);
+    setError(null);
+    setManifest(null);
+    setJobId(null);
+    setStatus("queued");
+    try {
+      const created = await createBackup();
+      setJobId(created.job_id);
+      setStatus(created.status);
+    } catch (err) {
+      // createBackup only throws safe client/server messages (including the
+      // 429 single-build-slot notice), never secret or record values.
+      setError(err instanceof Error && err.message !== "" ? err.message : "Could not start the backup.");
+      setStatus(null);
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  // Polling: GET every ~2s while the job is non-terminal (~10s while the
+  // document is hidden); stops entirely at succeeded/failed. The chain
+  // survives transient read failures; the timer is cleared on unmount or
+  // when a newer job supersedes this one.
+  useEffect(() => {
+    const current = jobId;
+    if (current === null) {
+      return;
+    }
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    function schedule(id: string): void {
+      timer = setTimeout(
+        () => {
+          timer = null;
+          void poll(id);
+        },
+        document.hidden ? 10000 : 2000,
+      );
+    }
+    async function poll(id: string): Promise<void> {
+      let terminal = false;
+      try {
+        const job: BackupJob = await getBackup(id);
+        if (cancelled) {
+          return;
+        }
+        setStatus(job.status);
+        setManifest(
+          typeof job.manifest === "object" && job.manifest !== null
+            ? (job.manifest as Record<string, unknown>)
+            : null,
+        );
+        if (job.status === "failed") {
+          setError(
+            typeof job.error === "string" && job.error !== ""
+              ? job.error
+              : "Backup failed.",
+          );
+        }
+        terminal = job.status === "succeeded" || job.status === "failed";
+      } catch {
+        /* transient read failure: keep polling on schedule */
+      }
+      if (!cancelled && !terminal) {
+        schedule(id);
+      }
+    }
+    schedule(current);
+    return () => {
+      cancelled = true;
+      if (timer !== null) {
+        clearTimeout(timer);
+      }
+    };
+  }, [jobId]);
+
+  const tables =
+    manifest !== null &&
+    typeof manifest.tables === "object" &&
+    manifest.tables !== null
+      ? (manifest.tables as Record<string, unknown>)
+      : null;
+  const files = Array.isArray(manifest?.files)
+    ? (manifest?.files as unknown[])
+    : null;
+  const tableEntries = tables !== null ? Object.entries(tables) : [];
+  const backupId =
+    typeof manifest?.backup_id === "string" ? String(manifest.backup_id) : jobId;
+  const createdAt =
+    typeof manifest?.created_at === "string"
+      ? String(manifest.created_at)
+      : typeof manifest?.timestamp === "string"
+        ? String(manifest.timestamp)
+        : null;
+
+  return (
+    <section data-testid="backups-section" aria-label="Backups">
+      <h1>Backups</h1>
+      <p>Full system backups. Creating a backup never exposes secret values.</p>
+      <button
+        type="button"
+        className="x-button"
+        data-testid="backups-create"
+        disabled={creating}
+        onClick={() => void handleCreate()}
+      >
+        Create backup
+      </button>
+      <p data-testid="backups-status">
+        {status === null ? "No backup yet." : `Status: ${status}`}
+      </p>
+      {error ? (
+        <p role="alert" className="x-error" data-testid="backups-error">
+          {error}
+        </p>
+      ) : null}
+      {jobId !== null && status === "succeeded" ? (
+        <a
+          data-testid="backups-download"
+          href={backupDownloadUrl(jobId)}
+          download={`backup-${jobId}.zip`}
+        >
+          Download backup
+        </a>
+      ) : null}
+      {manifest !== null && status === "succeeded" ? (
+        <div data-testid="backups-manifest" aria-label="Backup manifest">
+          <p>Backup id: {backupId ?? ""}</p>
+          <p>created_at: {createdAt ?? ""}</p>
+          {tableEntries.length > 0 ? (
+            <ul>
+              {tableEntries.map(([name, info]) => (
+                <li key={name}>
+                  {name}:{" "}
+                  {typeof info === "object" && info !== null
+                    ? String(
+                        (info as Record<string, unknown>).rows ?? "unknown",
+                      )
+                    : "unknown"}{" "}
+                  rows
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {files !== null ? <p>files: {files.length} checksums recorded</p> : null}
         </div>
       ) : null}
     </section>

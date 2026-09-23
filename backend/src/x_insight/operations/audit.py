@@ -109,9 +109,9 @@ REQUIRED_AUDIT_COVERAGE: dict[str, str] = {
     "network.validate": "models/routes.py",
     "model_bundle.activate": "models/routes.py",
     "model_bundle.rollback": "models/routes.py",
-    # S54–S56, not yet emitted:
-    BACKUP_CREATE: "recovery/backup.py",
-    BACKUP_DOWNLOAD: "recovery/backup.py",
+    # S54 emitted via operations/backup.py; S55–S56 not yet emitted:
+    BACKUP_CREATE: "operations/backup.py",
+    BACKUP_DOWNLOAD: "operations/backup.py",
     RESTORE_VALIDATE: "recovery/restore.py",
     RESTORE_COMMIT: "recovery/restore.py",
     # S53-owned, not yet emitted:

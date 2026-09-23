@@ -28,7 +28,7 @@ test-e2e:
 	NODE_PATH=$(CURDIR)/web/node_modules ./web/node_modules/.bin/playwright test $(TEST)
 
 test-recovery:
-	@echo "no recovery drills yet (first backup lands with its feature)"; exit 1
+	cd backend && uv run pytest tests/recovery -q
 
 test-load:
 	@echo "no load harness yet (benchmarks land with deployment tuning)"; exit 1

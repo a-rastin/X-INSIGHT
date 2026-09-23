@@ -1617,3 +1617,53 @@ export async function checkDdi(
   }
   return (await response.json()) as DdiReport;
 }
+
+/** S54 admin backup client (T9): create, poll, download.
+ * The manifest carries inventory/checksums only — no secret values.
+ */
+export interface BackupJob {
+  schema_version: number;
+  job_id: string;
+  status: string;
+  error: string | null;
+  manifest: Record<string, unknown> | null;
+}
+
+export async function createBackup(): Promise<{
+  job_id: string;
+  status: string;
+}> {
+  const response = await fetch("/api/v1/backups", {
+    method: "POST",
+    credentials: "include",
+    headers: csrfHeaders({ "Idempotency-Key": idempotencyKey() }),
+    body: JSON.stringify({}),
+  });
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (response.status === 429) {
+    throw statusError("A backup build is already running.", 429);
+  }
+  if (!response.ok) {
+    throw statusError("Could not start the backup.", response.status);
+  }
+  return (await response.json()) as { job_id: string; status: string };
+}
+
+export async function getBackup(jobId: string): Promise<BackupJob> {
+  const response = await fetch(`/api/v1/backups/${jobId}`, {
+    credentials: "include",
+  });
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (!response.ok) {
+    throw statusError("Could not load the backup.", response.status);
+  }
+  return (await response.json()) as BackupJob;
+}
+
+export function backupDownloadUrl(jobId: string): string {
+  return `/api/v1/backups/${jobId}/download`;
+}

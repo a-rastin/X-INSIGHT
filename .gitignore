@@ -8,5 +8,6 @@ node_modules/
 dist/
 test-results/
 playwright-report/
+backend/var/
 .local/
 *.egg-info/

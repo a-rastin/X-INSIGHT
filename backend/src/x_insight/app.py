@@ -21,6 +21,7 @@ from x_insight.ddi.routes import router as ddi_router
 from x_insight.identity.accounts import router as accounts_router
 from x_insight.identity.routes import router as identity_router
 from x_insight.models.routes import router as networks_router
+from x_insight.operations.routes import router as operations_router
 from x_insight.reasoning.routes import router as provider_config_router
 from x_insight.reasoning.runs import router as runs_router
 
@@ -189,6 +190,7 @@ app.include_router(provider_config_router, prefix="/api/v1")
 app.include_router(runs_router, prefix="/api/v1")
 app.include_router(ddi_router, prefix="/api/v1")
 app.include_router(networks_router, prefix="/api/v1")
+app.include_router(operations_router, prefix="/api/v1")
 
 
 @app.get("/api/v1/health")
