@@ -60,7 +60,7 @@ def create_note(encounter_id: UUID, body: NoteCreate, request: Request) -> JSONR
             return csrf
         row = (
             conn.execute(
-                text("SELECT * FROM encounters WHERE id = :id"),
+                text("SELECT * FROM encounters WHERE id = :id FOR UPDATE"),
                 {"id": str(encounter_id)},
             )
             .mappings()
@@ -70,6 +70,8 @@ def create_note(encounter_id: UUID, body: NoteCreate, request: Request) -> JSONR
             raise HTTPException(404, "Encounter not found.")
         if str(row["author_id"]) != str(actor["user_id"]):
             raise HTTPException(403, "Only the draft author may add notes.")
+        if row["state"] != "draft":
+            raise HTTPException(409, "Only draft encounters can be edited.")
         actor_id = str(actor["user_id"])
         key = parse_idempotency_key(request.headers)
         scope = {
