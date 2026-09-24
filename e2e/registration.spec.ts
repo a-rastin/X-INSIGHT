@@ -130,6 +130,9 @@ test("registration submit stays disabled until demographics are valid", async ({
   await dismissResearchNotice(page);
   const submit = page.getByRole("button", { name: /register patient|next/i });
   await expect(submit).toBeDisabled();
+  await expect(
+    page.getByText("Fill every field to enable registration.", { exact: true }),
+  ).toBeVisible();
   await page.getByLabel(/first name/i).fill("Anna");
   await page.getByLabel(/last name/i).fill("Muller");
   await page.getByLabel(/^sex$/i).selectOption("F");

@@ -166,6 +166,37 @@ test.describe.serial("admin staged restores", () => {
     await expect(commit).toBeDisabled();
   });
 
+  test("staged restore report survives reload without re-upload", async ({
+    page,
+    request,
+  }) => {
+    const archive = await createBackupAndDownload(request);
+    const zipPath = writeTmpZip(archive, "reload");
+
+    await loginViaUI(page, "admin", "admin", "admin");
+    await gotoBackups(page);
+
+    await page.getByTestId("restores-file").setInputFiles(zipPath);
+    await page.getByTestId("restores-validate").click();
+    await expect(page.getByTestId("restores-report")).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(page.getByTestId("restores-digest")).toHaveText(
+      /^[0-9a-f]{64}$/,
+    );
+
+    await page.reload();
+    await expect(page.getByTestId("backups-section")).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByTestId("restores-report")).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(page.getByTestId("restores-digest")).toHaveText(
+      /^[0-9a-f]{64}$/,
+    );
+  });
+
   test("corrupt archive shows an alert and leaves live data readable", async ({
     page,
     request,

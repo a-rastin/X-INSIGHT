@@ -280,6 +280,27 @@ test("wrong-password change shows the password error alert", async ({
   await expect(alert).toContainText(/could not change the password/i);
 });
 
+// S61 (T9 browser seam): every rendered table scrolls inside its own region.
+test("every rendered table sits inside its own scroll region", async ({
+  page,
+  request,
+}) => {
+  const username = uniquePhysicianUsername("e2etbl");
+  await createPhysicianViaAdminApi(request, username, uniquePassword());
+  await loginViaUI(page, "admin", "admin", "admin");
+  await expect(page.getByText(/admin dashboard/i)).toBeVisible();
+
+  await page.goto("/physicians");
+  await expect(page.getByRole("table")).toBeVisible({ timeout: 10_000 });
+  const unwrapped = await page.evaluate(
+    () =>
+      Array.from(document.querySelectorAll("table")).filter(
+        (table) => table.closest(".x-table-scroll") === null,
+      ).length,
+  );
+  expect(unwrapped).toBe(0);
+});
+
 // S05 slice-4 (T9 browser seam): served CSS honors prefers-reduced-motion.
 test("served CSS honors prefers-reduced-motion", async ({ page }) => {
   await page.goto("/");

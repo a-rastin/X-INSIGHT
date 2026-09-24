@@ -146,6 +146,15 @@ body {
   color: var(--urgent);
 }
 
+/* S61 dense tables: contain wide tables in their own horizontal scroll
+ * region so 200% zoom (or narrow viewports) scrolls the table, not the
+ * whole page. No visual change at normal widths.
+ */
+.x-table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
 :focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;

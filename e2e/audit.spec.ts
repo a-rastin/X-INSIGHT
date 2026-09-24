@@ -101,6 +101,26 @@ test.describe.serial("audit trail (admin only)", () => {
     );
   });
 
+  test("keyboard Enter on a focused audit row opens the detail", async ({
+    page,
+    request,
+  }) => {
+    const username = uniqueUsername("e2eauditkbd");
+    await createPhysicianViaAdminApi(request, username, "synthetic-secret");
+    await loginViaUI(page, "admin", "admin", "admin");
+    await gotoAudit(page);
+
+    await page.getByTestId("audit-filter-target").fill(username);
+    await page.getByTestId("audit-apply").click();
+    const row = page.getByTestId("audit-row").first();
+    await expect(row).toBeVisible({ timeout: 10_000 });
+    await row.focus();
+    await page.keyboard.press("Enter");
+    const detail = page.getByTestId("audit-detail");
+    await expect(detail).toBeVisible({ timeout: 10_000 });
+    await expect(detail).toContainText("physician.create");
+  });
+
   test("physician has no audit navigation and direct access is denied", async ({
     page,
     request,

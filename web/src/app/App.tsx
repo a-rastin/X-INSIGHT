@@ -2537,6 +2537,7 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
       ) : items.length === 0 ? (
         <p>No patients found.</p>
       ) : (
+        <div className="x-table-scroll">
         <table>
           <thead>
             <tr>
@@ -2565,6 +2566,7 @@ function PatientsSection({ role, userId }: { role: string; userId: string }) {
             ))}
           </tbody>
         </table>
+        </div>
       )}
       {openPatient ? (
         <>
@@ -5713,6 +5715,7 @@ function PatientForm({ onCreated }: { onCreated: () => void }) {
       <button type="submit" className="x-button" disabled={!valid || pending}>
         {pending ? "Registering…" : "Register patient"}
       </button>
+      {!valid && !pending ? <p>Fill every field to enable registration.</p> : null}
     </form>
   );
 }
@@ -6288,6 +6291,7 @@ function AuditSection() {
         <p data-testid="audit-empty">No audit events.</p>
       ) : (
         <>
+          <div className="x-table-scroll">
           <table data-testid="audit-table">
             <thead>
               <tr>
@@ -6303,7 +6307,14 @@ function AuditSection() {
                 <tr
                   key={item.id}
                   data-testid="audit-row"
+                  tabIndex={0}
                   onClick={() => void handleSelect(item.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      void handleSelect(item.id);
+                    }
+                  }}
                 >
                   <td>{item.occurred_at}</td>
                   <td>{item.actor_display}</td>
@@ -6314,6 +6325,7 @@ function AuditSection() {
               ))}
             </tbody>
           </table>
+          </div>
           {nextCursor !== null ? (
             <button
               type="button"
@@ -6543,7 +6555,31 @@ function BackupsSection() {
  * there is no separate restores route. Commit never fires automatically: the
  * button stays disabled until the typed confirmation exactly matches the
  * staged digest, and every commit/reopen outcome is a text status (never
- * color-only). */
+ * color-only). The staged restore id is remembered in localStorage so a
+ * post-commit session loss (sessions are revoked at commit) still offers the
+ * documented "log in again, then reopen" path after reload. */
+const STAGED_RESTORE_KEY = "xinsight.stagedRestoreId";
+
+function rememberStagedRestore(id: string | null): void {
+  try {
+    if (id === null) {
+      localStorage.removeItem(STAGED_RESTORE_KEY);
+    } else {
+      localStorage.setItem(STAGED_RESTORE_KEY, id);
+    }
+  } catch {
+    /* storage unavailable; resume simply stays unavailable */
+  }
+}
+
+function readRememberedStagedRestore(): string | null {
+  try {
+    return localStorage.getItem(STAGED_RESTORE_KEY);
+  } catch {
+    return null;
+  }
+}
+
 function RestoresSection() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [chosen, setChosen] = useState<File | null>(null);
@@ -6592,10 +6628,59 @@ function RestoresSection() {
     setError(null);
     setFlags({ expired: false, superseded: false });
     resetCommitState();
+    rememberStagedRestore(null);
     if (phase !== "validating") {
       setPhase("idle");
     }
   }
+
+  // S61 resume: a remembered staged/committed restore survives reload so the
+  // documented post-commit "log in again, then reopen" path keeps its
+  // control. Unknown ids (other database, reopened, expired) clear silently.
+  useEffect(() => {
+    const remembered = readRememberedStagedRestore();
+    if (remembered === null) {
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const staged = await getRestore(remembered);
+        if (cancelled) {
+          return;
+        }
+        if (
+          staged.report === null ||
+          staged.expired ||
+          staged.superseded ||
+          (staged.status !== "staged" &&
+            staged.status !== "committing" &&
+            staged.status !== "committed")
+        ) {
+          rememberStagedRestore(null);
+          return;
+        }
+        setReport(staged.report);
+        setDigest(staged.confirmation_digest);
+        setRestoreId(staged.restore_id);
+        setFlags({ expired: false, superseded: false });
+        setPhase("staged");
+        if (staged.status === "committed" || staged.status === "committing") {
+          setCommitPhase("committed");
+          setMaintenance(true);
+          setPreBackupId(staged.pre_restore_backup_id);
+        }
+      } catch {
+        if (!cancelled) {
+          rememberStagedRestore(null);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleValidate(): Promise<void> {
     if (chosen === null || phase === "validating") {
@@ -6612,6 +6697,7 @@ function RestoresSection() {
       setReport(result.report);
       setDigest(result.confirmation_digest);
       setRestoreId(result.restore_id);
+      rememberStagedRestore(result.restore_id);
       setPhase("staged");
       // Best-effort freshness flags (read-time expired/superseded); a read
       // failure never clears a successful stage.
@@ -6698,6 +6784,7 @@ function RestoresSection() {
       if (result.status === "reopened") {
         setReopenPhase("reopened");
         setMaintenance(false);
+        rememberStagedRestore(null);
       } else {
         setReopenPhase("failed");
         setReopenError(`Unexpected reopen status: ${result.status}.`);
@@ -6765,6 +6852,9 @@ function RestoresSection() {
       >
         Validate staged restore
       </button>
+      {chosen === null && !validating ? (
+        <p>Choose a backup archive (.zip) to enable validation.</p>
+      ) : null}
       <p data-testid="restores-status">
         {phase === "idle" && report === null
           ? "No staged restore yet."
@@ -7991,6 +8081,7 @@ function PhysiciansPage() {
       ) : items.length === 0 ? (
         <p>No physicians yet.</p>
       ) : (
+        <div className="x-table-scroll">
         <table>
           <thead>
             <tr>
@@ -8024,6 +8115,7 @@ function PhysiciansPage() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
       {selected !== null ? (
         <DeactivateReview
@@ -8181,6 +8273,9 @@ function DeactivateReview({
                 >
                   {pending ? "Deactivating…" : "Deactivate"}
                 </button>
+                {!valid ? (
+                  <p>Choose retain or discard and check the confirmation to enable deactivation.</p>
+                ) : null}
               </div>
               {submitError ? (
                 <p role="alert" className="x-error">
