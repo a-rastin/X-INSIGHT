@@ -21,6 +21,8 @@ from x_insight.contracts import (
 from x_insight.identity.hashing import hash_password, verify_password
 from x_insight.identity.routes import _check_csrf, _request_id, _require_session
 from x_insight.operations.audit import record_audit
+from x_insight.reasoning import queue as queue_module
+from x_insight.reasoning.provider_config import active_provider_revision
 from x_insight.reasoning.queue import (
     ACTIVE_RUN_STATUSES,
     MAX_QUEUED_RUNS,
@@ -233,7 +235,11 @@ def _compute_stale(conn: Any, run: Any) -> bool:
             dict(encounter),
             dict(patient),
             draft,
-            {"bundle_hash": run["bundle_hash"], "pins": dict(pins)},
+            {
+                "bundle_hash": run["bundle_hash"],
+                "pins": dict(pins),
+                "provider_revision": active_provider_revision(conn),
+            },
         )
         return bool(live_fingerprint != run["fingerprint"])
     except Exception:
@@ -333,7 +339,14 @@ async def start_run(encounter_id: UUID, request: Request) -> JSONResponse:
         actor_id = str(actor["user_id"])
         draft = row["draft_data"] if isinstance(row["draft_data"], dict) else {}
         snapshot, fingerprint, snapshot_hash = build_snapshot(
-            dict(row), dict(patient), draft, dict(pointer)
+            dict(row),
+            dict(patient),
+            draft,
+            {
+                "bundle_hash": str(pointer["bundle_hash"]),
+                "pins": dict(pins_dict),
+                "provider_revision": active_provider_revision(conn),
+            },
         )
         pins = dict(pointer["pins"])
         triples = build_projections(snapshot["facts"], pins, current_revision)
@@ -582,7 +595,7 @@ def get_run(run_id: UUID, request: Request) -> JSONResponse:
             conn.execute(
                 text(
                     "SELECT question_key, ordinal, stage, status, "
-                    "attempt_count, fencing_generation "
+                    "attempt_count, fencing_generation, failure_details "
                     "FROM reasoning_jobs WHERE run_id = :run_id "
                     "ORDER BY ordinal, id"
                 ),
@@ -599,6 +612,11 @@ def get_run(run_id: UUID, request: Request) -> JSONResponse:
                 "status": str(item["status"]),
                 "attempt_count": int(item["attempt_count"] or 0),
                 "fencing_generation": int(item["fencing_generation"] or 0),
+                "failure_details": (
+                    dict(item["failure_details"])
+                    if isinstance(item["failure_details"], dict)
+                    else None
+                ),
             }
             for item in job_rows
         ]
@@ -609,6 +627,7 @@ def get_run(run_id: UUID, request: Request) -> JSONResponse:
                     "model, effective_hash, query, result, rendered_section, "
                     "template_version, provenance "
                     "FROM run_question_artifacts WHERE run_id = :run_id "
+                    "AND status = 'succeeded' "
                     "ORDER BY ordinal, question_key"
                 ),
                 {"run_id": str(run_id)},
@@ -621,4 +640,130 @@ def get_run(run_id: UUID, request: Request) -> JSONResponse:
         return JSONResponse(
             _run_payload(run, projections, stale, jobs, sections, proposal),
             headers={"Cache-Control": "private, no-store"},
+        )
+
+
+_ALLOWED_RETRY_STAGES = frozenset({"estimating_cpts", "inferring", "rendering"})
+
+
+@router.post("/runs/{run_id}/retry")
+async def retry_run_question(run_id: UUID, request: Request) -> JSONResponse:
+    """Start a new bounded retry batch for one failed question (S47 slice 2)."""
+    with db.transaction() as conn:
+        denied, actor = _require_session(request, conn)
+        if denied is not None:
+            return denied
+        csrf_denied = _check_csrf(request, actor)
+        if csrf_denied is not None:
+            return csrf_denied
+        run = (
+            conn.execute(
+                text("SELECT * FROM runs WHERE id = :id"),
+                {"id": str(run_id)},
+            )
+            .mappings()
+            .first()
+        )
+        if run is None:
+            raise HTTPException(404, "Run not found.")
+        if str(run["author_id"]) != str(actor["user_id"]):
+            raise HTTPException(403, "Only the run author may retry it.")
+        try:
+            data = await request.json()
+        except Exception as exc:
+            raise HTTPException(422, "Invalid request body.") from exc
+        if not isinstance(data, dict) or set(data.keys()) != {
+            "question_key",
+            "failed_stage",
+            "expected_run_revision",
+        }:
+            raise HTTPException(
+                422,
+                "question_key, failed_stage, and expected_run_revision are required.",
+            )
+        question_key = data["question_key"]
+        failed_stage = data["failed_stage"]
+        expected_revision = data["expected_run_revision"]
+        if not isinstance(question_key, str) or not question_key:
+            raise HTTPException(422, "question_key must be a non-empty string.")
+        if failed_stage not in _ALLOWED_RETRY_STAGES:
+            raise HTTPException(
+                422, "failed_stage must be one of estimating_cpts/inferring/rendering."
+            )
+        if not isinstance(expected_revision, int) or isinstance(
+            expected_revision, bool
+        ):
+            raise HTTPException(422, "expected_run_revision must be an integer.")
+        if int(expected_revision) != int(run["revision"]):
+            raise HTTPException(412, "The run changed. Reload and reconcile your view.")
+        if str(run["status"]) == "needs_clarification":
+            raise HTTPException(409, "Clarification runs never retry blindly.")
+        if _compute_stale(conn, run):
+            raise HTTPException(
+                409,
+                "Analytical inputs changed since the run snapshot; "
+                "start a new run instead.",
+            )
+        job = (
+            conn.execute(
+                text(
+                    "SELECT id, status, attempt_count FROM reasoning_jobs "
+                    "WHERE run_id = :run_id AND question_key = :question_key "
+                    "FOR UPDATE"
+                ),
+                {"run_id": str(run_id), "question_key": question_key},
+            )
+            .mappings()
+            .first()
+        )
+        if job is None or str(job["status"]) != "failed":
+            raise HTTPException(409, "Only a failed question may be retried.")
+        job_id = str(job["id"])
+        now = queue_module.now_utc()
+        conn.execute(
+            text(
+                "UPDATE reasoning_jobs SET status = 'queued', "
+                "available_at = :now, lease_token = NULL, "
+                "lease_deadline = NULL, "
+                "retry_batch = COALESCE(retry_batch, 0) + 1, "
+                "batch_start_attempt = :attempt_count, "
+                "failed_stage = :failed_stage, stage = :failed_stage, "
+                "failure_details = NULL, updated_at = :now "
+                "WHERE id = :id"
+            ),
+            {
+                "now": now,
+                "attempt_count": int(job["attempt_count"] or 0),
+                "failed_stage": str(failed_stage),
+                "id": job_id,
+            },
+        )
+        conn.execute(
+            text(
+                "UPDATE runs SET status = 'queued', updated_at = :now "
+                "WHERE id = :run_id AND status = 'failed'"
+            ),
+            {"now": now, "run_id": str(run_id)},
+        )
+        record_audit(
+            conn,
+            operation="run.retry",
+            actor_id=str(actor["user_id"]),
+            result_reference=str(run_id),
+            request_id=_request_id(request),
+            target_display=str(run["patient_id"]),
+            details={
+                "question_key": question_key,
+                "failed_stage": failed_stage,
+            },
+            result_status=202,
+        )
+        return JSONResponse(
+            status_code=202,
+            content={
+                "schema_version": 1,
+                "run_id": str(run_id),
+                "question_key": question_key,
+                "status": "queued",
+            },
         )

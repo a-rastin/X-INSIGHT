@@ -13,14 +13,28 @@ import logging
 import signal
 import time
 from collections.abc import Callable
+from datetime import timedelta
 from typing import Any
 
 from sqlalchemy import text
 
 from x_insight import db
 from x_insight.reasoning import queue as queue_module
+from x_insight.reasoning.retry import (
+    backoff_delay_seconds,
+    batch_exhausted,
+    retryable_error,
+)
 
 logger = logging.getLogger(__name__)
+
+
+def _stage_for_failure(exc: BaseException) -> str:
+    """Map a terminal failure to its pipeline stage (secret-free)."""
+    stage = getattr(exc, "_failed_stage", None)
+    if stage in ("estimating_cpts", "inferring", "rendering"):
+        return str(stage)
+    return "estimating_cpts"
 
 
 def _record_question_failure(claim: Any, exc: BaseException) -> None:
@@ -77,10 +91,12 @@ def _record_question_failure(claim: Any, exc: BaseException) -> None:
             conn.execute(
                 text(
                     "UPDATE reasoning_jobs SET status = 'failed', "
+                    "failed_stage = :failed_stage, stage = :failed_stage, "
                     "failure_details = CAST(:failure_details AS jsonb), "
                     "updated_at = now() WHERE id = :id"
                 ),
                 {
+                    "failed_stage": _stage_for_failure(exc),
                     "failure_details": json.dumps(
                         {"code": code, "error": "failed"}, sort_keys=True
                     ),
@@ -157,27 +173,65 @@ def run_once(
         return _claimed_result(claim, attempt_index)
     from x_insight.reasoning import coordinator as coordinator_module
 
+    started_index = queue_module.begin_attempt(
+        str(claim["job_id"]),
+        str(claim["lease_token"]),
+        database_url=database_url,
+    )
+    if not isinstance(started_index, int):
+        return {
+            "claimed": False,
+            "busy": True,
+            "job_id": None,
+            "run_id": None,
+            "question_key": None,
+            "lease_token": None,
+            "fencing_generation": None,
+            "attempt_index": None,
+        }
+    claim = {**dict(claim), "started_attempt_index": started_index}
     try:
         outcome = coordinator_module.execute_claimed_question(
             dict(claim), database_url=database_url
         )
     except Exception as exc:
-        queue_module.record_attempt(
+        queue_module.finish_attempt(
             str(claim["job_id"]),
-            str(claim["lease_token"]),
+            started_index,
             outcome=None,
             error_details={"error": repr(exc)},
             database_url=database_url,
         )
-        _record_question_failure(dict(claim), exc)
+        leaf = retryable_error(exc)
+        batch_start = queue_module.get_batch_start(str(claim["job_id"]), database_url)
+        if leaf is not None and not batch_exhausted(started_index, batch_start):
+            code = getattr(leaf, "code", "failed")
+            if (
+                not isinstance(code, str)
+                or not code.replace("_", "").replace("-", "").isalnum()
+            ):
+                code = "failed"
+            delay = backoff_delay_seconds(
+                int(started_index or 1),
+                getattr(leaf, "retry_after", None),
+            )
+            queue_module.reschedule_for_retry(
+                str(claim["job_id"]),
+                str(claim["lease_token"]),
+                queue_module.now_utc() + timedelta(seconds=delay),
+                database_url,
+                {"code": code, "error": "failed"},
+            )
+            raise
+        _record_question_failure(dict(claim), leaf if leaf is not None else exc)
         raise
-    attempt_index = queue_module.record_attempt(
+    queue_module.finish_attempt(
         str(claim["job_id"]),
-        str(claim["lease_token"]),
+        started_index,
         outcome=outcome,
         database_url=database_url,
     )
-    return _claimed_result(claim, attempt_index)
+    return _claimed_result(claim, started_index)
 
 
 def main(argv: list[str] | None = None) -> int:

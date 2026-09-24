@@ -331,7 +331,7 @@ def build_snapshot(
         "pins": pins,
         "history_definition_version": history_version,
         "ddi_dataset_version": ddi_version,
-        "provider_revision": None,
+        "provider_revision": bundle_pointer.get("provider_revision"),
         "engine_pin": None,
     }
     snapshot: dict[str, Any] = {
@@ -339,9 +339,28 @@ def build_snapshot(
         "facts": facts,
         "pinned": pinned,
     }
-    fingerprint = content_hash({"facts": facts, "pinned": pinned})
+    fingerprint = content_hash({"facts": _fingerprint_facts(facts), "pinned": pinned})
     snapshot_hash = content_hash(snapshot)
     return snapshot, fingerprint, snapshot_hash
+
+
+def _fingerprint_facts(facts: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the analytical content covered by the analysis fingerprint.
+
+    Server-stamped ``provenance`` (actor/recorded_at/encounter_revision on
+    history/effects blocks) is run metadata, not an analytical input: two
+    saves of identical values must freeze an identical fingerprint so a
+    value-identical restore is retryable instead of stale. Only the
+    analytical block content (definition versions, values) counts.
+    """
+    narrowed: dict[str, Any] = dict(facts)
+    for key in ("history", "effects"):
+        block = narrowed.get(key)
+        if isinstance(block, dict):
+            narrowed[key] = {
+                name: value for name, value in block.items() if name != "provenance"
+            }
+    return narrowed
 
 
 def build_projections(

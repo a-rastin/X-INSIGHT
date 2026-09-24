@@ -1459,13 +1459,15 @@ def test_midflight_edit_discard_archive_deactivation_refuse_late_commit() -> Non
                     assert status == "raised", (
                         f"{kind}: late commit was accepted: {payload!r}"
                     )
-                    if kind == "deactivate":
-                        # Deactivation is refused at the earliest layer by
+                    if kind in ("deactivate", "discard"):
+                        # Deactivation/discard is refused at the earliest layer by
                         # design: the adapter's post-POST initial MCP read
-                        # hits S41 grant fencing for the inactive actor, so
-                        # the S47 late-commit guard is never reached. Both
-                        # are honest refusals with the same observable
-                        # outcome (failed, no sections).
+                        # hits S41 grant fencing for the inactive actor
+                        # (deactivate) or the revoked grant (discard per S51:
+                        # discard cancels the claimed job + revokes its grant
+                        # in-route), so the S47 late-commit guard is never
+                        # reached. Both are honest refusals with the same
+                        # observable outcome (failed, no sections).
                         assert isinstance(payload, CoordinatorError) or (
                             "grant denied" in repr(payload).lower()
                         ), (
@@ -1483,8 +1485,20 @@ def test_midflight_edit_discard_archive_deactivation_refuse_late_commit() -> Non
                         f"{kind}: refused commit stored a section"
                     )
                     failed = next(j for j in body["jobs"] if j["question_key"] == Q1)
-                    assert failed["status"] == "failed"
-                    assert body["run"]["status"] == "failed"
+                    if kind == "discard":
+                        # S51 discard cancels the claimed job + run in-route
+                        # (status cancelled, lease cleared), so the worker's
+                        # failure marker early-returns and the terminal state
+                        # stays cancelled — still a refusal with no sections.
+                        assert failed["status"] == "cancelled", (
+                            f"{kind}: expected cancelled job, got {failed!r}"
+                        )
+                        assert body["run"]["status"] == "cancelled", (
+                            f"{kind}: expected cancelled run, got {body['run']!r}"
+                        )
+                    else:
+                        assert failed["status"] == "failed"
+                        assert body["run"]["status"] == "failed"
                     assert len(bodies) == before + 1
 
                     if kind == "edit":

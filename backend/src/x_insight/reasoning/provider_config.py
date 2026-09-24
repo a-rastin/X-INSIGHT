@@ -319,3 +319,28 @@ def check_capabilities(
             "request_count": request_count,
         }
     raise ProviderURLBlocked("Provider redirected too many times.")
+
+
+def active_provider_revision(conn: Any) -> int | None:
+    """Return the active provider config revision, None when unconfigured.
+
+    S47 slice 4: the revision is pinned into every run fingerprint, so a
+    settings repair (bad credential/model/capability recovery) starts a new
+    pinned run and in-flight executions refuse to commit against the
+    replaced configuration. Best-effort read: missing tables/rows mean
+    unconfigured, never an error.
+    """
+    from sqlalchemy import text
+
+    try:
+        value = conn.execute(
+            text("SELECT active_revision FROM provider_config_pointer WHERE id = 1")
+        ).scalar()
+    except Exception:
+        return None
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None

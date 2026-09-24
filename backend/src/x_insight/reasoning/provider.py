@@ -34,11 +34,31 @@ _ALLOWED_BODY_KEYS = (
 class ProviderError(Exception):
     """Provider failure with machine-readable code and retry hint."""
 
-    def __init__(self, code: str, message: str, retryable: bool = False) -> None:
+    def __init__(
+        self,
+        code: str,
+        message: str,
+        retryable: bool = False,
+        retry_after: float | None = None,
+    ) -> None:
         super().__init__(message)
         self.code = code
         self.message = message
         self.retryable = retryable
+        self.retry_after = retry_after
+
+
+def _parse_retry_after(raw: Any) -> float | None:
+    """Parse a Retry-After header value; None when absent/unparseable."""
+    if raw is None:
+        return None
+    try:
+        value = float(str(raw).strip())
+    except (TypeError, ValueError):
+        return None
+    if value != value or value < 0:
+        return None
+    return value
 
 
 def _payload_from_bridge_result(res: Any) -> Any:
@@ -102,7 +122,10 @@ def _post_once(url: str, api_key: str, body: dict[str, Any]) -> dict[str, Any]:
             )
         if status == 429:
             raise ProviderError(
-                "rate_limited", f"Provider returned status {status}.", True
+                "rate_limited",
+                f"Provider returned status {status}.",
+                True,
+                retry_after=_parse_retry_after(response.headers.get("retry-after")),
             )
         if status == 422:
             raise ProviderError(

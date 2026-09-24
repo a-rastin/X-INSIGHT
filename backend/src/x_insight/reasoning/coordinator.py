@@ -35,7 +35,11 @@ from x_insight.models.validation import validate_xmlbif
 from x_insight.reasoning import queue as queue_module
 from x_insight.reasoning.mcp_host import build_scoped_server_params, stop_and_revoke
 from x_insight.reasoning.provider import TOOL_NAME, ProviderError, estimate_cpts
-from x_insight.reasoning.provider_config import decrypt_api_key
+from x_insight.reasoning.provider_config import (
+    active_provider_revision,
+    decrypt_api_key,
+)
+from x_insight.reasoning.snapshots import build_snapshot
 
 _GRANT_TTL = timedelta(minutes=10)
 _MCP_CALL_TIMEOUT_S = 60.0
@@ -328,6 +332,84 @@ async def _estimate_via_mcp(
             return candidate
 
 
+def _refuse_late_commit_if_invalid(run_id: str, database_url: str | None) -> None:
+    """Re-read liveness just before commit; refuse stale/ineligible runs.
+
+    S47 slice 4 (plan.md 8.5 archive/discard/deactivation/stale row): an
+    analytical edit, discard, archive, deactivation, or provider-config
+    replacement landing during the outbound request must prevent late
+    acceptance. Raises :class:`CoordinatorError` (terminal, secret-free)
+    so the worker marks the job failed without storing a success; history
+    and prior sections are preserved.
+    """
+    with db.transaction(database_url) as conn:
+        run = (
+            conn.execute(
+                text("SELECT * FROM runs WHERE id = :id"),
+                {"id": str(run_id)},
+            )
+            .mappings()
+            .first()
+        )
+        if run is None:
+            raise CoordinatorError("Run is gone; refusing late commit.")
+        encounter = (
+            conn.execute(
+                text("SELECT * FROM encounters WHERE id = :id"),
+                {"id": str(run["encounter_id"])},
+            )
+            .mappings()
+            .first()
+        )
+        if encounter is None or str(encounter["state"]) != "draft":
+            raise CoordinatorError(
+                "Encounter is no longer a draft; refusing late commit."
+            )
+        patient_id = run["patient_id"] or encounter["patient_id"]
+        patient = (
+            conn.execute(
+                text("SELECT * FROM patients WHERE id = :id"),
+                {"id": str(patient_id)},
+            )
+            .mappings()
+            .first()
+        )
+        if patient is None or bool(patient["archived"]):
+            raise CoordinatorError(
+                "Patient is archived or missing; refusing late commit."
+            )
+        author = (
+            conn.execute(
+                text("SELECT id, active FROM users WHERE id = :id"),
+                {"id": str(run["author_id"])},
+            )
+            .mappings()
+            .first()
+        )
+        if author is None or not author["active"]:
+            raise CoordinatorError("Run author is deactivated; refusing late commit.")
+        draft = encounter["draft_data"]
+        if not isinstance(draft, dict):
+            draft = {}
+        pins = run["pins"]
+        if not isinstance(pins, dict):
+            pins = {}
+        _snapshot, live_fingerprint, _snapshot_hash = build_snapshot(
+            dict(encounter),
+            dict(patient),
+            draft,
+            {
+                "bundle_hash": run["bundle_hash"],
+                "pins": dict(pins),
+                "provider_revision": active_provider_revision(conn),
+            },
+        )
+        if live_fingerprint != run["fingerprint"]:
+            raise CoordinatorError(
+                "Inputs changed during execution; refusing late commit."
+            )
+
+
 def _stored_success(
     run_id: str, question_key: str, database_url: str | None
 ) -> dict[str, Any] | None:
@@ -512,6 +594,154 @@ def _persist_artifact(
         )
 
 
+def _template_version_for(template: Any) -> str:
+    version = "synthetic-v1"
+    if isinstance(template, dict) and isinstance(template.get("template_version"), str):
+        version = str(template["template_version"])
+    return version
+
+
+def _load_partial_artifact(
+    run_id: str, question_key: str, database_url: str | None
+) -> dict[str, Any] | None:
+    """Return the stored (possibly partial) artifact row, if any."""
+    with db.transaction(database_url) as conn:
+        row = (
+            conn.execute(
+                text(
+                    "SELECT status, accepted, effective_xml, effective_hash, "
+                    "query, result FROM run_question_artifacts "
+                    "WHERE run_id = :run_id AND question_key = :question_key"
+                ),
+                {"run_id": run_id, "question_key": question_key},
+            )
+            .mappings()
+            .first()
+        )
+        return dict(row) if row is not None else None
+
+
+def _persist_validated_stage(
+    run_id: str,
+    ordinal: int,
+    question_key: str,
+    body: dict[str, Any],
+    projection: dict[str, Any],
+    prompt: str,
+    model_provenance: dict[str, Any],
+    accepted: dict[str, Any],
+    effective_xml: bytes,
+    effective_hash: str,
+    query: dict[str, Any],
+    template_version: str,
+    provenance: dict[str, Any],
+    database_url: str | None,
+) -> None:
+    """Persist accepted CPTs before inference (stage-resume checkpoint)."""
+    with db.transaction(database_url) as conn:
+        conn.execute(
+            text(
+                "INSERT INTO run_question_artifacts (run_id, question_key, "
+                "ordinal, stage, status, request, projection, prompt, model, "
+                "accepted, effective_xml, effective_hash, query, result, "
+                "rendered_section, template_version, provenance) "
+                "VALUES (:run_id, :question_key, :ordinal, 'inferring', "
+                "'inferring', CAST(:request AS jsonb), CAST(:projection AS jsonb), "
+                ":prompt, CAST(:model AS jsonb), CAST(:accepted AS jsonb), "
+                ":effective_xml, :effective_hash, CAST(:query AS jsonb), "
+                "NULL, NULL, :template_version, "
+                "CAST(:provenance AS jsonb)) "
+                "ON CONFLICT (run_id, question_key) DO UPDATE SET "
+                "ordinal = EXCLUDED.ordinal, stage = 'inferring', "
+                "status = 'inferring', request = EXCLUDED.request, "
+                "projection = EXCLUDED.projection, prompt = EXCLUDED.prompt, "
+                "model = EXCLUDED.model, accepted = EXCLUDED.accepted, "
+                "effective_xml = EXCLUDED.effective_xml, "
+                "effective_hash = EXCLUDED.effective_hash, query = EXCLUDED.query, "
+                "template_version = EXCLUDED.template_version, "
+                "provenance = EXCLUDED.provenance, updated_at = now() "
+                "WHERE run_question_artifacts.status != 'succeeded'"
+            ),
+            {
+                "run_id": run_id,
+                "question_key": question_key,
+                "ordinal": ordinal,
+                "request": json.dumps(body),
+                "projection": json.dumps(projection),
+                "prompt": prompt,
+                "model": json.dumps(model_provenance),
+                "accepted": json.dumps(accepted),
+                "effective_xml": effective_xml.decode("utf-8"),
+                "effective_hash": effective_hash,
+                "query": json.dumps(query),
+                "template_version": template_version,
+                "provenance": json.dumps(provenance),
+            },
+        )
+
+
+def _persist_inferred_stage(
+    run_id: str,
+    ordinal: int,
+    question_key: str,
+    body: dict[str, Any],
+    projection: dict[str, Any],
+    prompt: str,
+    model_provenance: dict[str, Any],
+    accepted: dict[str, Any],
+    effective_xml: bytes,
+    effective_hash: str,
+    query: dict[str, Any],
+    result: dict[str, Any],
+    template_version: str,
+    provenance: dict[str, Any],
+    database_url: str | None,
+) -> None:
+    """Persist the inference result before rendering (stage-resume)."""
+    with db.transaction(database_url) as conn:
+        conn.execute(
+            text(
+                "INSERT INTO run_question_artifacts (run_id, question_key, "
+                "ordinal, stage, status, request, projection, prompt, model, "
+                "accepted, effective_xml, effective_hash, query, result, "
+                "rendered_section, template_version, provenance) "
+                "VALUES (:run_id, :question_key, :ordinal, 'rendering', "
+                "'rendering', CAST(:request AS jsonb), CAST(:projection AS jsonb), "
+                ":prompt, CAST(:model AS jsonb), CAST(:accepted AS jsonb), "
+                ":effective_xml, :effective_hash, CAST(:query AS jsonb), "
+                "CAST(:result AS jsonb), NULL, :template_version, "
+                "CAST(:provenance AS jsonb)) "
+                "ON CONFLICT (run_id, question_key) DO UPDATE SET "
+                "ordinal = EXCLUDED.ordinal, stage = 'rendering', "
+                "status = 'rendering', request = EXCLUDED.request, "
+                "projection = EXCLUDED.projection, prompt = EXCLUDED.prompt, "
+                "model = EXCLUDED.model, accepted = EXCLUDED.accepted, "
+                "effective_xml = EXCLUDED.effective_xml, "
+                "effective_hash = EXCLUDED.effective_hash, query = EXCLUDED.query, "
+                "result = EXCLUDED.result, "
+                "template_version = EXCLUDED.template_version, "
+                "provenance = EXCLUDED.provenance, updated_at = now() "
+                "WHERE run_question_artifacts.status != 'succeeded'"
+            ),
+            {
+                "run_id": run_id,
+                "question_key": question_key,
+                "ordinal": ordinal,
+                "request": json.dumps(body),
+                "projection": json.dumps(projection),
+                "prompt": prompt,
+                "model": json.dumps(model_provenance),
+                "accepted": json.dumps(accepted),
+                "effective_xml": effective_xml.decode("utf-8"),
+                "effective_hash": effective_hash,
+                "query": json.dumps(query),
+                "result": json.dumps(result),
+                "template_version": template_version,
+                "provenance": json.dumps(provenance),
+            },
+        )
+
+
 def _read_applicability(projection: Any) -> str:
     """Return persisted gate status, defaulting to ready (pre-gate rows)."""
     if isinstance(projection, dict):
@@ -677,6 +907,7 @@ def execute_claimed_question(
             raise CoordinatorError(
                 "Stored question result is unreadable; refusing success."
             )
+        _refuse_late_commit_if_invalid(run_id, database_url)
         recommitted = queue_module.complete_job(
             job_id,
             str(claim["lease_token"]),
@@ -751,44 +982,6 @@ def execute_claimed_question(
         "api_key": provider["api_key"],
     }
 
-    grant = secrets.token_urlsafe(32)
-    _insert_grant(
-        grant,
-        run,
-        stored["id"],
-        question_key,
-        projection_hash,
-        claim,
-        database_url,
-    )
-    try:
-        candidate = asyncio.run(_estimate_via_mcp(grant, request, database_url))
-    finally:
-        stop_and_revoke(grant, database_url)
-
-    accepted = validate_cpt_response(candidate)
-    artifact = build_effective_artifact(validated, accepted)
-    effective_xml, effective_hash = _run_local_effective(artifact, question_key, run_id)
-    posterior = infer(
-        artifact,
-        str(query["target"]),
-        str(query["state"]),
-        {str(k): str(v) for k, v in dict(query["evidence"]).items()},
-    )
-    result = {
-        "target": str(query["target"]),
-        "state": str(query["state"]),
-        "posterior": float(posterior),
-        "evidence": {str(k): str(v) for k, v in dict(query["evidence"]).items()},
-    }
-    rendered, template_version = render_section(
-        entry.get("template"),
-        question_key,
-        entry.get("version"),
-        accepted,
-        query,
-        float(posterior),
-    )
     variables = scoped["variables"]
     source_paths = sorted(
         {
@@ -817,8 +1010,173 @@ def execute_claimed_question(
         "provider_revision": provider["revision"],
         "lease_token": str(claim["lease_token"]),
         "fencing_generation": int(claim.get("fencing_generation") or 0),
-        "attempt_index": int(context["attempt_count"]) + 1,
+        "attempt_index": int(
+            claim.get("started_attempt_index") or (int(context["attempt_count"]) + 1)
+        ),
     }
+    template_version = _template_version_for(entry.get("template"))
+
+    # Stage resume: reuse stored accepted CPTs / inference result so a
+    # manual retry of a later stage issues zero new provider POSTs.
+    partial = _load_partial_artifact(run_id, question_key, database_url)
+    accepted: dict[str, Any] | None = None
+    artifact: dict[str, Any] | None = None
+    effective_xml: bytes | None = None
+    effective_hash: str | None = None
+    result: dict[str, Any] | None = None
+    posterior: float | None = None
+    if partial is not None and str(partial.get("status")) != "succeeded":
+        try:
+            stored_accepted = partial.get("accepted")
+            stored_query = partial.get("query")
+            if isinstance(stored_accepted, dict) and isinstance(stored_query, dict):
+                reused = validate_cpt_response(stored_accepted)
+                rebuilt = build_effective_artifact(validated, reused)
+                if (
+                    isinstance(stored_query.get("target"), str)
+                    and isinstance(stored_query.get("state"), str)
+                    and isinstance(stored_query.get("evidence"), dict)
+                ):
+                    accepted = reused
+                    artifact = rebuilt
+                    query = {
+                        "target": str(stored_query["target"]),
+                        "state": str(stored_query["state"]),
+                        "evidence": {
+                            str(k): str(v)
+                            for k, v in dict(stored_query["evidence"]).items()
+                        },
+                    }
+                    stored_xml = partial.get("effective_xml")
+                    stored_hash = partial.get("effective_hash")
+                    if isinstance(stored_xml, str) and isinstance(stored_hash, str):
+                        effective_xml = stored_xml.encode("utf-8")
+                        effective_hash = stored_hash
+                    else:
+                        effective_xml, effective_hash = _run_local_effective(
+                            rebuilt, question_key, run_id
+                        )
+                    stored_result = partial.get("result")
+                    if isinstance(stored_result, dict):
+                        candidate_posterior = float(stored_result["posterior"])
+                        if math.isfinite(candidate_posterior):
+                            result = {
+                                "target": str(
+                                    stored_result.get("target", query["target"])
+                                ),
+                                "state": str(
+                                    stored_result.get("state", query["state"])
+                                ),
+                                "posterior": float(candidate_posterior),
+                                "evidence": dict(query["evidence"]),
+                            }
+                            posterior = float(candidate_posterior)
+        except Exception:
+            accepted = None
+            artifact = None
+            effective_xml = None
+            effective_hash = None
+            result = None
+            posterior = None
+
+    if (
+        accepted is None
+        or artifact is None
+        or effective_xml is None
+        or effective_hash is None
+    ):
+        grant = secrets.token_urlsafe(32)
+        _insert_grant(
+            grant,
+            run,
+            stored["id"],
+            question_key,
+            projection_hash,
+            claim,
+            database_url,
+        )
+        try:
+            candidate = asyncio.run(_estimate_via_mcp(grant, request, database_url))
+        finally:
+            stop_and_revoke(grant, database_url)
+
+        accepted = validate_cpt_response(candidate)
+        artifact = build_effective_artifact(validated, accepted)
+        effective_xml, effective_hash = _run_local_effective(
+            artifact, question_key, run_id
+        )
+        result = None
+        posterior = None
+        _persist_validated_stage(
+            run_id,
+            int(stored["ordinal"]),
+            question_key,
+            body,
+            dict(projection),
+            prompt,
+            model_provenance,
+            accepted,
+            effective_xml,
+            effective_hash,
+            query,
+            template_version,
+            provenance,
+            database_url,
+        )
+
+    assert accepted is not None and artifact is not None
+    assert effective_xml is not None and effective_hash is not None
+    if result is None or posterior is None:
+        try:
+            posterior = infer(
+                artifact,
+                str(query["target"]),
+                str(query["state"]),
+                {str(k): str(v) for k, v in dict(query["evidence"]).items()},
+            )
+        except Exception as exc:
+            setattr(exc, "_failed_stage", "inferring")
+            raise
+        result = {
+            "target": str(query["target"]),
+            "state": str(query["state"]),
+            "posterior": float(posterior),
+            "evidence": {str(k): str(v) for k, v in dict(query["evidence"]).items()},
+        }
+        _persist_inferred_stage(
+            run_id,
+            int(stored["ordinal"]),
+            question_key,
+            body,
+            dict(projection),
+            prompt,
+            model_provenance,
+            accepted,
+            effective_xml,
+            effective_hash,
+            query,
+            result,
+            template_version,
+            provenance,
+            database_url,
+        )
+    assert result is not None and posterior is not None
+    try:
+        rendered, template_version = render_section(
+            entry.get("template"),
+            question_key,
+            entry.get("version"),
+            accepted,
+            query,
+            float(posterior),
+        )
+    except Exception as exc:
+        setattr(exc, "_failed_stage", "rendering")
+        raise
+    # S47 slice 4: refuse the late commit BEFORE persisting any success, so
+    # a refused execution leaves no section behind (partial inferring /
+    # rendering checkpoints stay invisible and reusable).
+    _refuse_late_commit_if_invalid(run_id, database_url)
     _persist_artifact(
         run_id,
         int(stored["ordinal"]),
