@@ -31,7 +31,7 @@ test-recovery:
 	cd backend && uv run pytest tests/recovery -q
 
 test-load:
-	@echo "no load harness yet (benchmarks land with deployment tuning)"; exit 1
+	cd backend && PYTHONPATH=src uv run python -m x_insight.load --patients $${X_INSIGHT_LOAD_PATIENTS:-50} --threads $${X_INSIGHT_LOAD_THREADS:-4} --dataset $${X_INSIGHT_LOAD_DATASET:-synthetic-ci-default} --host $${X_INSIGHT_LOAD_HOST:-ci}
 
 verify: check
 	cd backend && uv run pytest tests -q

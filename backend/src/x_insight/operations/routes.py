@@ -1,4 +1,4 @@
-"""Backup + restore-validation HTTP routes (S54 slice 1, S55 slice 1, T10+T1)."""
+"""Backup + restore-validation + ops-metrics HTTP routes (S54/S55/S58, T10+T1)."""
 
 from __future__ import annotations
 
@@ -21,11 +21,20 @@ from x_insight.contracts import (
 )
 from x_insight.identity.accounts import require_admin
 from x_insight.identity.routes import _request_id
-from x_insight.operations import backup, restore
+from x_insight.operations import backup, metrics, restore
 
 router = APIRouter()
 
 _PRIVATE_NO_STORE = {"Cache-Control": "private, no-store"}
+
+
+@router.get("/ops-metrics")
+def read_ops_metrics(request: Request) -> JSONResponse:
+    """Admin-only safe operational metrics (S58 item 3, T1)."""
+    with db.transaction() as conn:
+        require_admin(request, conn)
+        payload = metrics.collect_metrics(conn)
+        return JSONResponse(payload, headers=_PRIVATE_NO_STORE)
 
 
 def _build_and_release(job_id: str, staging: str, database_url: str) -> None:

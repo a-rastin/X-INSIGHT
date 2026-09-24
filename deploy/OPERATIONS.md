@@ -127,3 +127,116 @@ pipefail`: any migration error fails loudly with a nonzero exit.
   run `docker volume rm` on `pgdata`.
 - db publishes no host ports; app is reached only through edge. `setup.sh`
   and `upgrade.sh` never touch volumes.
+
+## Capacity and operational status (S58)
+
+All load/bench inputs are synthetic (`Loadtest Synthetic*` names, random
+ten-digit IDs, `synthetic_*` markers). No live provider calls, no real
+patient data. Provider latency is always reported separately from ordinary
+requests. Do not claim any SLA or availability figure without a fresh
+measurement on the target host; the targets below are provisional planning
+guides, not promises.
+
+### Load harness (`make test-load`)
+
+CI default is 50 synthetic patients (4 threads):
+
+```sh
+make test-load
+```
+
+Full planning-load override is 10,000 synthetic patients:
+
+```sh
+X_INSIGHT_LOAD_PATIENTS=10000 X_INSIGHT_LOAD_THREADS=4 \
+  X_INSIGHT_LOAD_DATASET=synthetic-planning-10k make test-load
+```
+
+Optional overrides: `X_INSIGHT_LOAD_THREADS` (concurrency),
+`X_INSIGHT_LOAD_DATASET` (report label), `X_INSIGHT_LOAD_HOST` (report
+label, default `ci`). The harness creates patients through public
+`POST /patients`, then drives concurrent acknowledged saves (`PATCH
+/encounters/{id}`), directory searches (`GET /patients?q=Loadtest`), and
+readiness polls (`GET /ready`) through public HTTP only, and prints JSON
+with `host`, `dataset`, `duration_s`, per-operation `*_p95_s`,
+`ordinary_p95_s`, `provider_calls` (always 0), and `provider_p95_s`
+(always null). Measured evidence lives in
+`docs/dev/capacity-report-s58.md` (CI 50 plus a 1000-patient scale run;
+10k remains a resume task there).
+
+### Operational status (`GET /api/v1/ops-metrics`)
+
+Admin session cookie only (physician `403`, anonymous `401`; response is
+`private, no-store`). The payload carries counts/ages/status only — no
+clinical records, no secrets, no tracebacks:
+
+- `queue.oldest_eligible_age_seconds` (null when no eligible work),
+  `heartbeat.missing` / `last_heartbeat_age_seconds` (missing when never
+  seen), `provider.retries` / `provider.auth_failures`,
+  `inference.limit_rejections`, `disk.usage_percent` (+ staging `path`),
+  `backup.last_success_at` / `status`, `saves.failures` (honest 0: no
+  save-failure ledger exists yet), plus an `alerts` object evaluated from
+  the same payload.
+
+Four alert thresholds (see `backend/src/x_insight/operations/metrics.py`):
+
+- `missing_heartbeat`: last heartbeat older than 120 s (or never seen).
+- `queue_age_exceeded`: oldest eligible job older than 300 s.
+- `provider_auth_failure`: auth-failure signals >= 2.
+- `disk_high`: backup-filesystem usage above 80%.
+
+The browser Ops status page (`/ops`, admin-only link) renders the same
+fields with `normal` / `attention needed` text labels. On an idle system
+expect `missing_heartbeat: true` with an empty queue and zero provider
+failures — that is the honest cold state, not an incident.
+
+### Model capacity bench (`models/capacity.measure`)
+
+```python
+from x_insight.models.capacity import measure
+report = measure(network_xml, cpt_response, queries, limits=None, timeout_s=10.0)
+```
+
+Admitted synthetic networks return `request_bytes` / `output_bytes`
+(complete CPT request/output sizes), `inference_wall_s` (exact inference
+only, pinned `pgmpy 1.1.2` / `float64` / artifact-node-order),
+`peak_rss_delta_bytes` (process-wide `ru_maxrss` delta, may read 0 below
+the existing peak), exact `posterior`, `measurements` + `limits` +
+sorted `diagnostics`, and `failure_kind: "ok"`. Over-limit inputs return
+`failure_kind: "rejected"` with diagnostics and no posterior (never
+truncated); impossible evidence or timeout raises a bounded error (never
+approximated). Draft `content/questions/*/network.xml` structures are
+measured with `models/semantics.check_admission` (xml bytes, node count,
+CPT cells); full CPT estimation of clinical tables requires the provider
+path and is never fabricated — bench timing comes from synthetic
+equivalents only.
+
+### Caches and scaling policy
+
+Immutable parsed definitions/catalogs are cached in-process by content
+hash through `backend/src/x_insight/models/definition_cache.py`
+(`MAX_ENTRIES = 128`, LRU eviction, re-parse on next use). Patient
+CPTs/projections are never cached under a base-model key and never reused
+across patients; run reads stay `private, no-store`. Queue policy is two
+global provider slots with round-robin fairness across physicians and a
+`429` busy state at saturation (never deleting drafts/jobs).
+
+Do not add a broker, Redis, database cache table, or any new caching
+infrastructure without measured evidence that the current two-slot /
+PostgreSQL-queue / in-process-LRU design is the bottleneck (plan.md §11).
+Tune only measured bottlenecks.
+
+### Provisional targets (not an SLA)
+
+- Ordinary acknowledged reads/saves and patient search: p95 below 1 s at
+  the §11 planning load (nine physicians plus admin, 10,000 synthetic
+  patients, ~20 ordinary req/s). Measured: CI 50 and scale-1000 runs in
+  the capacity report both clear this with headroom.
+- Provider work: measured and reported separately; never mixed into
+  ordinary p95.
+- Restore drill target: under 30 minutes on the reference dataset,
+  subject to measurement (see `docs/dev/recovery-runbook.md`).
+
+No unmeasured SLA or availability claim is authorized. If a target is
+missed on the deployment host, record host/dataset/duration/p95 in the
+capacity report and file a remediation task; do not retune blindly.

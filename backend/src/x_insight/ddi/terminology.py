@@ -7,11 +7,14 @@ silently: it stays unresolved.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+from x_insight.models.definition_cache import get_or_parse
 
 TERMINOLOGY_VERSION = "ddi-terminology-1"
 
@@ -50,51 +53,72 @@ def _alias_text(entry: Any, concept_id: str) -> str:
     raise ValueError(f"concept {concept_id!r}: invalid alias entry {entry!r}")
 
 
-def load_terminology(path: Path) -> Terminology:
-    """Load the controlled concept/alias table from a JSON file path."""
-    raw: Any = json.loads(Path(path).read_bytes().decode("utf-8-sig"))
+def _parse_terminology_bytes(data: bytes, source: str) -> Terminology:
+    """Parse immutable terminology bytes (pure function of ``data``)."""
+    raw: Any = json.loads(bytes(data).decode("utf-8-sig"))
     if not isinstance(raw, dict) or not isinstance(raw.get("concepts"), list):
-        raise ValueError(f"{path}: terminology requires a 'concepts' list")
+        raise ValueError(f"{source}: terminology requires a 'concepts' list")
     concepts: dict[str, dict[str, str]] = {}
     index: dict[str, list[str]] = {}
     for position, item in enumerate(raw["concepts"]):
         if not isinstance(item, dict):
-            raise ValueError(f"{path}: concept #{position} is not an object")
+            raise ValueError(f"{source}: concept #{position} is not an object")
         concept_id = item.get("id")
         canonical = item.get("canonical_name")
         concept_type = item.get("concept_type")
         if not isinstance(concept_id, str) or not concept_id:
-            raise ValueError(f"{path}: concept #{position} needs a string 'id'")
+            raise ValueError(f"{source}: concept #{position} needs a string 'id'")
         if not isinstance(canonical, str) or not canonical:
-            raise ValueError(f"{path}: concept #{position} needs 'canonical_name'")
+            raise ValueError(f"{source}: concept #{position} needs 'canonical_name'")
         if not isinstance(concept_type, str) or not concept_type:
-            raise ValueError(f"{path}: concept #{position} needs 'concept_type'")
+            raise ValueError(f"{source}: concept #{position} needs 'concept_type'")
         if concept_id in concepts:
-            raise ValueError(f"{path}: duplicate concept id {concept_id!r}")
+            raise ValueError(f"{source}: duplicate concept id {concept_id!r}")
         concepts[concept_id] = {
             "canonical_name": canonical,
             "concept_type": concept_type,
         }
         aliases = item.get("aliases", [])
         if not isinstance(aliases, list):
-            raise ValueError(f"{path}: concept {concept_id!r} needs an 'aliases' list")
+            raise ValueError(
+                f"{source}: concept {concept_id!r} needs an 'aliases' list"
+            )
         for name in [canonical] + [_alias_text(a, concept_id) for a in aliases]:
             key = normalize(name)
             if not key:
-                raise ValueError(f"{path}: concept {concept_id!r} has an empty name")
+                raise ValueError(f"{source}: concept {concept_id!r} has an empty name")
             bucket = index.setdefault(key, [])
             if concept_id not in bucket:
                 bucket.append(concept_id)
     collisions = tuple(sorted(key for key, ids in index.items() if len(ids) >= 2))
     version = raw.get("terminology_version", TERMINOLOGY_VERSION)
     if not isinstance(version, str) or not version:
-        raise ValueError(f"{path}: needs a string 'terminology_version'")
+        raise ValueError(f"{source}: needs a string 'terminology_version'")
     return Terminology(
         version=version,
         concepts=concepts,
         index={key: tuple(ids) for key, ids in index.items()},
         collisions=collisions,
     )
+
+
+def load_terminology(path: Path) -> Terminology:
+    """Load the controlled concept/alias table from a JSON file path.
+
+    Immutable catalog bytes are parsed once per content hash through the
+    bounded :mod:`x_insight.models.definition_cache` LRU (key is the file
+    sha256 plus the terminology schema version). Patient data never flows
+    through this path; per-patient artifacts are never cached here.
+    """
+    raw_bytes = Path(path).read_bytes()
+    digest = hashlib.sha256(raw_bytes).hexdigest()
+    cache_key = f"ddi-terminology:{TERMINOLOGY_VERSION}:{digest}"
+    source = str(path)
+
+    def _parse(data: bytes) -> Terminology:
+        return _parse_terminology_bytes(data, source)
+
+    return get_or_parse(cache_key, raw_bytes, _parse)
 
 
 def resolve(name: str, terminology: Terminology) -> dict[str, str]:

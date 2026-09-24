@@ -1875,3 +1875,39 @@ export async function reopenRestore(
   }
   return (await response.json()) as RestoreReopenResult;
 }
+
+/** S58 item 3 ops-metrics client (T9): admin-only safe counts/ages/status.
+ * Payload carries schema_version 1 plus queue/heartbeat/provider/inference/
+ * disk/backup/saves/alerts — never clinical payloads or secrets. */
+export interface OpsMetrics {
+  schema_version: number;
+  queue: { oldest_eligible_age_seconds: number | null };
+  heartbeat: { missing: boolean; last_heartbeat_age_seconds: number | null };
+  provider: { retries: number; auth_failures: number };
+  inference: { limit_rejections: number };
+  disk: { usage_percent: number; path: string };
+  backup: { last_success_at: string | null; status: string };
+  saves: { failures: number };
+  alerts: {
+    missing_heartbeat: boolean;
+    queue_age_exceeded: boolean;
+    provider_auth_failure: boolean;
+    disk_high: boolean;
+  };
+}
+
+export async function getOpsMetrics(): Promise<OpsMetrics> {
+  const response = await fetch("/api/v1/ops-metrics", {
+    credentials: "include",
+  });
+  if (response.status === 401) {
+    throw statusError("Log in to continue.", 401);
+  }
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (!response.ok) {
+    throw statusError("Could not load operational status.", response.status);
+  }
+  return (await response.json()) as OpsMetrics;
+}

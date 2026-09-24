@@ -28,6 +28,7 @@ import {
   getHistoryContent,
   getModelBundle,
   getNetworkGraph,
+  getOpsMetrics,
   getProviderSettings,
   getRestore,
   getRun,
@@ -78,6 +79,7 @@ import {
   type NetworkGraph,
   type NetworkValidation,
   type NetworkVersionItem,
+  type OpsMetrics,
   type PageNote,
   type Patient,
   type PhysicianAccount,
@@ -89,7 +91,7 @@ import {
   type ThemeName,
 } from "./api";
 
-type Route = "/" | "/register" | "/physicians" | "/provider-settings" | "/networks" | "/audit" | "/backups";
+type Route = "/" | "/register" | "/physicians" | "/provider-settings" | "/networks" | "/audit" | "/backups" | "/ops";
 
 /** S09 diagnosis preview (mirrors backend evaluate_diagnosis, no I/O). */
 type DiagAnswers = {
@@ -1846,6 +1848,9 @@ function currentRoute(): Route {
   if (window.location.pathname === "/backups") {
     return "/backups";
   }
+  if (window.location.pathname === "/ops") {
+    return "/ops";
+  }
   return "/";
 }
 
@@ -1952,6 +1957,11 @@ export function App() {
             Backups
           </NavLink>
         ) : null}
+        {user?.role === "admin" ? (
+          <NavLink route="/ops" current={route}>
+            Ops status
+          </NavLink>
+        ) : null}
         {!user ? (
           <NavLink route="/register" current={route}>
             Register
@@ -1979,6 +1989,8 @@ export function App() {
         <AuditGate user={user} />
       ) : route === "/backups" ? (
         <BackupsGate user={user} />
+      ) : route === "/ops" ? (
+        <OpsGate user={user} />
       ) : user ? (
         <Dashboard user={user} />
       ) : (
@@ -6917,6 +6929,191 @@ function RestoresSection() {
           ) : null}
         </div>
       ) : null}
+    </section>
+  );
+}
+
+/** S58 item 3 admin ops/status view (T9): safe metrics only — queue age,
+ * heartbeat, provider retries/auth failures, inference rejections, disk
+ * usage, backup status, save failures, plus the four alert booleans as text
+ * labels (never color-only). No clinical payloads or secrets are rendered;
+ * server JSON renders verbatim as plain JSX text (React escapes by default). */
+function OpsGate({ user }: { user: SessionUser | null }) {
+  if (!user) {
+    return <LoginHint />;
+  }
+  if (user.role !== "admin") {
+    return <p role="alert">Access denied.</p>;
+  }
+  return <OpsSection />;
+}
+
+function opsAgeText(age: number | null | undefined, emptyText: string): string {
+  if (age === null || age === undefined) {
+    return emptyText;
+  }
+  return `${Math.max(0, Math.round(age))} seconds`;
+}
+
+function OpsAlert({
+  label,
+  active,
+  testId,
+}: {
+  label: string;
+  active: boolean;
+  testId: string;
+}) {
+  return (
+    <li>
+      {label}:{" "}
+      <span data-testid={testId}>{active ? "Attention needed" : "Normal"}</span>
+    </li>
+  );
+}
+
+function OpsSection() {
+  const [metrics, setMetrics] = useState<OpsMetrics | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      setMetrics(await getOpsMetrics());
+    } catch (failure: unknown) {
+      const status = (failure as { status?: number }).status;
+      setMetrics(null);
+      setError(
+        status === 403
+          ? "Access denied."
+          : failure instanceof Error && failure.message !== ""
+            ? failure.message
+            : "Could not load operational status.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  return (
+    <section data-testid="ops-section" aria-label="Operational status">
+      <h1>Operational status</h1>
+      <p>Safe operational metrics only — no clinical records or secrets.</p>
+      <button
+        type="button"
+        className="x-button"
+        data-testid="ops-refresh"
+        onClick={() => void load()}
+      >
+        Refresh
+      </button>
+      {error ? (
+        <p role="alert" className="x-error" data-testid="ops-error">
+          {error}
+        </p>
+      ) : loading || metrics === null ? (
+        <p>Loading operational status…</p>
+      ) : (
+        <>
+          <dl>
+            <div>
+              <dt>Oldest eligible queue age</dt>
+              <dd data-testid="ops-queue-age">
+                {opsAgeText(
+                  metrics.queue?.oldest_eligible_age_seconds,
+                  "No queued work.",
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt>Worker heartbeat</dt>
+              <dd data-testid="ops-heartbeat-missing">
+                {metrics.heartbeat?.missing ? "Missing" : "Seen"}
+              </dd>
+            </div>
+            <div>
+              <dt>Heartbeat age</dt>
+              <dd data-testid="ops-heartbeat-age">
+                {opsAgeText(
+                  metrics.heartbeat?.last_heartbeat_age_seconds,
+                  "No heartbeat recorded.",
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt>Provider retries</dt>
+              <dd data-testid="ops-provider-retries">
+                {String(metrics.provider?.retries ?? 0)}
+              </dd>
+            </div>
+            <div>
+              <dt>Provider auth failures</dt>
+              <dd data-testid="ops-provider-auth-failures">
+                {String(metrics.provider?.auth_failures ?? 0)}
+              </dd>
+            </div>
+            <div>
+              <dt>Inference limit rejections</dt>
+              <dd data-testid="ops-inference-rejections">
+                {String(metrics.inference?.limit_rejections ?? 0)}
+              </dd>
+            </div>
+            <div>
+              <dt>Disk usage</dt>
+              <dd data-testid="ops-disk-percent">
+                {`${Number(metrics.disk?.usage_percent ?? 0).toFixed(1)}%`}
+              </dd>
+            </div>
+            <div>
+              <dt>Last backup</dt>
+              <dd data-testid="ops-backup-status">
+                {String(metrics.backup?.status ?? "none")}
+              </dd>
+            </div>
+            <div>
+              <dt>Last backup time</dt>
+              <dd data-testid="ops-backup-time">
+                {metrics.backup?.last_success_at ?? "Never"}
+              </dd>
+            </div>
+            <div>
+              <dt>Save failures</dt>
+              <dd data-testid="ops-save-failures">
+                {String(metrics.saves?.failures ?? 0)}
+              </dd>
+            </div>
+          </dl>
+          <h2>Alerts</h2>
+          <ul aria-label="Operational alerts">
+            <OpsAlert
+              label="Missing heartbeat (over 2 minutes)"
+              active={metrics.alerts?.missing_heartbeat === true}
+              testId="ops-alert-heartbeat"
+            />
+            <OpsAlert
+              label="Queue age over 5 minutes"
+              active={metrics.alerts?.queue_age_exceeded === true}
+              testId="ops-alert-queue"
+            />
+            <OpsAlert
+              label="Repeated provider auth failure"
+              active={metrics.alerts?.provider_auth_failure === true}
+              testId="ops-alert-auth"
+            />
+            <OpsAlert
+              label="Disk usage over 80%"
+              active={metrics.alerts?.disk_high === true}
+              testId="ops-alert-disk"
+            />
+          </ul>
+        </>
+      )}
     </section>
   );
 }
