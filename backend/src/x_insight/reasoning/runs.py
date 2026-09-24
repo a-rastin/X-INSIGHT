@@ -13,6 +13,7 @@ from sqlalchemy import text
 from x_insight import db
 from x_insight.contracts import (
     canonical_json,
+    error_body,
     parse_idempotency_key,
     parse_if_match,
     to_utc_z,
@@ -310,7 +311,22 @@ async def start_run(encounter_id: UUID, request: Request) -> JSONResponse:
             or not pointer["bundle_hash"]
             or not isinstance(pointer["pins"], dict)
         ):
-            raise HTTPException(409, "No active model bundle for this workflow.")
+            # S57 item 2: missing bundle is an unavailable dependency (503
+            # with a machine-readable code + retryable flag), never a
+            # client state conflict. True state conflicts (non-draft,
+            # archived, idempotency reuse) stay 409 above/below. Provider
+            # readiness is enforced at worker time (coordinator raises an
+            # unavailable error there); run start stays provider-agnostic
+            # so frozen-snapshot tests need no live provider.
+            return JSONResponse(
+                status_code=503,
+                content=error_body(
+                    "GENERATION_UNAVAILABLE",
+                    "Generation is unavailable: no active model bundle. Retry later.",
+                    _request_id(request),
+                    retryable=True,
+                ),
+            )
         pins_dict = dict(pointer["pins"])
         if find_invalid_source_path(pins_dict) is not None:
             raise HTTPException(422, "INVALID_CONTENT: disallowed source path.")

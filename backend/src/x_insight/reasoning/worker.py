@@ -7,7 +7,11 @@ inference); an explicitly passed adapter keeps the S44 compat path.
 
 from __future__ import annotations
 
+import argparse
 import json
+import logging
+import signal
+import time
 from collections.abc import Callable
 from typing import Any
 
@@ -15,6 +19,8 @@ from sqlalchemy import text
 
 from x_insight import db
 from x_insight.reasoning import queue as queue_module
+
+logger = logging.getLogger(__name__)
 
 
 def _record_question_failure(claim: Any, exc: BaseException) -> None:
@@ -172,3 +178,81 @@ def run_once(
         database_url=database_url,
     )
     return _claimed_result(claim, attempt_index)
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Worker entrypoint for ``python -m x_insight.reasoning.worker``.
+
+    Repeatedly claims queued jobs via :func:`run_once`; sleeps briefly
+    when the queue is empty. Handles SIGTERM/SIGINT gracefully (exit 0).
+    ``--once`` performs a single claim pass then exits.
+    """
+    parser = argparse.ArgumentParser(
+        prog="python -m x_insight.reasoning.worker",
+        description="X-INSIGHT reasoning worker: claim queued jobs via run_once().",
+    )
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="Run a single worker claim pass then exit.",
+    )
+    parser.add_argument(
+        "--worker-id",
+        default=None,
+        help="Worker identity recorded with queue claims.",
+    )
+    parser.add_argument(
+        "--idle-seconds",
+        type=float,
+        default=2.0,
+        help="Sleep between empty polls.",
+    )
+    args = parser.parse_args(argv)
+
+    stop = {"flag": False}
+
+    def _handle(*_args: Any) -> None:
+        stop["flag"] = True
+
+    try:
+        signal.signal(signal.SIGTERM, _handle)
+        signal.signal(signal.SIGINT, _handle)
+    except Exception:
+        pass
+
+    if args.once:
+        result = run_once(worker_id=args.worker_id)
+        if result.get("claimed"):
+            logger.info(
+                "worker claimed job_id=%s run_id=%s",
+                result.get("job_id"),
+                result.get("run_id"),
+            )
+        return 0
+
+    while not stop["flag"]:
+        try:
+            result = run_once(worker_id=args.worker_id)
+        except KeyboardInterrupt:
+            break
+        except Exception:
+            logger.exception("worker pass failed")
+            if stop["flag"]:
+                break
+            time.sleep(args.idle_seconds)
+            continue
+        if stop["flag"]:
+            break
+        if result.get("claimed"):
+            logger.info(
+                "worker claimed job_id=%s run_id=%s",
+                result.get("job_id"),
+                result.get("run_id"),
+            )
+        else:
+            time.sleep(args.idle_seconds)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

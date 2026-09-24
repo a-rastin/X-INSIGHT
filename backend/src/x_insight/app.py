@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import sys
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI, Request
@@ -20,12 +23,33 @@ from x_insight.contracts import MAX_BODY_BYTES, error_body, new_request_id
 from x_insight.ddi.routes import router as ddi_router
 from x_insight.identity.accounts import router as accounts_router
 from x_insight.identity.routes import router as identity_router
+from x_insight.identity.store import ensure_admin_seeded
 from x_insight.models.routes import router as networks_router
 from x_insight.operations.routes import router as operations_router
 from x_insight.reasoning.routes import router as provider_config_router
 from x_insight.reasoning.runs import router as runs_router
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """One-time admin seed outside the login paths (S57 item 2).
+
+    Idempotent: ``ensure_admin_seeded`` returns early when the admin row
+    exists, so changed passwords are never overwritten. Never crashes
+    startup: an unreachable database is logged as safe metadata to
+    stderr and startup continues; ``/ready`` still reports
+    UNAVAILABLE/INCOMPATIBLE_SCHEMA via ``db.check_readiness``.
+    """
+    del app
+    try:
+        with db.transaction() as conn:
+            ensure_admin_seeded(conn)
+    except Exception as exc:
+        print(f"admin seed skipped: {type(exc).__name__}", file=sys.stderr)
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 _HTTP_CODE_MAP = {
     400: "BAD_REQUEST",

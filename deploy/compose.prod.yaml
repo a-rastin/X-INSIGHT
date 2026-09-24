@@ -1,0 +1,70 @@
+# Production Compose topology (S57 slice 1).
+#
+# Single modular release: exactly four services (edge, app, worker, db).
+# Only edge publishes host ports. The worker owns the private MCP
+# subprocess (python -m x_insight.mcp_server via x_insight.reasoning.mcp_host);
+# no MCP service or MCP ports exist here. Dev compose (compose.yaml at the
+# repo root) is untouched and remains the local-dev path.
+#
+# Images: every service declares a pinned image (exact tag, never :latest).
+# db tracks the dev postgres line (postgres:14.24); app/worker build from the
+# pinned backend Dockerfile (python:3.11.16-slim); edge pins nginx. The web
+# bundle is built with the pinned web toolchain (node:22.23.2-slim) by
+# deploy/setup.sh and served statically by edge at the same origin
+# (bind mount ../web/dist, no separate web service).
+# Secrets: none checked in here -- set values in the deployment
+# environment (see deploy/OPERATIONS.md).
+services:
+  edge:
+    image: nginx:1.27.4
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./edge/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Prebuilt web bundle (bind mount, read-only). deploy/setup.sh and
+      # deploy/upgrade.sh build it into ../web/dist; edge serves it at `/`
+      # while /api/v1/ proxies to app. web/dist is gitignored build output.
+      - ../web/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - app
+  app:
+    image: x-insight-app:0.1.0
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://xinsight:${DB_PASSWORD:?set DB_PASSWORD}@db:5432/xinsight
+      X_INSIGHT_PROVIDER_KEY_ENCRYPTION_KEY: ${X_INSIGHT_PROVIDER_KEY_ENCRYPTION_KEY:?set X_INSIGHT_PROVIDER_KEY_ENCRYPTION_KEY}
+    depends_on:
+      - db
+  worker:
+    image: x-insight-worker:0.1.0
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    # The worker owns the private MCP: each job spawns
+    # python -m x_insight.mcp_server as a stdio subprocess via
+    # x_insight.reasoning.mcp_host (scoped grant in the process
+    # environment, never on the command line). No ports are published,
+    # so the MCP stays private to the compose network.
+    command: ["python", "-m", "x_insight.reasoning.worker"]
+    environment:
+      MCP_SERVER_MODULE: x_insight.mcp_server
+      MCP_HOST_MODULE: x_insight.reasoning.mcp_host
+      DATABASE_URL: postgresql://xinsight:${DB_PASSWORD:?set DB_PASSWORD}@db:5432/xinsight
+      X_INSIGHT_PROVIDER_KEY_ENCRYPTION_KEY: ${X_INSIGHT_PROVIDER_KEY_ENCRYPTION_KEY:?set X_INSIGHT_PROVIDER_KEY_ENCRYPTION_KEY}
+    depends_on:
+      - db
+      - app
+  db:
+    image: postgres:14.24
+    environment:
+      POSTGRES_USER: xinsight
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      POSTGRES_DB: xinsight
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
