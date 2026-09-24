@@ -169,8 +169,17 @@ def claim_next_job(
     eligible job (``FOR UPDATE SKIP LOCKED``) with a fresh lease token.
     Expired claimed leases (deadline at or before now) are eligible for
     reclaim with fencing+1. The caller must invoke the provider OUTSIDE
-    this transaction.
+    this transaction. No claim is granted while restore maintenance fencing
+    is active (worker quiesce; stale complete_job generation check below
+    stays as the commit-side fence).
     """
+    try:
+        from x_insight.operations.restore import maintenance_active
+
+        if maintenance_active():
+            return None
+    except Exception:
+        pass
     _ = worker_id
     now = now_utc()
     with db.transaction(database_url) as conn:

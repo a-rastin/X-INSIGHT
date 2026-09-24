@@ -1708,6 +1708,9 @@ export interface RestoreStatus {
   superseded: boolean;
   report: RestoreReport | null;
   error: string | null;
+  pre_restore_backup_id: string | null;
+  commit_error: string | null;
+  commit: Record<string, unknown> | null;
 }
 
 export async function validateRestore(file: File): Promise<RestoreValidation> {
@@ -1778,4 +1781,97 @@ export async function getRestore(restoreId: string): Promise<RestoreStatus> {
     throw statusError("Could not load the staged restore.", response.status);
   }
   return (await response.json()) as RestoreStatus;
+}
+
+/** S56 restore commit/reopen client (T9): digest-gated commit + reopen.
+ * Payloads carry ids/digests only — no secret or record values. Errors carry
+ * safe server text (error_body message plus field code); 403 maps to the
+ * shared guard message. */
+export interface RestoreCommitResult {
+  schema_version: number;
+  restore_id: string;
+  status: string;
+  confirmation_digest: string;
+  pre_restore_backup_id: string | null;
+}
+
+export interface RestoreReopenResult {
+  schema_version: number;
+  restore_id: string;
+  status: string;
+}
+
+async function restoreActionError(
+  response: Response,
+  fallback: string,
+): Promise<Error> {
+  let detail = fallback;
+  let fieldCode = "";
+  try {
+    const payload = (await response.clone().json()) as {
+      message?: unknown;
+      field_errors?: unknown;
+    };
+    if (typeof payload.message === "string" && payload.message.trim() !== "") {
+      detail = payload.message;
+    }
+    const fields = payload.field_errors as Record<string, unknown> | undefined;
+    if (fields !== undefined) {
+      for (const value of Object.values(fields)) {
+        if (typeof value === "string" && value !== "") {
+          fieldCode = value;
+          break;
+        }
+      }
+    }
+  } catch {
+    /* keep fallback */
+  }
+  return statusError(
+    fieldCode !== "" ? `${detail} (field: ${fieldCode})` : detail,
+    response.status,
+  );
+}
+
+export async function commitRestore(
+  restoreId: string,
+  digest: string,
+): Promise<RestoreCommitResult> {
+  const response = await fetch("/api/v1/restores/commit", {
+    method: "POST",
+    credentials: "include",
+    headers: csrfHeaders({ "Idempotency-Key": idempotencyKey() }),
+    body: JSON.stringify({ restore_id: restoreId, confirmation_digest: digest }),
+  });
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (response.status === 404) {
+    throw statusError("Staged restore not found.", 404);
+  }
+  if (!response.ok) {
+    throw await restoreActionError(response, "Could not commit the restore.");
+  }
+  return (await response.json()) as RestoreCommitResult;
+}
+
+export async function reopenRestore(
+  restoreId: string,
+): Promise<RestoreReopenResult> {
+  const response = await fetch(`/api/v1/restores/${restoreId}/reopen`, {
+    method: "POST",
+    credentials: "include",
+    headers: csrfHeaders({ "Idempotency-Key": idempotencyKey() }),
+    body: JSON.stringify({}),
+  });
+  if (response.status === 403) {
+    throw statusError("Access denied.", 403);
+  }
+  if (response.status === 404) {
+    throw statusError("Staged restore not found.", 404);
+  }
+  if (!response.ok) {
+    throw await restoreActionError(response, "Could not reopen after restore.");
+  }
+  return (await response.json()) as RestoreReopenResult;
 }

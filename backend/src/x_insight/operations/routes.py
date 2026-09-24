@@ -10,6 +10,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import text
 
 from x_insight import db
@@ -201,6 +202,152 @@ def read_restore(restore_id: UUID, request: Request) -> JSONResponse:
                 "superseded": row["superseded"],
                 "report": row["report"],
                 "error": row["error"],
+                "pre_restore_backup_id": row.get("pre_restore_backup_id"),
+                "commit": row.get("commit"),
             },
             headers=_PRIVATE_NO_STORE,
         )
+
+
+class RestoreCommitRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    restore_id: UUID = Field()
+    confirmation_digest: str = Field(min_length=1)
+
+
+@router.post("/restores/commit")
+def commit_restore_route(request: Request, body: RestoreCommitRequest) -> JSONResponse:
+    with db.transaction() as conn:
+        actor = require_admin(request, conn)
+        key = parse_idempotency_key(request.headers)
+        if key is None:
+            raise HTTPException(422, "A valid Idempotency-Key is required.")
+        actor_id = str(actor["id"])
+        request_id = _request_id(request)
+    restore_id = str(body.restore_id)
+    digest = body.confirmation_digest
+    request_hash = hashlib.sha256(
+        canonical_json({"confirmation_digest": digest, "restore_id": restore_id})
+    ).hexdigest()
+    try:
+        result = restore.commit_restore(
+            restore_id=restore_id,
+            confirmation_digest=digest,
+            actor_id=actor_id,
+            idempotency_key=key,
+            request_hash=request_hash,
+            request_id=request_id,
+            database_url=db.database_url_for("app"),
+        )
+    except restore.RestoreConflict:
+        return JSONResponse(
+            status_code=409,
+            content=error_body(
+                "CONFLICT",
+                "Idempotency key was used for another request.",
+                request_id,
+                field_errors={"idempotency_key": "conflict"},
+            ),
+            headers=_PRIVATE_NO_STORE,
+        )
+    except restore.RestoreRejected as exc:
+        code = exc.code or "stale_confirmation"
+        if code == "not_found":
+            raise HTTPException(404, "Restore job not found.") from exc
+        if code == "restore_rolled_back":
+            return JSONResponse(
+                status_code=503,
+                content=error_body(
+                    "UNAVAILABLE",
+                    f"Restore commit failed ({code}): rolled back to "
+                    "pre-restore backup. Maintenance stays active.",
+                    request_id,
+                    field_errors={"restore": code},
+                    retryable=True,
+                ),
+                headers=_PRIVATE_NO_STORE,
+            )
+        return JSONResponse(
+            status_code=409,
+            content=error_body(
+                "CONFLICT",
+                f"Restore commit rejected ({code}): confirmation digest is stale.",
+                request_id,
+                field_errors={"confirmation_digest": code},
+            ),
+            headers=_PRIVATE_NO_STORE,
+        )
+    if result is None:
+        raise HTTPException(404, "Restore job not found.")
+    return JSONResponse(
+        status_code=202,
+        content={
+            "schema_version": 1,
+            "restore_id": str(result["restore_id"]),
+            "status": str(result["status"]),
+            "confirmation_digest": result["confirmation_digest"],
+            "pre_restore_backup_id": result.get("pre_restore_backup_id"),
+        },
+        headers=_PRIVATE_NO_STORE,
+    )
+
+
+@router.post("/restores/{restore_id}/reopen")
+def reopen_restore_route(restore_id: UUID, request: Request) -> JSONResponse:
+    with db.transaction() as conn:
+        actor = require_admin(request, conn)
+        key = parse_idempotency_key(request.headers)
+        if key is None:
+            raise HTTPException(422, "A valid Idempotency-Key is required.")
+        actor_id = str(actor["id"])
+        request_id = _request_id(request)
+    request_hash = hashlib.sha256(
+        canonical_json({"restore_id": str(restore_id)})
+    ).hexdigest()
+    try:
+        result = restore.reopen_restore(
+            restore_id=str(restore_id),
+            actor_id=actor_id,
+            idempotency_key=key,
+            request_hash=request_hash,
+            request_id=request_id,
+            database_url=db.database_url_for("app"),
+        )
+    except restore.RestoreRejected as exc:
+        code = exc.code or "reopen_refused"
+        if code == "not_found":
+            raise HTTPException(404, "Restore job not found.") from exc
+        if code == "unhealthy":
+            return JSONResponse(
+                status_code=503,
+                content=error_body(
+                    "UNAVAILABLE",
+                    f"Restore target failed health checks ({code}). "
+                    "Maintenance stays active.",
+                    request_id,
+                    retryable=True,
+                ),
+                headers=_PRIVATE_NO_STORE,
+            )
+        return JSONResponse(
+            status_code=409,
+            content=error_body(
+                "CONFLICT",
+                f"Restore reopen refused ({code}).",
+                request_id,
+                field_errors={"restore_id": code},
+            ),
+            headers=_PRIVATE_NO_STORE,
+        )
+    if result is None:
+        raise HTTPException(404, "Restore job not found.")
+    return JSONResponse(
+        status_code=200,
+        content={
+            "schema_version": 1,
+            "restore_id": str(result["restore_id"]),
+            "status": str(result["status"]),
+        },
+        headers=_PRIVATE_NO_STORE,
+    )

@@ -1171,7 +1171,7 @@ def test_restore_validate_idempotency_key_ordering():
 
 
 def test_restore_validate_no_premature_commit():
-    """S55 item 4 (T10): commit route absent (S56); unknown ids 404."""
+    """S55 item 4 (T10): commit route gated (S56 item 1); unknown ids 404."""
     nonce = uuid.uuid4().hex[:8]
     with TestClient(app) as admin:
         login(admin)
@@ -1180,8 +1180,7 @@ def test_restore_validate_no_premature_commit():
             json={},
             headers=admin_headers(admin, f"s55s4-commit-{nonce}"),
         )
-        assert commit.status_code in (404, 405)  # no commit route (S56);
-        # "commit" path-matches GET /restores/{id}, hence 405 is also safe.
+        assert commit.status_code == 422  # S56 commit route exists; {} is invalid
 
         ghost = admin.get(f"/api/v1/restores/{uuid.uuid4()}")
         assert ghost.status_code == 404

@@ -19,6 +19,7 @@ import {
   fetchPatientReportHtml,
   fetchSession,
   addNote,
+  commitRestore,
   getAuditEvent,
   getBackup,
   getDdiCurrent,
@@ -50,6 +51,7 @@ import {
   patchPatientPhone,
   patientsCsvUrl,
   physiciansCsvUrl,
+  reopenRestore,
   retryRun,
   rollbackModelBundle,
   saveProviderSettings,
@@ -6524,9 +6526,12 @@ function BackupsSection() {
   );
 }
 
-/** S55 staged-restore validation (T1): validate-only, commit stays disabled
- * until S56. Lives inside the admin Backups page so the existing admin guard
- * covers it; there is no separate restores route. */
+/** S55 staged-restore validation (T1) + S56 digest-gated commit/reopen (T9).
+ * Lives inside the admin Backups page so the existing admin guard covers it;
+ * there is no separate restores route. Commit never fires automatically: the
+ * button stays disabled until the typed confirmation exactly matches the
+ * staged digest, and every commit/reopen outcome is a text status (never
+ * color-only). */
 function RestoresSection() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [chosen, setChosen] = useState<File | null>(null);
@@ -6536,10 +6541,35 @@ function RestoresSection() {
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<RestoreReport | null>(null);
   const [digest, setDigest] = useState<string | null>(null);
+  const [restoreId, setRestoreId] = useState<string | null>(null);
   const [flags, setFlags] = useState<{ expired: boolean; superseded: boolean }>({
     expired: false,
     superseded: false,
   });
+  const [confirm, setConfirm] = useState("");
+  const [commitPhase, setCommitPhase] = useState<
+    "idle" | "committing" | "committed" | "failed"
+  >("idle");
+  const [commitError, setCommitError] = useState<string | null>(null);
+  const [confirmFieldError, setConfirmFieldError] = useState<string | null>(null);
+  const [preBackupId, setPreBackupId] = useState<string | null>(null);
+  const [maintenance, setMaintenance] = useState(false);
+  const [reopenPhase, setReopenPhase] = useState<
+    "idle" | "reopening" | "reopened" | "failed"
+  >("idle");
+  const [reopenError, setReopenError] = useState<string | null>(null);
+
+  function resetCommitState(): void {
+    setRestoreId(null);
+    setConfirm("");
+    setCommitPhase("idle");
+    setCommitError(null);
+    setConfirmFieldError(null);
+    setPreBackupId(null);
+    setMaintenance(false);
+    setReopenPhase("idle");
+    setReopenError(null);
+  }
 
   function handleFile(event: React.ChangeEvent<HTMLInputElement>): void {
     const next = event.target.files?.[0] ?? null;
@@ -6549,6 +6579,7 @@ function RestoresSection() {
     setDigest(null);
     setError(null);
     setFlags({ expired: false, superseded: false });
+    resetCommitState();
     if (phase !== "validating") {
       setPhase("idle");
     }
@@ -6563,10 +6594,12 @@ function RestoresSection() {
     setReport(null);
     setDigest(null);
     setFlags({ expired: false, superseded: false });
+    resetCommitState();
     try {
       const result = await validateRestore(chosen);
       setReport(result.report);
       setDigest(result.confirmation_digest);
+      setRestoreId(result.restore_id);
       setPhase("staged");
       // Best-effort freshness flags (read-time expired/superseded); a read
       // failure never clears a successful stage.
@@ -6591,7 +6624,99 @@ function RestoresSection() {
     }
   }
 
+  async function handleCommit(): Promise<void> {
+    if (
+      restoreId === null ||
+      digest === null ||
+      confirm !== digest ||
+      commitPhase === "committing"
+    ) {
+      return;
+    }
+    setCommitPhase("committing");
+    setCommitError(null);
+    setConfirmFieldError(null);
+    setReopenError(null);
+    try {
+      const result = await commitRestore(restoreId, confirm);
+      setPreBackupId(result.pre_restore_backup_id ?? null);
+      setCommitPhase("committed");
+      // A committed restore holds maintenance until an explicit reopen;
+      // pre-commit sessions (including this one) are revoked.
+      setMaintenance(true);
+    } catch (err) {
+      const status = (err as { status?: number }).status;
+      const message =
+        err instanceof Error && err.message !== ""
+          ? err.message
+          : "Could not commit the restore.";
+      if (status === 503) {
+        // Rolled back to the pre-restore backup; maintenance stays active.
+        let detail = `${message} Maintenance stays active; patient and encounter writes are held.`;
+        try {
+          const staged = await getRestore(restoreId);
+          if (staged.commit_error) {
+            detail = `Rolled back to the pre-restore backup (commit error: ${staged.commit_error}). Maintenance stays active; patient and encounter writes are held.`;
+          }
+        } catch {
+          /* keep server message */
+        }
+        setCommitError(detail);
+        setMaintenance(true);
+      } else if (
+        status === 409 &&
+        /digest|stale|superseded|expired|committed/i.test(message)
+      ) {
+        setConfirmFieldError(message);
+      } else {
+        setCommitError(message);
+      }
+      setCommitPhase("failed");
+    }
+  }
+
+  async function handleReopen(): Promise<void> {
+    if (restoreId === null || reopenPhase === "reopening") {
+      return;
+    }
+    setReopenPhase("reopening");
+    setReopenError(null);
+    try {
+      const result = await reopenRestore(restoreId);
+      if (result.status === "reopened") {
+        setReopenPhase("reopened");
+        setMaintenance(false);
+      } else {
+        setReopenPhase("failed");
+        setReopenError(`Unexpected reopen status: ${result.status}.`);
+      }
+    } catch (err) {
+      const status = (err as { status?: number }).status;
+      const message =
+        err instanceof Error && err.message !== ""
+          ? err.message
+          : "Could not reopen after restore.";
+      if (status === 503) {
+        setMaintenance(true);
+      }
+      setReopenPhase("failed");
+      setReopenError(message);
+    }
+  }
+
   const validating = phase === "validating";
+  const digestMatches = digest !== null && confirm === digest;
+  const canCommit =
+    phase === "staged" &&
+    restoreId !== null &&
+    digestMatches &&
+    (commitPhase === "idle" || commitPhase === "failed") &&
+    reopenPhase !== "reopening";
+  const committing = commitPhase === "committing";
+  const showReopen =
+    restoreId !== null &&
+    (commitPhase === "committed" ||
+      (commitPhase === "failed" && maintenance));
   const tableEntries = report !== null ? Object.entries(report.tables ?? {}) : [];
   const fileEntries = report !== null && Array.isArray(report.files) ? report.files : [];
   const liveEntries =
@@ -6680,19 +6805,116 @@ function RestoresSection() {
           {flags.expired ? <p>Staged restore expired.</p> : null}
           {flags.superseded ? <p>Staged restore superseded.</p> : null}
           <p data-testid="restores-key-note">{report.key_reentry_note}</p>
+          {maintenance ? (
+            <p role="alert" className="x-error" data-testid="restores-maintenance">
+              System is in maintenance for restore. Patient and encounter
+              writes are held; reads stay available until an administrator
+              reopens.
+            </p>
+          ) : null}
+          <div className="x-field">
+            <label htmlFor="restores-confirm-input">Confirmation digest</label>
+            <input
+              id="restores-confirm-input"
+              data-testid="restores-confirm"
+              autoComplete="off"
+              spellCheck={false}
+              value={confirm}
+              placeholder={digest ?? ""}
+              onChange={(event) => {
+                setConfirm(event.target.value);
+                setConfirmFieldError(null);
+              }}
+              aria-describedby="restores-commit-note"
+            />
+            {confirmFieldError ? (
+              <p
+                role="alert"
+                className="x-error"
+                data-testid="restores-confirm-error"
+              >
+                {confirmFieldError}
+              </p>
+            ) : null}
+          </div>
           <button
             type="button"
             className="x-button"
             data-testid="restores-commit"
-            disabled
-            title="Restore commit is unavailable until S56."
+            disabled={!canCommit}
             aria-describedby="restores-commit-note"
+            onClick={() => void handleCommit()}
           >
-            Commit restore
+            {committing ? "Committing…" : "Commit restore"}
           </button>
           <p id="restores-commit-note">
-            Restore commit is unavailable until S56.
+            {digest === null
+              ? "Validate an archive first. Commit stays unavailable until a staged restore exists."
+              : confirm === ""
+                ? "Type the staged confirmation digest exactly to enable commit. Commit replaces live data after taking a pre-restore backup."
+                : !digestMatches
+                  ? "Commit stays disabled until the typed digest exactly matches the staged digest."
+                  : commitPhase === "committed"
+                    ? "Digest matches. The restore is committed; reopen to exit maintenance."
+                    : "Digest matches. Commit replaces live data after taking a pre-restore backup."}
           </p>
+          {commitPhase === "committing" || commitPhase === "committed" || commitPhase === "failed" ? (
+            <p role="status" data-testid="restores-commit-status">
+              {commitPhase === "committing"
+                ? "Committing…"
+                : commitPhase === "committed"
+                  ? "Status: committed"
+                  : "Status: failed"}
+            </p>
+          ) : null}
+          {commitError ? (
+            <p role="alert" className="x-error" data-testid="restores-commit-error">
+              {commitError}
+            </p>
+          ) : null}
+          {commitPhase === "committed" ? (
+            <div data-testid="restores-commit-report" aria-label="Restore commit report">
+              <p>
+                Pre-restore backup:{" "}
+                <span data-testid="restores-pre-backup">{preBackupId ?? "unknown"}</span>
+              </p>
+              <p>
+                Maintenance is active: patient and encounter writes are held
+                until reopen. Pre-commit sessions were revoked — log in again
+                if the session expired, then reopen.
+              </p>
+            </div>
+          ) : null}
+          {showReopen && reopenPhase !== "reopened" ? (
+            <div>
+              <button
+                type="button"
+                className="x-button"
+                data-testid="restores-reopen"
+                disabled={reopenPhase === "reopening"}
+                onClick={() => void handleReopen()}
+              >
+                {reopenPhase === "reopening" ? "Reopening…" : "Reopen"}
+              </button>
+              {reopenPhase === "reopening" || reopenPhase === "failed" ? (
+                <p role="status" data-testid="restores-reopen-status">
+                  {reopenPhase === "reopening"
+                    ? "Reopening…"
+                    : "Status: reopen failed"}
+                </p>
+              ) : null}
+              {reopenError ? (
+                <p role="alert" className="x-error" data-testid="restores-reopen-error">
+                  {reopenError} Maintenance stays active.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+          {reopenPhase === "reopened" ? (
+            <p role="status" data-testid="restores-reopen-status">
+              Status: reopened — writes work again.
+            </p>
+          ) : null}
         </div>
       ) : null}
     </section>

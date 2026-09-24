@@ -65,6 +65,48 @@ class RequestContextMiddleware:
         request_id = headers.get("x-request-id") or new_request_id()
         scope["request_id"] = request_id
 
+        method = str(scope.get("method", ""))
+        path = str(scope.get("path", ""))
+        # Slice-2 fenced writes (minimal per failing test): chart/workflow
+        # mutations under patients/encounters are 503 during restore
+        # maintenance; reads, auth/login, recovery, and account management
+        # stay available for verification and subsequent test setup.
+        if method in ("POST", "PATCH", "PUT", "DELETE") and (
+            path == "/api/v1/patients"
+            or path.startswith("/api/v1/patients/")
+            or path == "/api/v1/encounters"
+            or path.startswith("/api/v1/encounters/")
+        ):
+            try:
+                from x_insight.operations.restore import maintenance_active
+
+                fenced = maintenance_active()
+            except Exception:
+                fenced = False
+            if fenced:
+                body = json.dumps(
+                    error_body(
+                        "MAINTENANCE",
+                        "System is in maintenance for restore. Retry later.",
+                        request_id,
+                        retryable=True,
+                    )
+                ).encode("utf-8")
+                response_headers = [
+                    (b"content-type", b"application/json"),
+                    (b"content-length", str(len(body)).encode()),
+                    (b"x-request-id", request_id.encode()),
+                ]
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 503,
+                        "headers": response_headers,
+                    }
+                )
+                await send({"type": "http.response.body", "body": body})
+                return
+
         content_length = headers.get("content-length", "")
         # Restore validation accepts backup archives larger than the generic
         # JSON body cap; restore.py enforces its own MAX_RESTORE_UPLOAD_BYTES.
