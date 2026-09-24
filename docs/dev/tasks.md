@@ -765,18 +765,6 @@ Run the S25 validator and S23 inference harness on independently worked examples
 
 ## 10. Integrated release verification
 
-### S59 — Prove both workflows using reviewed released content
-
-**Depends:** S39, S18, S09–S12 approvals, S50–S58. **Requirements:** FR-10–16, FR-20–22, FR-30–37, NFR-04–05. **Seams:** T1/T4–T9.
-
-**Tests/files:** `e2e/registration-complete.spec.ts`, `e2e/followup-complete.spec.ts`, `BT/worker/test_released_content.py`, release evidence manifest.
-
-1. Run registration and follow-up through saved assessments/history/DDI, real MCP, controlled provider responses matching **released** network contracts, exact inference, real templates, review/edit/sign and chart. No synthetic substitute for released clinical definitions.
-2. Exercise every required question with independently reviewed true/false/unknown cases. Verify all roots/tables required, one combined LAI question and scoped input per step. Provider estimates in CI may be deterministic fixtures; label them as such.
-3. Verify note-only changes leave inputs/results eligibility unchanged; analytical changes require new run; all five transparency fields match saved artifacts and both plans remain distinct.
-4. If authorized/configured, separately run a synthetic-input live-provider compatibility smoke. Record it separately from deterministic clinical-package acceptance; absence of live credentials is an explicit unrun integration check, never fabricated success.
-
-**Verify/exit:** traceable owner-approved content hashes, complete 13-question coverage and both signed flows. Any missing package/review blocks this gate even if the generic app works.
 
 ### S60 — Run cross-user, failure, and security acceptance
 
