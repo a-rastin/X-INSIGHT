@@ -1,538 +1,443 @@
 # X-INSIGHT — System Design
 
-## 1. Basis, precedence, and boundaries
+Revision: 2026-09-28. This document defines the application in technical detail; it is a design specification, not implementation code or a claim of completed testing.
 
-X-INSIGHT helps one administrator and fewer than ten physicians maintain a shared patient pool, assess schizophrenia cases, review generated treatment proposals, and sign physician-edited plans. It is a research prototype. After every successful psychiatrist login, display: **“This is a research app and is not intended to be used as the sole basis for treating patients.”** The application does not independently execute treatment decisions.
+## 1. Authority, scope, and confirmed decisions
 
-### 1.1 Explicit exclusions
+The supplied `user_requirements.md`, including FR-50–FR-59 and NFR-06, is the product baseline. The project owner's clarifications below govern where the requirements leave policy unspecified. Technology and numerical implementation choices are proposed design decisions. Unresolved content and policies are identified in Section 15 rather than silently treated as approved requirements.
 
-No permanent patient deletion, PDF generator, self-registration, graphical network editor, external EHR integration, multi-tenant organizations, mobile-specific interface, automatic treatment execution, or production clinical compliance claim in v1. Browser printing is supported through HTML. The requirements no longer restrict patient records or questionnaires to synthetic data; only the medication catalog is explicitly a demo catalog. Exact questionnaire editions/forms and approved content must be supplied before implementation of scoring.
+X-INSIGHT is an English-only research prototype for one administrator and fewer than ten physicians sharing a patient pool. It supports schizophrenia assessment, an initial system-generated treatment proposal, optional physician adjustment of Bayesian probabilities, and a signed secondary treatment plan. Display the research warning after every successful physician login: “This application is a research prototype and must not be used as the sole basis for treating patients.”
 
-## 2. Proposed architecture and deployment
+### 1.1 Confirmed product rules
 
-Use a **modular monolith with a separate background worker**, one relational database, and an internal MCP server. Modules share one release and database but have explicit service interfaces and ownership. Long-running inference and LLM work must not block form saving or browsing.
+1. Patient-variable values are supplied to the LLM **only to estimate CPTs**. Do not also condition Bayesian execution on those values as hard, soft, likelihood, or virtual evidence. Patient data still drive forms, versioned applicability rules, DDI evaluation, and invalidation where appropriate; the prohibition concerns feeding them into inference as additional evidence.
+2. The LLM estimates every CPT, including root-node distributions. The application validates the estimates, executes the fixed network, and renders versioned recommendation templates.
+3. Only the draft's author can view its clinical content, edit it, adjust/reset CPTs, retry work, accept results, or sign it. Other physicians cannot view that draft. Shared access to patient demographics and signed records does not confer draft access.
+4. Any active physician can append a dated, attributed addendum to a signed encounter, including one signed by another physician. An addendum never alters the original signed content.
+5. A patient has at most **one open draft across all physicians and encounter types**, including drafts awaiting generation or probability review. Separate drafts for the same patient are prohibited, including multiple drafts by the same author.
+6. A physician cannot bypass failed initial proposal generation by signing a manual plan. Every applicable question must have a successful, current original execution, and its final probabilities and results must be accepted before signing.
+7. Every CPT value is reviewable and adjustable, subject to probability constraints. A single-state row remains at 100%. Slider changes affect only the selected encounter and question run; they never create or change shared network versions.
 
-| Layer | Proposed choice | Responsibility / reason |
+### 1.2 Terminology and exclusions
+
+| Term | Meaning |
+|---|---|
+| Initial treatment proposal | Immutable system proposal combining original question recommendations and local DDI findings |
+| Original baseline | Successful question run's validated LLM-estimated CPTs, output, recommendation, patient-input snapshot and pinned versions |
+| CPT revision | Immutable, complete probability set created by a completed slider change or reset within one question run |
+| Adjusted result | Application-calculated output and templated recommendation tied to one exact CPT revision |
+| Accepted result | The author-approved current revision and matching successful result, or the unchanged original baseline |
+| Secondary treatment plan | Separately editable physician plan that becomes immutable on sign-off |
+
+Excluded from v1: permanent patient deletion, PDF generation, self-registration, graphical network editing, external EHR integration, autonomous treatment execution, and production clinical compliance claims. Only the medication catalog is explicitly a demo catalog; do not invent a synthetic-only patient-data restriction. Standard clinical content must be supplied and verified before implementing its rules.
+
+## 2. Proposed technical structure
+
+Use a modular monolith, a separate background worker, an internal MCP process, and one authoritative relational database. This is a physical realization of the four logical subsystems in `system-architecture.md`; it does not turn every module into a separate service.
+
+| Component | Proposed choice | Responsibility |
 |---|---|---|
-| Browser UI | TypeScript + React | Desktop forms, wizard, review screens, graph display, theme, printable reports |
-| Application API | Python + FastAPI | Authorization, validation, domain transactions, REST contracts |
-| Worker | Same Python application package, separate process | Durable jobs, LLM orchestration, bounded inference |
-| Reasoning engine | pgmpy adapter, pinned release after validation | Deterministic discrete Bayesian inference and XMLBIF import/export |
-| Persistence | PostgreSQL | Concurrent records, versioned artifacts, audit events, sessions, durable job queue |
-| MCP server | Internal Python process, stdio transport to worker | Narrow read-only access to run-scoped record snapshots |
-| LLM adapter | Configured OpenAI-compatible HTTP API | Question-specific CPT percentage estimation; server-side credentials |
-| Edge | HTTPS reverse proxy | TLS termination, request limits, static assets and API routing |
-| Packaging | Container Compose deployment on Linux | Repeatable self-hosted or VPS installation |
+| Desktop UI | TypeScript and React | Forms, draft autosave, CPT review, comparison, accessible controls and HTML printing |
+| Application API | Python and FastAPI | Authorization, validation, revisions, domain transactions and REST endpoints |
+| Worker | Same application package, separate process | Durable initial-generation jobs and isolated local recalculation jobs |
+| Bayesian adapter | Pinned and validated pgmpy adapter | XMLBIF handling and deterministic exact inference |
+| Database | PostgreSQL | Records, immutable artifacts, audit, sessions and durable job queues |
+| MCP server | Private worker-managed process | Read-only, question-scoped access to saved patient projections |
+| Provider adapter | Configured OpenAI-compatible endpoint | CPT estimation only; credentials remain server-side |
+| Deployment | Linux containers with reverse proxy | HTTPS, persistent volumes, self-hosted/VPS operation |
 
-These are recommendations, not a stack mandated by the requirements. Team familiarity, budget, and delivery deadline are unknown. Exact dependency versions must be selected, pinned, and tested during implementation.
+These are retained implementation proposals, not requirements for particular frameworks or verified compatibility claims. Pin dependency versions and validate XMLBIF, inference, and provider behavior during implementation. No external documentation was newly validated for this revision.
 
 ```mermaid
 flowchart TD
-    U[Desktop browser] --> P[HTTPS reverse proxy]
-    P --> A[Web API and domain modules]
-    A --> D[(PostgreSQL)]
-    W[Background worker] --> D
-    W --> M[Internal MCP server]
-    M --> D
-    W --> L[Configured LLM endpoint]
-    W --> B[Bayesian inference adapter]
-    B --> W
+    UI[Desktop browser] --> API[Application API]
+    API --> DB[(Authoritative database)]
+    W[Background worker] --> DB
+    W --> MCP[Internal MCP]
+    MCP --> DB
+    W --> LLM[LLM CPT estimation]
+    W --> BN[Local Bayesian execution]
 ```
 
-The browser talks only to the application origin. The database and MCP server have no public ports. The worker obtains persisted jobs from the database. The inference adapter runs within a bounded child process when resource isolation is needed. The MCP server reads immutable snapshots from the same database; it does not create a second patient record store.
+Generation and local recalculation use separate job classes and capacity limits. Slider changes need neither provider access nor MCP reads. The worker loads their already-saved CPTs, fixed network and templates from the database. Keep the database and MCP private; expose only the application through HTTPS outside localhost.
 
-### 2.1 Module boundaries
+| Domain module | Owns |
+|---|---|
+| Identity and access | Accounts, sessions, active-account checks and permissions |
+| Patient registry | Demographics, unique Patient ID, archive state and demographic revisions |
+| Encounter workflow | Single-open-draft rule, assessments, history, notes, secondary plan, signing and addenda |
+| Knowledge registry | Network definitions, prompts, templates, content versions and activation |
+| Initial reasoning | Scoped patient projections, sequential LLM estimation, original runs and proposals |
+| Probability review | Revisioned CPT changes, redistribution, reset, comparison and local calculation state |
+| Operations | Reporting, backups, restore and append-only audit presentation |
 
-| Module | Owns | Must not do |
+Writes use owning domain services. Background jobs enforce the same authorization and lifecycle rules as API requests.
+
+## 3. Identity, privacy, and access
+
+Create exactly one administrator with immutable username `admin`, initial password `admin`, and a stored password hash. No password-complexity rules or mandatory password-change gate are introduced. The administrator provisions and edits physician credentials. Physicians can change their own password. The Register button displays “Contact administrator”.
+
+Use server-side opaque sessions, hashed tokens and protected cookies. No application idle or absolute timeout applies. Logout, password reset/change, deactivation and restore revoke applicable sessions. Enforce role and account status on every protected request and immediately before queued work commits. The role selected at login does not grant permissions independently of the stored account.
+
+| Operation | Administrator | Active physician |
 |---|---|---|
-| Identity | Accounts, credential changes, role checks, sessions, theme preferences | Infer privileges from the role selected on the login form |
-| Patient registry | Identifiers, demographics, phone, archive state, revisions | Modify signed encounter snapshots |
-| Encounter service | Drafts, assessments, history, medications, notes, final plans, addenda | Allow non-author draft edits or signing |
-| Assessment and drug content | Questionnaire versions, scoring rules, demo drug catalog, interaction data | Invent scoring rules or imply complete interaction coverage |
-| Model registry | XML, manifests, validation, immutable versions, activation | Change a model already referenced by a run |
-| Reasoning orchestration | Run snapshots, evidence, patient-specific CPT artifacts, jobs, inference outputs, proposals | Change registered network structure or sign plans |
-| Operations | Exports, backups, restores, audit viewing | Bypass domain authorization or silently overwrite live data |
-
-Only domain service interfaces perform writes. API handlers, workers, and MCP tools reuse the same access policies instead of issuing unrestricted database operations.
-
-## 3. Access, identity, and initialization
-
-Exactly one administrator exists, with immutable username `admin`. A singleton constraint or dedicated administrator identity prevents provisioning a second administrator. Seed password `admin` once and store only a password hash. Administrators can change their password; no complexity rules, mandatory first-login change or deployment password-change gate are required. Password entry is required and credentials are never trimmed silently. Use a standard password-hashing implementation, with parameters selected through deployment testing.
-
-Store opaque session tokens as hashes server-side. Cookies are HttpOnly, SameSite, and Secure under HTTPS. Do not configure application idle or absolute session expiration, in accordance with NFR-02. Sessions nevertheless end on logout, account deactivation, password change/reset, restore, or administrative credential revocation. Browser-cookie persistence is an implementation preference; it must not introduce a server inactivity timeout. Enforce account-active status on every request and before committing queued work.
-
-| Capability | Administrator | Physician |
-|---|---|---|
-| Change own password and theme | Yes | Yes |
-| Create/edit/deactivate physician | Yes | No |
-| Change admin username / create another admin | No | No |
-| View patient directory and records | Yes | Yes, shared pool |
-| Update demographics / create encounters | No by default; not requested for admin | Yes |
-| Edit/sign draft | No | Draft author only |
-| Read another physician's draft | Proposed yes; visibly marked unfinished | Proposed yes; read-only |
-| Add correction to signed encounter | No | Proposed original signer only |
+| View patient directory, demographics and signed records | Yes | Yes |
+| Create patient, update demographics, start encounter | Not granted by requirements | Yes, subject to single-open-draft rule |
+| View draft clinical content and its derived artifacts | No ordinary draft-view route | Author only |
+| Edit draft, sliders, reset, retry, accept, sign | No | Author only |
+| Add addendum to any signed encounter | No | Yes |
 | Archive/unarchive patient | Yes | No |
-| CSV lists and patient HTML report | Yes | Proposed patient HTML only |
-| API settings, models, audit, backup/restore | Yes | No |
+| Manage models, API settings, physicians, audit and backups | Yes | No |
+| Export patient/physician CSV | Yes | No |
+| Printable signed patient report | Yes | Proposed yes; see Section 15 |
 
-Draft visibility, addendum authorship, and physician report permissions are unresolved product choices; the defaults above are proposals. Audit records retain stable actor IDs and display-name snapshots after usernames change.
+Draft restrictions apply transitively to assessments, notes, history, medications, runs, CPTs, results, proposal text, download routes and notifications. Do not leak draft content via shared chart responses, search snippets or printable reports. Other physicians attempting a new encounter see only a generic “An encounter draft is already open for this patient” conflict, without the draft contents. The author can resume that draft.
 
-The Register button displays “Contact administrator”. After successful physician authentication, show the research warning from Section 1 before proceeding with the role dashboard. Authentication failures return generic errors. Login throttling and CSRF protection protect sessions without adding password-complexity rules or idle logout.
+Administrator audit and full-backup capabilities remain explicitly authorized operations and can contain required draft audit data. They do not grant normal clinical draft viewing or editing. The administrator may inspect minimal draft counts/identifiers to confirm deactivation/discard, not a clinical draft screen.
 
-## 4. Patient and encounter workflows
+Deactivation revokes access immediately and preserves records. If drafts exist, show a choice to retain them or explicitly confirm discard. Retained drafts remain reserved to their author and continue occupying the patient's open-draft slot; reactivation allows resumption. Reassignment and automatic expiry are outside v1. A confirmed administrative discard releases the slot and cancels pending jobs. No silent takeover is allowed.
+
+## 4. Patient and encounter lifecycle
 
 ### 4.1 Registration
 
-1. Require first and last names, sex M/F, age 18–99, a ten-digit identifier, and first-time/established clinical status. Keep Next disabled until valid. Propose Unicode letters only for names, rejecting digits, punctuation and spaces pending clarification. Patient ID is a text field constrained to exactly ten ASCII digits; preserve leading zeros in every layer. Check against the entire patient pool, including archived patients, before creation; reject a match. The database constraint below also protects against concurrent registrations.
-2. Atomically create a patient and registration draft after valid demographics. Assign internal UUIDs and a server-generated encounter timestamp. A unique database constraint resolves simultaneous attempts to register the same ID; return a duplicate warning and a link to the existing patient. Do not merge automatically.
-3. Capture the versioned DSM-5-TR diagnostic criteria. Show the threshold indicator live; recompute server-side using the supplied content rules. Below-threshold cases remain saveable and may continue to generation after a recorded warning acknowledgment. Bypass without a reason is allowed; record its status, author and time without requiring a reason field. An incomplete questionnaire is not a below-threshold result.
-4. Capture PANSS severity and C-SSRS suicide assessments. Both start unanswered; skipping either records `not_assessed`. Compute a score/result only when its required items are complete under the supplied instrument rules; never silently assign zero or minimum scores.
-5. Capture structured history, separate history free text, and medication records. Generate the local interaction report.
-6. On reaching proposal review, automatically queue a run once required inputs and warning acknowledgments are present. Do not run on every keystroke. Display per-question progress, supplied patient inputs, gaps, network versions, returned CPT percentages, network outputs, DDI report and template-rendered proposal sections.
-7. Let the author edit a separate secondary plan, review changes, and sign explicitly. Signing is an authenticated in-app attestation, not a qualified digital signature or external prescribing action.
+Require first/last names containing letters only, sex M/F, age 18–99 and Patient ID as exactly ten ASCII digits. Preserve leading zeros. Check uniqueness across archived and active patients and enforce it with a database unique constraint. Propose Unicode letters for names; spaces/punctuation remain a content-validation question. Record clinical status as first-time or established, and timestamp the encounter automatically. Next remains disabled until required fields are valid.
+
+Create the patient and registration draft atomically. Duplicate registration returns a conflict rather than creating another record. A canceled draft does not delete the registered patient.
+
+| Page | Required behavior |
+|---|---|
+| Diagnosis | Versioned DSM-5-TR criteria, live threshold indicator; below-threshold generation allowed with warning; bypass allowed without a reason |
+| Severity | PANSS items initially unanswered; skip records `not_assessed`; compute only scores whose required items are complete |
+| Suicide | C-SSRS items initially unanswered; skip records `not_assessed`; required completeness precedes results |
+| History | Structured fields and catalog-selected medications; no dose, unit, route, frequency or active/stopped state |
+| Proposal review | Automatic initial processing, DDI report, per-question original baseline and CPT review; optional local adjustment |
+| Finalization | Review/accept current probabilities and results, edit secondary plan and sign explicitly |
+
+Every page supports timestamped, physician-attributed notes. Notes are a separate field type excluded from patient projections, prompts, MCP responses, applicability rules and all algorithms. Never turn notes into algorithm-visible history implicitly.
 
 ### 4.2 Follow-up
 
-Any active physician may start a follow-up for an unarchived patient. Copy prior signed clinical facts into the draft with provenance and require reconciliation of current medications and history. Do not inherit severity or suicide scores as if newly assessed. Show the source encounter and assessment dates. Capture phone changes, severity, suicide assessment, history, medications, and adverse effects before running the follow-up bundle.
+Any active physician may start a follow-up if no open draft exists for that patient. Prior signed history may be copied with provenance and reconciled; do not present prior severity/suicide scores as newly assessed. Allow phone update, severity and suicide reassessment, history/medication updates, adverse-effect recording, initial proposal review, CPT adjustment and signing.
 
-Adverse-effect status is `present`, `absent`, or `not_assessed` for tardive dyskinesia, akathisia, parkinsonism, and acute dystonia. When present, record severity under the versioned content schema. An absent/not-assessed effect has no severity score. Retain other-effect text separately. No standardized scale is assumed.
+For tardive dyskinesia, akathisia, parkinsonism and acute dystonia, distinguish `present`, `absent` and `not_assessed`. Severity is recorded when present, using supplied categories; it is null for absent/not-assessed. Do not invent a clinical severity scale.
 
-### 4.3 Notes and algorithm-visible history
+### 4.3 Single-draft enforcement and autosave
 
-Every wizard page has an attributed, timestamped note facility. Page notes are a separate data type excluded from every analysis snapshot, MCP response, and question-specific prompt. This exclusion is enforced by an allowlisted serializer, not just a prompt instruction. They appear in the chart and report.
+Use encounter lifecycle states `draft`, `signed` and `discarded`; generation/review readiness is separate derived state. Enforce a partial unique database constraint on `patient_id` for lifecycle `draft`. Creation locks the patient row and checks the slot in the same transaction. Concurrent requests cannot both succeed. Signing/discard releases the slot atomically; generation failure, inactivity and account deactivation do not.
 
-Structured history and any designated history free-text field may influence CPT estimation only when mapped to a variable in the current network; label them accordingly. The UI must make the distinction between “History used for analysis” and “Page note” clear. Signed encounter notes are immutable; later corrections are addenda.
+Autosave normal form edits with a short debounce, and save completed slider interactions as explicit durable revisions. “Saved” means a server acknowledgment. Display saving/failure states and warn before leaving with unsaved local edits. A process crash can lose unacknowledged input; committed drafts and adjustments survive restarts. Offline editing is not promised.
 
-### 4.4 State, autosave, and concurrency
+Mutable records use revisions/ETags. Require the expected revision for writes; return a conflict instead of merging changes silently. Multiple tabs of the same author are subject to the same rule. Queue that browser's completed slider commands in order, but use server concurrency checks against other tabs. The server computes redistribution from the exact previous committed revision.
 
-```mermaid
-stateDiagram-v2
-    [*] --> Draft
-    Draft --> Draft: Autosave or failed run
-    Draft --> ReviewReady: Current proposal succeeds
-    ReviewReady --> Draft: Analysis input changes
-    ReviewReady --> Signed: Author signs
-    Draft --> Discarded: Confirm discard
-    ReviewReady --> Discarded: Confirm discard
-    Signed --> Signed: Append attributed addendum
-```
+Other physicians can update shared demographics without viewing the draft. Such edits trigger dependency checks on any open draft and notify its author of stale results. Authorize and recheck archive/account/draft state within committing transactions.
 
-Run state is separate from encounter state. Proposed run states are `queued`, `preparing_question`, `estimating_cpts`, `validating_cpts`, `needs_clarification`, `inferring`, `rendering`, `succeeded`, `failed`, `stale`, and `cancelled`. Each run also stores its current question and ordered question-step statuses; later questions remain pending until the current question completes or is marked not applicable.
+### 4.4 Signed records, addenda, archive and discard
 
-Autosave uses a short debounce (proposed one second) and saves on page transitions. Display “Saving”, “Saved”, and “Save failed”; only a server acknowledgment means durable save. Warn on navigation when local edits remain unsaved. A crash may lose unacknowledged keystrokes, but acknowledged drafts survive process restarts. Do not claim offline editing support.
+Signed encounters, CPT snapshots, accepted results, notes and plan text are immutable. Any active physician can append an attributed, timestamped addendum referencing a signed encounter. The new author does not replace the original signer. Addenda do not overwrite assessment fields, accepted probabilities or prior results; new clinical assessment uses a new encounter.
 
-Every mutable record carries a revision/ETag. Updates require the expected revision; conflicting edits return `409` or `412` and require explicit reconciliation. Multiple tabs cannot silently overwrite one another. Shared demographic edits increment the patient revision, while draft ownership remains unchanged. Proposed policy permits multiple physicians to hold separate follow-up drafts, each showing other open encounters and their baseline signed encounter; signing against an outdated clinical baseline requires review and a new run when analysis inputs change.
+Archive behavior remains a **proposed policy, not a confirmed owner decision**: block new encounters and signing while archived, preserve existing drafts read-only, and permit the author to resume after unarchive. Such a retained draft still occupies the patient's single slot. This does not change the confirmed single-draft constraint.
 
-A run pins an analysis snapshot, network/content versions and the complete effective CPT artifact. Edits to algorithm-visible facts invalidate its suitability for signing. Note-only changes do not require inference reruns, but signing still uses the latest encounter revision. Patient archive, account deactivation, and sign operations are rechecked inside the committing transaction.
+Explicit discard requires confirmation and records actor/time/reason if supplied. Proposed retention is to retain committed draft artifacts and adjustment history as discarded, non-editable records for audit, while excluding them from signed clinical reports. This retention policy remains unconfirmed. Discard never deletes the patient or signed records.
 
-Signed encounters are immutable. Corrections append dated, attributed records referencing the original; they never replace the original result. Addenda do not silently update structured clinical facts or generate a revised plan. A new encounter captures changed structured facts.
+## 5. Persistent data model and invariants
 
-The shared patient list supports name and Patient ID search and a clinical-status filter (FR-23).
+Use relational identities, lifecycle/ownership columns and foreign keys, with schema-validated JSON for versioned clinical content, snapshots and complete probability tables. Use UTC timestamps and explicit display timezone. Store reported age rather than inventing birthdate.
 
-Proposed archive policy: retain visibility through an archive filter, block new encounters and signing, preserve existing drafts read-only, and resume them after unarchive. Patient discard does not delete the patient: it ends the draft and leaves an incomplete-registration record visible for recovery. These archive/discard policies require review.
-
-## 5. Persistence and invariants
-
-Use normalized relational tables for identities, ownership, state, and references. Use schema-validated JSON documents for versioned assessment answers, snapshots, and model output structures that evolve during research. Store UTC timestamps and display the browser's timezone with an explicit label. Record age as reported, including an encounter snapshot; do not infer a birthdate.
-
-| Entity | Principal fields and constraints |
+| Entity | Essential fields and invariants |
 |---|---|
-| `User` | UUID, unique normalized username, role, password hash, active flag, credential revision, theme; one admin only |
-| `Session` | Token hash, user, credential revision, created/revoked times; no inactivity expiry |
-| `Patient` | UUID, unique ten-digit text ID, names, sex, age, clinical status, optional phone, archived flag, revision |
-| `PatientRevision` | Patient, revision, changed fields, actor, timestamp; attribution for demographic changes |
-| `Encounter` | UUID, patient, registration/follow-up, author, state, visit time, baseline encounter, revision |
-| `Assessment` | Encounter, type, content version, unanswered/partial/complete/not-assessed/bypassed state, answers, nullable score/result, bypass attribution; no required bypass reason |
-| `History` | Encounter, structured fields, algorithm-visible free text, provenance |
-| `MedicationEntry` | Encounter, catalog drug or explicit unknown label, provenance; no dose/unit/route/frequency/active-stopped fields |
-| `AdverseEffect` | Encounter, effect type, assessment status, nullable severity, other text |
-| `PageNote` | Encounter, page, author ID/name snapshot, timestamp, text; excluded from reasoning |
-| `SignedEncounterSnapshot` | Encounter, complete signed record, final plan, initial proposal/run reference, signature actor/time, content hash |
-| `Addendum` | Signed encounter, author/time, reason, correction text; append-only |
-| `ContentVersion` | Type, schema, immutable payload/hash; questionnaires, scoring, catalog, DDI, prompt and proposal templates |
-| `Network` / `NetworkVersion` | Clinical question, immutable XML, manifest, hash, validation report, version, creator/time |
-| `ModelBundle` | Immutable ordered workflow questions with network, prompt, mapping, gating and template versions; active pointer per workflow |
-| `ReasoningRun` | Encounter, author, snapshot/hash, pinned bundle/content/config versions, engine version, current question, status and timestamps |
-| `QuestionStep` | Run/question, ordinal, network/prompt/template versions, supplied patient-variable projection/hash, applicability, status, attempt count, result and proposal-section references |
-| `EvidenceItem` | Run/question/node, deterministically mapped evidence kind/value, source references, missing/conflict reason, mapping version |
-| `RunCPTSet` | Run/question, network version, returned CPT percentages, converted ordered probability tables, estimation metadata, validation report, effective XML/hash; immutable once accepted |
-| `NetworkResult` | Run/question, version, applicability, posterior, warnings, outcome or error |
-| `Proposal` / `SecondaryPlan` | Persisted per-question template sections and source results, immutable assembled proposal; separately revisioned physician draft and change history |
-| `Job` / `JobAttempt` | Run/step/question, status, lease, attempt counter, next eligible time, bounded error, deduplication key |
-| `APIConfigVersion` | Endpoint/model, encrypted key reference, configuration revision, capability-test status |
-| `AuditEvent` | Event ID, UTC time, actor, action, target, outcome, correlation ID, bounded metadata |
+| User / Session | Unique username, role, active state, password hash, credential revision, theme; one admin; revocable non-expiring application sessions |
+| Patient / PatientRevision | Unique ten-digit text identifier, demographics, clinical status, optional phone, archive state, revision and change attribution |
+| Encounter | Patient, author, encounter type, lifecycle, visit timestamp, revision and prior signed source; at most one draft per patient |
+| Assessment / History / MedicationEntry / AdverseEffect | Encounter-owned clinical data, completeness/status, content versions and provenance |
+| PageNote | Encounter/page, text, author and timestamp; never included in algorithm inputs |
+| NetworkVersion / ContentVersion | Immutable XML, structure hash, manifest, prompt, template, scoring/catalog/DDI definitions and versioned numerical rules |
+| ModelBundle | Ordered clinical-question mappings, versions, applicability and missing-data rules; versioned active pointer |
+| GenerationBatch | Encounter, source revision, ordered work list, pinned bundle/configuration, progress and retries |
+| QuestionRun | Question, immutable patient-variable projection/hash, applicability dependencies, network/prompt/template/configuration versions and original execution status |
+| OriginalBaseline | Successful QuestionRun, raw returned percentages, validated complete CPT set, effective XML/hash, output and templated recommendation; immutable |
+| CPTRevision | QuestionRun, parent revision, sequence, kind `adjustment` or `reset`, complete CPT artifact/hash, actor/time, direct edit and redistributed before/after row values |
+| QuestionReviewState | Current QuestionRun, current CPT revision or baseline, latest successful result reference, current calculation state, input freshness and optimistic revision |
+| CalculationAttempt / Result | Exact baseline/revision ID, CPT hash, network/template/engine/configuration versions, status, output, recommendation, error and timestamps |
+| ProbabilityAcceptance | Encounter/question, baseline/run, exact current CPT revision and result, actor/time, input hash; invalidated by a later change |
+| ProposalSnapshot | Immutable initial proposal assembled from successful original baseline references, DDI snapshot and applicability set |
+| SecondaryPlan / PlanRevision | Physician-authored draft text and edits; linked proposal and review-set revision; never overwrites the initial proposal |
+| SignedEncounterSnapshot | Full clinical record, plan text, proposal, per-question original and accepted CPTs/results, versions, inputs, acceptor/signer/timestamps and hash |
+| Addendum | Signed encounter reference, author/time, correction text; append-only and independently attributed |
+| Job / JobAttempt | Class, scope, revision/hash, lease/fencing token, idempotency key, status, retry count and bounded diagnostics |
+| APIConfigVersion | Base URL/model and protected credential reference; secrets excluded from clinical artifacts |
+| AuditEvent | Actor/time, action/outcome, patient/encounter/question/run/revision IDs and required before/after values; append-only |
 
-Foreign keys prevent orphaned records. Signed snapshots, model versions, content versions, proposals and audit events referenced by history cannot be overwritten by ordinary application roles. Both registered and run-effective XML are stored in the database to make the database the authoritative model store; backup packages also export XML files for portability.
+Store authoritative network XML and complete effective CPT artifacts in the database. XML files in backups are exports from the same consistent database snapshot. No run depends on mutable files outside its versioned definitions.
 
-Signing is one transaction: lock encounter, verify active author and expected revision, ensure all saves completed, validate required acknowledgments and current successful run, freeze secondary plan plus full encounter snapshot, mark signed, and append sign-off audit event. A repeated idempotent sign request returns the original signed result. Admins cannot sign on behalf of physicians.
+Baseline creation is atomic with its successful original result and recommendation. A validated CPT set without successful execution is not an adjustable baseline. An unsuccessful calculation never updates the current successful-result pointer. Full CPT artifacts are retained per revision initially for simple replay; later compression must preserve exact reconstruction.
 
-Deactivation immediately revokes access. If drafts exist, the admin sees their count and can deactivate while retaining them read-only, or explicitly confirm discard. No draft is discarded implicitly. Retained drafts become editable by their original author upon reactivation; reassignment is outside v1. Discard cancels associated jobs and removes their eligibility for signing while retaining an audit tombstone; physical draft-content retention is an open policy choice.
+The signed snapshot records unchanged questions explicitly: their original and final accepted values/results are equal. A question adjusted and then reset has `final_values_differ_from_original=false` and `had_adjustment_history=true`; do not erase that distinction.
 
-## 6. Assessment content and local interactions
+## 6. Clinical content and local drug interactions
 
-Use versioned DSM-5-TR diagnostic criteria, PANSS severity items, and the selected C-SSRS form. Definitions include stable item IDs, answer types, allowed values, required/conditional items, completeness rules and scoring or result rules. The content owner supplies exact forms, thresholds, permitted content and worked examples; this design does not reproduce instruments or invent clinical scoring rules. Validate each definition against those supplied examples before release. Unanswered, partial, complete, not-assessed and diagnosis-bypassed states remain distinct.
+The content owner supplies exact DSM-5-TR criteria, PANSS/C-SSRS forms, scoring/completeness rules, structured history fields, adverse-effect severity categories, medication catalog and interaction data. Version the definitions and validate worked examples before release. Unanswered, partial, bypassed and not-assessed states must remain different from negative findings or minimum scores.
 
-History uses structured fields. Any separately designated analysis-visible history text must be defined by the content schema; page notes remain excluded. Medication entries identify drugs from the bundled demo catalog or preserve an unknown drug label for unavailable coverage. FR-14 excludes dose, unit, route, frequency and active/stopped fields. The proposed DDI input is the reconciled medication list recorded in the encounter; prior encounter lists remain historical snapshots rather than a current-status flag.
+Medications are selected from the bundled demo catalog. A catalog entry may lack DDI coverage; show “coverage unavailable”. Free-text medication addition is not introduced as an extra feature. Evaluate each unordered drug pair once using the recorded medication set and pinned DDI version. Distinguish interaction found, explicitly covered with no listed interaction, and coverage unavailable. A missing database row alone cannot prove absence of an interaction.
 
-Interaction evaluation uses that list and a pinned local bundled DDI version. Evaluate each unordered drug pair once, canonicalizing catalog IDs. Distinguish `interaction_found`, `covered_no_listed_interaction`, and `coverage_unavailable`; display unknown drugs as “coverage unavailable”. Absence of a database row cannot mean no interaction unless the dataset explicitly defines coverage for that pair. Every report identifies its catalog/data version and coverage limitations. Recompute when the medication list changes and preserve the signed report snapshot. Include the DDI report alongside Bayesian recommendations in the initial proposal; predefined templates always preserve coverage warnings.
+Recompute DDI findings on medication changes and retain prior reports as history. Include the current report and limitations in the initial proposal. A medication edit also invalidates questions whose patient projections or applicability depend on it. If only DDI findings change, refresh the proposal snapshot and invalidate final review without inventing an LLM dependency for unrelated questions.
 
-## 7. Bayesian model registry and execution
+## 7. Model registry and original reasoning
 
-### 7.1 Question inventory and applicability
+### 7.1 Inventory and definitions
 
-The registry must cover every FR-30 question. Each clinical question has one corresponding XMLBIF network and one predefined versioned prompt. A question manifest declares patient-variable mappings, fixed variable types and relevance, input/output nodes, state names/order, applicability, required inputs, missing-data policy, complete CPT contract, and a predefined result-to-proposal template. Applicability predicates and thresholds belong to versioned content; the LLM does not invent them.
-
-| Workflow | Stable question key | Applicability proposal |
-|---|---|---|
-| Registration | `hospitalization` | All registration runs |
-| Registration | `pharmacotherapy` | All registration runs |
-| Registration | `involuntary_care` | All registration runs |
-| Registration | `high_suicide_clozapine` | Versioned high-risk gate true |
-| Registration | `lai_indication_choice` | Indication queried; choice shown only when indication rule permits |
-| Registration | `aggression_clozapine` | Recorded aggression gate true |
-| Registration | `established_case_clozapine` | Established-case status |
-| Follow-up | `tardive_dyskinesia` | Effect present |
-| Follow-up | `akathisia` | Effect present |
-| Follow-up | `parkinsonism` | Effect present |
-| Follow-up | `acute_dystonia` | Effect present |
-| Follow-up | `no_improvement_clozapine` | Versioned no-improvement rule true |
-| Follow-up | `continue_or_adjust` | All follow-up runs |
-
-Use one LAI network with indication and choice output nodes for the combined FR-30 clinical question. Unknown applicability is not false: record `applicability_unknown` and request clarification when required, otherwise display the skipped/unknown reason. A false gate yields `not_applicable`, not a negative posterior. Process questions in the pinned bundle order, initially the FR-30 order above. Sequential scheduling does not imply that one network result becomes an input to another: only declared patient variables are supplied to each question.
-
-### 7.2 Import, validation, and versioning
-
-1. Accept XML as text/file under configured size limits. Reject external entities, DTD resolution, unexpected remote references, and parser resource abuse.
-2. Validate against the app's versioned XSD for structural form only, as required by FR-31. XSD does not establish clinical validity or correct probability semantics.
-3. Perform separate semantic checks: unique nodes/states, valid parent references, directed acyclic graph, complete CPT dimensions, finite nonnegative probabilities, normalized distributions within a documented tolerance, and declared state/CPT ordering.
-4. Validate the manifest: designated inputs/outputs exist; question-specific prompts, templates, gates, required fields, state mappings and the complete CPT contract are defined; no unexpected executable expressions; inference fixtures pass within resource limits.
-5. Persist a new immutable version and validation report. Editing XML always creates a new version. Render a read-only graph from parsed nodes/edges.
-6. Activate through an atomic bundle update after compatibility validation. Rollback points a new activation event to previously validated versions. Running jobs retain their pinned bundle.
-
-An incomplete or invalid bundle may be stored for editing but cannot be activated for its workflow. The rest of the application remains usable if no workflow bundle is active; generation clearly reports unavailable configuration.
-
-### 7.3 Evidence contract and uncertainty
-
-Before each question, the application builds an allowlisted projection from the immutable encounter snapshot using that network's versioned patient-variable mappings. Each item records `node_id`, fixed variable type, typed patient value or explicit missing/conflict status, source field paths and source revision. Only variables represented in the current network may appear in the prompt or MCP responses. No full-record extraction call or combined cross-question patient context is sent to the LLM. Page notes remain excluded even if a mapping attempts to reference them.
-
-Deterministic mappings may separately produce observed inference evidence under the network manifest. Hard evidence conditions on a declared state; unknown or conflicting values remain unobserved unless required, in which case the step waits for clarification. Never substitute an absent finding or zero score for missing data. Likelihood evidence is disabled unless the model explicitly defines its semantics and numerical fixtures. The LLM returns CPT percentages, not evidence classifications or inferred patient facts.
-
-The content owner must define whether each supplied fact informs CPT estimation, observed evidence, or both, and validate that interpretation against double counting. Correcting a patient input changes the source record and creates a new run; stored inputs remain immutable. Missing-data and applicability policies are versioned content rather than model decisions.
-
-### 7.4 Patient-specific CPT estimation and deterministic inference
-
-FR-32–34 separate fixed network definitions, LLM CPT estimation and application-owned execution. Variables, types, states, parent relationships and relevance/input mappings are pinned by the selected network version. The LLM cannot add/remove variables, change their types or states, alter edges, or redefine relevance. Administrator XML edits create a new registered version; a patient run never edits that shared version.
-
-For the current question, send its predefined prompt, fixed network structure and only its represented patient-variable values to the LLM in the MCP environment. Each response identifies the question, network version, node, ordered parent-state assignment, child states and CPT percentages. The response contract uses finite numbers in `[0,100]`, with each distribution summing to 100 within a documented tolerance (proposed absolute tolerance: `0.000001` percentage points). **Confirmed scope: every CPT is estimated for each question**, including root-node distributions. The response must cover every node and every parent-state configuration. Reject missing estimates; no table falls back to registered defaults.
-
-The application validates exact node/state/parent identities and ordering, coverage, dimensions, duplicates, bounds and sums. Reject structural changes and unexpected entries. Do not silently normalize, clip or repair invalid output. Corrective LLM attempts share the bounded question-step retry budget. These checks are separate from XSD structural validation and do not establish clinical validity.
-
-Persist the returned percentages and accepted response, then convert percentages to probabilities by dividing by 100. Insert these values into a run-local copy of the pinned XMLBIF network, replacing every table with the validated estimates. Freeze the complete `RunCPTSet` and effective XMLBIF artifact/hash before inference; never modify the registered version. Record the supplied patient projection, prompt version, provider/model and configuration version, attempt and snapshot hash.
-
-The app runs deterministic inference with the effective CPTs, mapped evidence, declared query and pinned engine configuration. Reject impossible evidence and resource-limit failures; never silently switch to approximate inference. Replay uses those stored inputs and engine/runtime version within a declared numerical tolerance, without an LLM request. A fresh estimation may differ for the same patient record; NFR-04's “same inputs+version” includes the accepted CPT artifact.
-
-Render the question-specific recommendation into its relevant proposal section using a predefined, versioned template and result mapping. The LLM does not draft or rewrite proposal text. Persist the result and rendered section before advancing to the next applicable question. After all applicable questions complete, assemble the initial proposal with the local DDI report and its coverage warnings. Clinical thresholds and result-to-treatment mappings must be supplied as versioned content.
-
-Show each question, network version, exact patient inputs supplied to the LLM, returned CPT percentages and network result alongside its recommendation. Also expose the effective tables for replay, clearly distinguishing estimated CPT percentages from posterior result probabilities. Partial sections remain inspectable after failure but are visibly incomplete and cannot count as a successful proposal.
-
-**Previously confirmed signing decision:** signing requires a successful current AI proposal and physician review. Physicians cannot sign a manual plan after generation failure. Preserve the draft and allow retry; enforce this prerequisite server-side and in the UI.
-
-## 8. MCP and LLM orchestration
-
-The application worker is the MCP host/client. It mediates every model-requested tool invocation, calls the internal server, and sends bounded tool results to the configured LLM. The provider need not connect directly to the server or implement native MCP. This follows MCP's host/client/server separation; stdio keeps this single-host prototype's server private.
-
-| Internal read tool | Arguments / return contract |
+| Workflow | Ordered clinical questions |
 |---|---|
-| `get_question_patient_inputs` | No patient/question selector; returns only represented patient-variable values from the server-bound question projection, with source paths and missing/conflict status |
+| Registration | Hospitalization; pharmacotherapy; involuntary care; high-suicide Clozapine; LAI indication and choice; aggression Clozapine; established-case Clozapine |
+| Follow-up | Tardive dyskinesia; akathisia; parkinsonism; acute dystonia; no-improvement Clozapine; continue-versus-adjust |
 
-The worker loads the pinned predefined prompt and network structure from the registry and supplies them directly. The worker obtains the initial patient projection through this MCP tool; any later model-requested read returns that same persisted projection. The server binds authorization to actor, encounter, run, question, snapshot and manifest; the model cannot broaden the field set or select another patient. Check active account status, tool arguments and output limits. Tools cannot write records, change networks, run inference, retrieve page notes or expose credentials. The detailed contract is in [MCP design](MCP-design.md).
+Each question maps to one XMLBIF network, one prompt and a recommendation template. Treat LAI indication and choice as one question with its corresponding network. A versioned manifest fixes node identities, states/order, parent relationships, variable types, patient-variable mappings, output queries, applicability, missing-data policy, CPT layout and template result mappings. Clinical gates and treatment thresholds must be supplied; names of questions alone do not define thresholds.
 
-Propose at most ten tool calls per attempt and explicit request/context limits. If the complete question projection and structure exceed the budget, fail with a clear context-size error; do not silently drop required facts or change the network. Provider activation tests must check the configured endpoint's required tool-call and response capabilities. Prefer schema-constrained output where supported; otherwise parse and validate structured JSON under the same retry policy.
+Process applicable questions sequentially in the bundle's declared order. Record false gates as not applicable with a reason; missing information is not automatically false. Unknown required applicability pauses generation for clarification. No question result becomes another question's patient input unless requirements are explicitly revised; slider recalculation always remains independent.
 
-The worker runs this sequence for each question before starting the next:
+### 7.2 Import and validation
 
-```mermaid
-flowchart TD
-    A[Automatic run: freeze snapshot and versions] --> B[Next question in pinned order]
-    B --> C[Check applicability and project represented variables]
-    C -->|Applicable| D[LLM: predefined prompt + structure + patient inputs]
-    C -->|Not applicable: record reason| J{Questions remain?}
-    D --> E[Validate returned CPT percentages]
-    E -->|Valid| F[Insert into run-local network and infer]
-    E -->|Invalid or request failed| R{Retry budget remains?}
-    R -->|Yes| D
-    R -->|No| H[Stop at failed question; preserve completed sections]
-    H -->|Physician retries same saved step| D
-    F --> G[Render and persist predefined proposal section]
-    G --> J
-    J -->|Yes| B
-    J -->|No| K[Assemble proposal with local DDI report]
-```
+Administrators can inspect a graph, import/edit/export XML, validate, version, activate and roll back. Graph editing is unavailable. XML edits create new immutable versions; activation switches a pointer and does not alter existing runs.
 
-Unknown required applicability or missing required inputs pauses the current question for clarification. Inference or rendering failure also stops progression; retry reuses accepted CPTs or results where available. Later questions remain pending. A manual retry of unchanged inputs resumes the failed step and then continues the sequence; it does not repeat completed questions. Changed inputs require a new run, retaining earlier artifacts as history.
+Disable external entity/DTD resolution and constrain file size and parsing resources. XSD validates structure, including CPT syntax. Separate semantic validation checks unique nodes/states, parent references, acyclicity, state and parent-combination ordering, complete CPT dimensions, duplicate/missing entries, numeric finiteness, bounds and normalized rows. Validate manifests and deterministic execution fixtures before activation. Invalid versions may remain drafts but cannot be activated.
 
-Pin API configuration at run creation. New settings affect new runs; retain old secrets securely while referenced pending jobs require them, or explicitly cancel/restart those jobs when removing a credential. Secrets never enter audit payloads or prompts. History and model responses are data; no shell, arbitrary SQL, URL-fetch or filesystem tools are exposed.
+Physician adjustments are run artifacts, never model imports, activations or network versions. Imported default CPTs do not fill gaps in incomplete LLM estimates.
 
-## 9. Jobs, failures, caching, and capacity
+### 7.3 Patient inputs and execution contract
 
-### 9.1 Durable queue
+Create an immutable question-scoped projection containing only patient variables represented in that network, typed values, source revisions and explicit missing status. Notes are excluded by an allowlisted serializer. The MCP tool exposes precisely that saved projection, not the whole chart. The LLM receives the question prompt and fixed network structure with the projection.
 
-Use database-backed jobs initially, without a separate broker. Creating a run snapshot and its first job is atomic. Workers claim ready jobs with row locks and a lease; heartbeat renews ownership. A crashed worker's expired lease allows recovery. Fence completion by lease token so an old worker cannot commit after another worker has reclaimed the job.
+**Execution uses the complete saved CPT set, fixed graph, declared output queries and pinned execution configuration with an empty evidence set.** Do not clamp a node to a patient's observed state or submit soft/virtual evidence. Patient-specific information has already entered through LLM-estimated CPTs. The patient snapshot remains required provenance and determines whether a result is current, even though the execution adapter does not consume it as evidence.
 
-Use at-least-once execution with idempotent persistence. Unique run/step/question keys prevent duplicate committed outputs. An external provider request may still be billed twice after a timeout; exactly-once external execution is not promised. Results only commit if the run is current and the actor remains authorized. Repeated automatic triggers for the same snapshot reuse the active run; explicit retry records a new attempt, and changed evidence creates a new run.
+Store engine/runtime version, query order and numerical rules. Use deterministic exact inference; fail clearly on numerical/resource problems rather than silently switching to sampling or approximation. Recommendation rendering consumes network output through the pinned template. The LLM neither executes inference nor writes final recommendation prose.
 
-Only the current question is eligible within a run; completion and enqueueing its successor commit atomically. Proposed defaults: two concurrent provider calls across different runs in the deployment; FIFO eligible jobs with per-physician fairness; one active generation per encounter. Queue saturation returns a visible busy state while preserving the draft. New arrivals do not displace saved jobs.
+### 7.4 Percentage representation and original baseline
 
-### 9.2 Retry and failure policy
+Proposed deterministic storage policy: percentages have up to six decimal places. Represent 100% as `100,000,000` integer units, with one unit equal to `0.000001` percentage point. Encode API percentage values as decimal strings to avoid binary-floating-point parsing drift. The LLM response contract declares this precision, every row must total exactly 100%, and out-of-contract precision or totals are validation errors. Never silently normalize, clip or complete invalid LLM output. Conversion to the engine's numeric representation occurs at its boundary and is recorded with the execution policy version.
 
-| Failure | Response |
+Validate every node, root distribution, child state and complete parent-state combination. Reject extra, missing or duplicate identities and any attempted structure change. Store the raw response, validated percentages and complete run-local effective CPT artifact. Execute and render the template, then atomically persist the original baseline. Continue to the next applicable question only after this succeeds.
+
+After all applicable questions succeed, create an immutable initial proposal with original recommendations and DDI findings. Each completed question can already be inspected and adjusted while later questions are pending, but a partial proposal cannot authorize signing.
+
+### 7.5 Patient changes and regeneration
+
+Maintain per-question dependency fingerprints for represented patient variables and declared applicability inputs. Compare typed values and dependency state rather than invalidating every result for any record timestamp change. A relevant demographic or encounter edit marks the affected QuestionRun and adjustments out of date, clears its acceptance and blocks final signing. Retain its original proposal, baseline and full adjustment history.
+
+Regenerate affected applicable questions in declared order using new patient projections and new QuestionRun identities. New runs establish new original baselines; never copy old physician adjustments into them. Unaffected, still-current question baselines and adjustments remain valid and retain their references. Record transitions into/out of applicability and refresh the proposal snapshot's question set. An obsolete run remains historical rather than being relabeled as current.
+
+A note-only edit does not regenerate questions or invalidate probability acceptance. A plan-text edit requires final plan review but does not cause inference. Changing active model versions does not silently rebase an open encounter; preserve its pinned definitions. Patient-input regeneration uses the encounter's existing pinned bundle so unaffected questions remain coherent with regenerated questions. Newly created encounters select the then-active bundle.
+
+## 8. Interactive CPT review and local calculation
+
+### 8.1 Review panel
+
+For every successfully completed question, show question title, network version, original recommendation and calculation state. Group all CPT entries by node and complete parent-state combination; root distributions have no parent grouping. Show each state's original and current percentages, signed percentage-point difference and row total. Highlight both directly edited and automatically redistributed states. Label original values “LLM-estimated”; distinguish current physician-adjusted values and read-only output probabilities.
+
+All values remain reachable, including in large CPTs. Search, folding, pagination or virtualization may aid navigation but must not omit rows. Support keyboard sliders, clear focus, accessible labels and exact numeric readouts at storage precision. A single-state row visibly remains at 100% with an explanation. Proposed slider step is 0.01 percentage point; stored redistributed/original values retain six-decimal precision. Small screens are not the primary target.
+
+Show original and latest successfully adjusted outputs and recommendations side by side. An identical recommendation after adjustment is valid; still show changed probabilities and provenance. If no successful adjusted result exists, say so rather than presenting the original as an adjusted calculation.
+
+### 8.2 Deterministic redistribution
+
+Treat a pointer-release, keyboard adjustment commit or equivalent completed interaction as one command. Transient drag previews are not audit events. The client may preview redistribution, but the server is authoritative.
+
+For a row with units `u[1..n]`, selected state `k`, selected target `X`, and total `T=100,000,000`:
+
+1. Authorize the author, verify draft/run freshness and expected review revision, and validate `0 <= X <= T`.
+2. For `n=1`, the only valid value is `T`; reject any other requested value and explain the constraint.
+3. Let `R=T-X` and `S=sum(u[j] for j != k)` from the immediately preceding committed row.
+4. If `S>0`, each remaining state's ideal units are `R*u[j]/S`. If `S=0`, they are `R/(n-1)`.
+5. Floor ideal units, then allocate remaining single units by descending fractional remainder. Break ties using the pinned network's state order. Keep the selected state exactly `X`.
+6. Verify every value is in `[0,T]` and the row total is exactly `T`. Other CPT rows are byte-for-byte unchanged. Persist a complete new CPT revision with before/after values, selected edit, redistribution rule version, actor and timestamp.
+
+This largest-remainder rule is deterministic and preserves proportional allocation to the supported precision. Display the canonical stored percentages, whose sum is 100%; do not round each label independently to a lower precision and show an inconsistent total.
+
+Examples: `[20,30,50]`, changing the first value to 40, becomes `[40,22.5,37.5]`. `[100,0,0]`, changing the first value to 40, becomes `[40,30,30]`. A four-state `[100,0,0,0]` changed to 0 becomes `[0,33.333334,33.333333,33.333333]` in the defined state order. Setting a state to 100 makes the others zero.
+
+### 8.3 Save and recalculate
+
+In one transaction, insert the revision, update the current revision pointer, clear prior acceptance, mark recalculating, enqueue its local job and append the adjustment/redistribution audit event. Acknowledging the command means the new values are durable even if the calculation later fails.
+
+The worker validates the complete saved CPT set and runs only that question's pinned network, with empty evidence and the original query/configuration. Use the same patient-input snapshot for provenance and the original template version. Render the adjusted recommendation and save its exact revision association. This path never invokes the provider, MCP, the initial generation pipeline, DDI processing or unrelated networks.
+
+| UI calculation state | Meaning and permitted next action |
 |---|---|
-| Connection timeout, transient provider 5xx, rate limit | Two retries after the initial attempt; exponential backoff with jitter and bounded Retry-After |
-| Invalid CPT response schema or CPT percentages | Two retries after the initial attempt, shared with transport failures: three attempts total per question step; no nested repair budget |
-| Invalid credential/model/unsupported capability | Fail configuration immediately; do not retry unchanged credentials |
-| Required evidence missing | `needs_clarification`; no automatic guesses or blind retries |
-| XML/model semantic failure | Block activation or fail affected run; preserve records |
-| Inference exceeds resource budget | Fail step with diagnostic; no silent approximation |
-| Database unavailable | No false “Saved” acknowledgment; retry reads as appropriate and show unsaved edits |
-| Worker crash | Recover persisted jobs after lease expiry; retain attempts and idempotency |
-| Changed record / deactivation / archive | Invalidate or cancel current eligibility; never commit a signed result from stale work |
+| Unchanged | Baseline/current values match original and a valid corresponding result is available; review and accept |
+| Recalculating | Current saved revision is queued/running; keep sliders responsive, block acceptance/signing |
+| Successfully recalculated | Current revision has a successful matching output and recommendation; review and accept |
+| Failed | Current revision is preserved but unsolved; show error, allow local retry or reset, block acceptance/signing |
 
-Propose 60 seconds per provider request, capped retry delay of 60 seconds, and a ten-minute active execution budget per question attempt batch, excluding queue wait and time awaiting manual retry. Budget exhaustion stops the current question with retained artifacts; an explicit retry starts a new bounded batch. These are configurable operating assumptions, not confirmed requirements. Poll status every two seconds while active, back off when hidden, and stop polling terminal runs.
+Track `out_of_date` separately from calculation state. Historical success cannot override changed patient inputs. Identify previous successful results with their revision and a visible “earlier revision” label whenever the current revision is unresolved.
 
-### 9.3 Caching
+### 8.4 Concurrency, failure and reset
 
-Cache parsed, validated network structures and immutable catalogs by content hash with bounded memory. Keep CPT sets and inference state per run to avoid cross-patient contamination. Never cache a patient-specific CPT set under the base network hash alone. Cache no shared authenticated patient responses at the reverse proxy. Patient charts, exports and reports use private/no-store response policies. Do not cache LLM responses across patients. A run may reuse its own completed steps only when its snapshot and all relevant version hashes match.
+Every job/result carries QuestionRun ID, CPT revision, complete CPT hash, versions and attempt identity. Saving a later adjustment moves the current pointer immediately. An older response may be stored as historical, but a conditional update must prevent it from replacing the latest result/state. Ignore out-of-order browser responses using the same identifiers. Pending superseded local jobs may be canceled; committed revision history is retained.
 
-### 9.4 Sizing assumptions and proposed targets
+A failed calculation preserves current values and the prior successful result separately. Local retry targets exactly the current saved revision and does not re-estimate CPTs. Process recovery can resume a saved job; a completed numerical failure requires an explicit local retry or reset. Recheck active author, draft lifecycle and current-input eligibility before publishing a result.
 
-Design for one administrator plus up to nine physicians. A registration run requires up to seven sequential question-specific CPT-estimation requests; follow-up requires up to six. No LLM extraction or proposal-drafting request is required. Each question may require tool exchanges and bounded retries; templates render locally before the next question starts. Admission tests must measure CPT payload size and provider calls, not just user count. As a conservative test scenario, ten active clients each autosaving once every five seconds produce about two writes/second; add navigation and status polling to test twenty requests/second. These are planning assumptions, not observed demand.
+“Reset to original values” creates an audited reset revision referencing this QuestionRun's immutable baseline, restores every CPT row for this question, clears acceptance and refreshes the result. Since the values and execution/template configuration are identical, bind the reset revision explicitly to the retained original result as an exact baseline reuse; record this reuse rather than claiming a fresh execution. Alternatively, deterministic local execution is possible, but the default design reuses the verified original artifact. Fence any older in-flight responses. Other question panels are unchanged and no history is deleted.
 
-Start evaluation on 2 vCPU / 4 GB RAM / 20 GB persistent disk, then size from model benchmarks and retained audit/run volumes. Exact inference cost depends on network topology and state cardinality, not merely the number of users; model admission tests are mandatory. Do not promise that this host supports arbitrary imported networks.
+A reset cannot make a stale patient snapshot current. If relevant patient inputs changed, regeneration remains mandatory. Returning manually to original values also requires a matching successful calculation or explicit verified baseline reuse; equality of a few displayed values is insufficient.
 
-Proposed local targets: p95 ordinary reads and acknowledged saves under one second at test load; list search under one second for 10,000 test patients; no loss of committed drafts on application restart. Provider latency is reported separately and excluded from interactive-save targets. End-to-end reasoning has no confirmed SLA.
+### 8.5 Acceptance and atomic sign-off
 
-Use disk sizing as `records + run snapshots + model/content versions + logs + backup staging + headroom`, measured from representative fixtures. Pending retention decisions, do not automatically delete signed records, model versions or audit history.
+Provide author-only acceptance per question and a final review summary of all applicable questions. A grouped “Accept all current results” action may create explicit per-question acceptance records atomically. Acceptance references exact original baseline, current CPT revision, successful result, patient-input hash and actor/time. Unchanged baselines require acceptance too. Any later probability edit/reset, relevant patient edit or regeneration invalidates the affected acceptance.
 
-## 10. External API contracts
+Sign-off is one transaction that locks the patient and encounter, validates expected encounter/plan/review revisions, and verifies:
 
-Expose versioned REST endpoints under `/api/v1`. Use JSON, internal UUIDs, explicit schema versions, cursor pagination, bounded page sizes, ISO-8601 UTC timestamps, and stable machine-readable error codes. Never place API keys or passwords in URLs. Mutation bodies are validated server-side irrespective of UI checks.
+- The actor is the active draft author, every save is acknowledged, and the encounter remains the patient's single draft.
+- A complete current initial proposal exists, with successful originals for all applicable questions and current DDI findings.
+- Each current accepted revision has a matching successful result and recommendation. No calculation is pending, failed or stale.
+- Patient projection and applicability fingerprints still match the current data; versions and results are internally consistent.
+- The physician has reviewed the final secondary-plan revision and accepted the exact probability/result set used for it.
 
-| Method and route | Contract / authorization |
+Freeze the full signed snapshot, original proposal, all original/final CPTs and outputs, adjusted recommendations, physician plan edits, versions/configuration, patient inputs and attribution. Mark signed, release the open-draft slot and append audit events in the same transaction. Repeated identical idempotent sign requests return the original signed result. A concurrent demographic edit must serialize with signing or fail its freshness check.
+
+## 9. MCP, queues, failures and capacity
+
+The worker hosts a private MCP client/server relationship and mediates any provider tool calls. Expose a read-only `get_question_patient_inputs` tool bound by the server to actor, encounter, QuestionRun and projection. It accepts no arbitrary patient selector. Responses contain only represented patient variables already saved for that question; no notes, credentials, unrestricted chart reads or write/inference tools are exposed.
+
+Queue initial LLM calls across encounters with bounded concurrency, proposed initially two provider calls at once. Within one generation batch, only the current question can execute; completion and enqueueing its successor are atomic. Use two retries after the initial LLM attempt, shared across transport and invalid-CPT failures: three attempts total, within FR-36's allowed range. Exhaustion stops the affected question, leaves later work pending and preserves completed originals and adjustments. A manual retry resumes the failed step. If CPT validation succeeded but execution failed, retry local execution from those saved CPTs before requesting new estimates.
+
+Use separate local calculation jobs so queued provider calls cannot monopolize worker slots. Proposed local concurrency starts at one bounded inference process and is benchmarked for available memory. Long-running local execution never blocks form/API threads. Fair scheduling across users and coalescing superseded pending revisions avoid slider starvation without deleting adjustment history.
+
+Database-backed jobs use leases, heartbeats, fencing tokens and at-least-once execution with idempotent result persistence. An expired worker cannot commit using an old lease. External provider requests can still be duplicated after uncertain transport outcomes; do not promise exactly-once billing. Proposed provider timeout is 60 seconds per request with bounded backoff. Exact inference resource limits depend on admitted network size.
+
+| Failure | Required behavior |
 |---|---|
-| `POST /auth/login`, `POST /auth/logout` | Role/username/password; authenticated session or generic failure; logout revokes session |
-| `GET /me`, `PATCH /me/preferences`, `POST /me/password` | Current user and theme; password change revokes prior sessions |
-| `GET/POST /physicians` | Admin list/create; creation assigns physician role only |
-| `PATCH /physicians/{id}` | Admin credential changes; revision required; no admin role escalation |
-| `POST /physicians/{id}/deactivate` | Admin; explicit discard choice and reviewed draft-set revision |
-| `POST /physicians/{id}/reactivate` | Admin; preserve attribution and retained drafts |
-| `GET/POST /patients` | Directory for both roles; physician creates validated demographics and initial draft atomically |
-| `GET/PATCH /patients/{id}` | Both read; physician updates allowed fields with expected revision |
-| `POST /patients/{id}/archive`, `/unarchive` | Admin state change with expected revision |
-| `POST /patients/{id}/encounters` | Physician starts follow-up or resumes through existing draft workflow |
-| `GET/PATCH /encounters/{id}` | Authorized read; author-only draft update with revision |
-| `POST /encounters/{id}/notes` | Author-only draft note; idempotency key avoids duplicate notes |
-| `POST /encounters/{id}/discard` | Author; explicit confirmation and revision |
-| `POST /encounters/{id}/runs` | Author; snapshot revision, idempotency key; returns `202` with run ID |
-| `GET /runs/{id}`, `POST /runs/{id}/retry` | Authorized review; author-only retry of eligible failed question step; request identifies question key and expected run revision |
-| `PATCH /encounters/{id}/secondary-plan` | Author; draft plan revision and associated proposal reference |
-| `POST /encounters/{id}/sign` | Author; encounter revision, run ID, final plan revision and acknowledgments |
-| `POST /encounters/{id}/addenda` | Authorized signer under proposed policy; append-only |
-| `GET/POST /networks`, `GET /networks/{id}/versions` | Admin registry and import |
-| `POST /networks/{id}/versions`, `POST /network-versions/{id}/validate` | Admin XML edit-as-new-version and validation |
-| `GET /network-versions/{id}/graph`, `/xml` | Admin read-only graph and XML export |
-| `POST /model-bundles/activate`, `/rollback` | Admin atomic version mapping change with audit |
-| `GET/PUT /api-settings`, `POST /api-settings/test` | Admin; masked key in reads; explicit replace/clear semantics |
-| `GET /exports/patients.csv`, `/exports/physicians.csv` | Admin bounded export of list fields, excluding credentials |
-| `GET /patients/{id}/report` | Printable HTML, authorized actor, explicit draft/signed labels |
-| `POST /backups`, `GET /backups/{id}` | Admin asynchronous consistent backup and authorized download |
-| `POST /restores/validate`, `POST /restores/commit` | Admin staging validation then explicit destructive restore confirmation |
-| `GET /audit-events` | Admin paginated filter by actor/action/time/target |
+| Provider unavailable/invalid CPT response | Bounded original-generation retries, then visible failed step; no manual signing bypass |
+| Invalid credentials/capability | Configuration error; no blind retries with unchanged settings |
+| Required patient variable/applicability missing | Explicit missing state or clarification according to manifest; no fabricated negative finding |
+| Local recalculation fails | Retain values and previous result with revision labels; local retry/reset; no LLM/MCP call |
+| Worker or application restarts | Recover persisted jobs/drafts and revision associations; no false successful calculation |
+| Database save fails | No “Saved” acknowledgment; show unsaved local state |
+| Stale revision or wrong draft author | Reject request; never silently overwrite or disclose draft content |
+| Relevant data changes | Mark affected question stale and require a new original baseline |
 
-Return `401` for missing/revoked authentication, `403` for role/ownership denial, `404` for missing or inaccessible resources as appropriate, `409/412` for duplicate/stale/state conflicts, `422` for field/content validation, `429` for admission/rate limits, and `503` for unavailable dependencies. Error bodies contain `code`, safe `message`, field errors where applicable, `request_id`, and `retryable`; no stack traces or secrets.
+Cache only immutable parsed models/content by hash; patient-specific results must also include run/revision/CPT/configuration identity. Never share CPT sets by network version alone. Use private/no-store policies for authenticated records and reports. Separate provider latency from local UI responsiveness.
 
-Idempotency keys apply to create, run, sign, note and addendum commands. Scope keys to actor and operation; a reused key with a different payload is a conflict. Revision requirements also apply to administrative settings and activation pointers.
+Sizing remains a proposal: start evaluation at 2 vCPU, 4 GB RAM and persistent storage sized from records, CPT revisions, model artifacts, audit and backups. Admission benchmarks must constrain graph topology and CPT cardinality. Target ordinary read/save p95 under one second at representative load; measure local recalculation separately and show progress rather than promising a universal inference latency. There is no confirmed high-availability or end-to-end SLA.
 
-## 11. Security, audit, exports, and recovery
+## 10. Application API contracts
 
-### 11.1 Prototype security boundary
+Use `/api/v1`, internal UUIDs, schema-versioned JSON, decimal percentage strings, UTC timestamps and bounded pagination. All mutation validation and ownership checks are server-side. Use idempotency keys for create, slider, reset, retry, accept, sign and addendum operations; reused keys with different payloads are conflicts.
 
-Require HTTPS for non-localhost use. Encrypt provider credentials using a deployment-held key outside the database. Restrict configurable endpoint schemes and validate destinations against an operator-controlled allowlist, including redirect and resolved-address checks, to prevent server-side request forgery. Allow explicitly configured local model hosts without allowing arbitrary metadata-service or internal-network access. HTTP provider endpoints, if supported for local operation, require explicit deployment configuration; browser non-localhost traffic remains HTTPS.
+| Route | Contract |
+|---|---|
+| `POST /auth/login`, `/auth/logout`; `GET /me` | Role/credentials, session lifecycle and authenticated identity |
+| `POST /me/password`; `PATCH /me/preferences` | Own password/theme; credential changes revoke prior sessions |
+| `GET/POST /physicians`; `PATCH /physicians/{id}` | Administrator account management |
+| `POST /physicians/{id}/deactivate`, `/reactivate` | Admin; explicit confirmed discard choice if applicable |
+| `GET/POST /patients`; `GET/PATCH /patients/{id}` | Shared directory/read; physician create/update; revision and duplicate checks |
+| `POST /patients/{id}/archive`, `/unarchive` | Admin; preserve records and apply declared archive policy |
+| `POST /patients/{id}/encounters` | Atomic single-draft creation; `409 OPEN_DRAFT_EXISTS` without another author's clinical content |
+| `GET/PATCH /encounters/{id}` | Draft author only for drafts; shared authorized read after signing |
+| `POST /encounters/{id}/notes`, `/discard` | Author-only note creation/confirmed discard |
+| `POST /encounters/{id}/generation-batches` | Automatic author-context generation trigger; expected source revision; returns `202` and batch ID |
+| `GET /generation-batches/{id}`; `POST /question-runs/{id}/retry-original` | Author-only progress/resume; retain completed questions |
+| `GET /question-runs/{id}/review` | Original/current CPTs, results, revision IDs, input freshness, history and permissions |
+| `POST /question-runs/{id}/cpt-adjustments` | Expected review revision, node, full parent assignment, state and target percentage; server redistributes and returns saved revision/job/state |
+| `POST /question-runs/{id}/reset` | Expected review revision; save reset revision and explicit baseline-result reuse |
+| `POST /question-runs/{id}/retry-calculation` | Exact current CPT revision; local-only retry |
+| `POST /question-runs/{id}/acceptance` | Exact current baseline/revision/result/input hash; author-only; reject unresolved/stale combinations |
+| `PATCH /encounters/{id}/secondary-plan` | Author's plan text, expected plan revision and proposal reference |
+| `POST /encounters/{id}/sign` | Encounter/plan/review revisions, proposal ID and acceptance references; atomic checks in Section 8.5 |
+| `POST /encounters/{id}/addenda` | Any active physician; signed target only; attributed append-only content |
+| `GET/POST /networks`; `POST /networks/{id}/versions` | Admin import/edit-as-new-version |
+| `POST /network-versions/{id}/validate`; `GET /network-versions/{id}/graph`, `/xml` | Admin validation and read-only graph/XML export |
+| `POST /model-bundles/activate`, `/rollback` | Admin atomic activation with version checks and audit |
+| `GET/PUT /api-settings`; `POST /api-settings/test` | Admin; masked keys and explicit replacement semantics |
+| `GET /exports/patients.csv`, `/exports/physicians.csv` | Admin lists without credentials or private draft content |
+| `GET /patients/{id}/report` | Authorized printable signed history, including complete original/accepted CPT comparisons |
+| `POST /backups`; `GET /backups/{id}` | Admin full consistent backup/download |
+| `POST /restores/validate`, `/commit`; `GET /audit-events` | Admin staged recovery and append-only audit viewing |
 
-Validate output encoding for HTML and XML, use parameterized database access, enforce request/file/context size limits, and exclude secrets from logs. NFR-02 specifies prototype-basic security and no PHI hardening. These controls do not establish production clinical compliance or clinical validation; the revised requirements do not impose a synthetic-only patient-data restriction.
+Use `401` for unauthenticated access, `403`/non-disclosing `404` for unauthorized draft access, `409/412` for stale/duplicate/lifecycle conflicts, `422` for invalid input, `429` for admission limits and `503` for dependency failure. Errors expose safe code/message, retryability and request ID; no stack traces, secrets or another author's draft fields.
 
-### 11.2 Audit
+Review responses explicitly distinguish `current_cpt_revision_id`, `displayed_result_revision_id`, `current_result_matches`, `calculation_state` and `input_freshness`. Never infer validity from the existence of any successful result.
 
-Append audit events for successful/failed logins, password and account actions, record changes, network imports/validation/activation/rollback, each run and its terminal outcome, signing/addenda, exports, and backup/restore. Mutations and their audit events commit together. Log failed operations separately without claiming their mutation succeeded.
+## 11. Security, audit, reports and recovery
 
-Application database roles cannot update/delete audit rows. This is application-level append-only history, not a guarantee against the database owner or someone restoring an older backup. Report that limitation honestly. Preserve pre-restore audit history in the pre-restore archive and record the restore operation in an operator recovery log outside the replaced database, then add a restore event to the restored system before reopening it.
+Require HTTPS outside localhost; protect cookies against script access, use CSRF protection, parameterized database access, bounded requests and safe HTML/XML handling. Encrypt provider credentials with a deployment-held key outside the database. Validate configurable provider endpoints and redirects against operator-approved destinations. These controls support prototype security; they do not claim PHI hardening or clinical certification.
 
-### 11.3 CSV and printable HTML
+Audit successful/failed logins, administrator actions, original runs, completed slider edits and redistribution, resets, calculation outcomes, probability acceptance, signing and addenda. Required context is actor/time, patient, encounter, question, run/revision and outcome. Preserve before/after CPT values for adjustment events, including automatic changes. A result calculated after its revision is superseded is identified as historical. Successful mutations and audit events commit atomically; failed attempts must not appear as successful changes.
 
-CSV exports have stable English headers, UTF-8 encoding, proper quoting and spreadsheet-formula injection neutralization for user text. Preserve Patient ID bytes as ten digits; document importing that column as text in spreadsheet software because CSV itself has no column type. Do not add formula-based wrappers to preserve leading zeros.
+Application roles cannot modify/delete audit rows. Database owners or restoring an old backup can affect history, so this is application-level append-only protection. Keep pre-restore history in a pre-restore archive and record recovery outside the replaced database as well as in the restored system.
 
-The patient HTML report includes current demographics, encounter chronology, assessment completeness, history, medications, interaction coverage, initial treatment proposal, physician final plan, signature attribution, notes and addenda. Clearly distinguish draft content from signed content and current demographics from historical snapshots. Use print CSS, readable page breaks and research labeling. Escape all user and model text.
+CSV exports use UTF-8, stable headers, quoting and formula-injection neutralization. Preserve Patient ID as ten digit characters; spreadsheet import must treat it as text. Do not use formula wrappers.
 
-### 11.4 Backup and restore
+Printable HTML includes signed encounter chronology, assessments, DDI coverage, original proposal, final plan, signatures and attributed addenda. For **every clinical question**, include original CPT values and output/recommendation, final accepted CPT values and output/recommendation, network/template versions, adjustment indicators, accepting physician and timestamps. Include complete root and conditional tables, with repeated print headings/page breaks for long CPTs. If adjusted then reset, report both final equality and the existence of adjustment history. Distinguish final physician text from adjusted templated recommendations. Do not include another author's private drafts; any optional author-only draft preview must be explicitly labeled and use the same access policy.
 
-A full backup includes a consistent database snapshot, all referenced network XML and manifests, accepted patient-specific CPT/effective XML artifacts, content versions, active-bundle mapping, schema/application versions, checksums and a backup timestamp. Because authoritative XML resides in the database, exported XML must be derived from that same snapshot; do not combine a live filesystem copy with an unrelated database dump. Exclude active session tokens from portable recovery and revoke all sessions on restore.
+A full backup contains a consistent database snapshot, network XML, versioned prompts/templates/manifests, numerical policies, engine/configuration metadata, raw/validated original CPTs, all revisions/calculations/acceptances, signed snapshots, audit, schema versions and checksums. Include dependency/runtime lock information sufficient to restore the recorded execution configuration. Reproduction uses saved CPTs, never new LLM estimates.
 
-Encrypted API credentials remain in the database backup. The deployment encryption key is a separate recovery dependency; never include it in a plaintext downloadable archive. Document secure key escrow, or require API-key re-entry after migration to a host without the original key. This exception must be clear in the backup manifest.
+Restore into staging, validate checksums/schema/foreign keys/artifact references, preview the replacement impact and require administrator confirmation. Quiesce writes and workers, take a pre-restore backup, switch atomically, revoke sessions and fence old jobs before reopening. Reconcile restored pending jobs against their exact revision and lifecycle. Failed staging validation leaves live data intact. Protect the credential encryption key separately or require API-key re-entry after migration. Backup/restore is full recovery, not a merge. Manual backups satisfy v1; no automated schedule or numerical recovery guarantee is assumed.
 
-Restore is a full replacement, not a merge. Flow: upload to staging → validate archive paths/size/checksums/schema compatibility → restore into an isolated database and validate identities/models/foreign keys → show backup date and replacement impact → admin confirms → enter maintenance mode and quiesce writes/workers → take pre-restore backup → switch atomically → revoke sessions, clear caches and cancel/reconcile restored nonterminal jobs → verify login and read health → reopen. In-flight calls from the old deployment generation cannot commit after the switch. Failed validation leaves the live system intact; failed switching rolls back to the pre-restore state.
+## 12. Deployment and operations
 
-Manual backups satisfy FR-41. No automatic backup schedule is assumed. Recovery point is the most recent successful retained backup; no numerical RPO is promised. Proposed restore drill target is under thirty minutes on the representative dataset, subject to measurement.
+Deploy API, worker, private database and HTTPS edge on one Linux host initially. Bundle the MCP subprocess with the worker. Use persistent database storage, explicit migrations, restart policies and readiness/liveness checks. A missing provider disables new estimation but does not prevent saved-draft access or local recalculation of existing valid baselines.
 
-## 12. Deployment, operations, and growth
+Monitor save failures, authorization failures, both queue classes, worker leases, provider retry rates, local calculation duration/memory, stale-result rejection, disk growth and backup success. Logs use correlation IDs without credentials or clinical text. Restore tests must include an adjusted-then-signed encounter, a failed pending revision and a retained private draft.
 
-Run edge, API, worker and database services on one Linux host initially. Bundle the internal MCP subprocess with the worker. Use persistent database volumes, explicit migration jobs, private service networking and restart policies. Production changes use saved configuration and a database backup before schema migration. Rollback requires a compatible previous application and schema; do not assume arbitrary downgrade is safe.
-
-Liveness checks process responsiveness. Readiness checks database/schema/config availability; lack of an LLM endpoint disables generation without disabling chart access. Monitor request latency/error rate, database connections/disk, autosave failure rate, oldest queued job, worker heartbeat, provider errors/retries, inference duration/memory failures, and last successful backup. Logs use request/run correlation IDs without record text or credentials. Proposed alerts: worker heartbeat absent for two minutes, oldest runnable job over five minutes, repeated provider authentication failure, or disk over 80%; tune after use.
-
-The initial host is a single point of failure. Restart policies and backups provide recovery, not high availability. No multi-node failover SLA was requested. If measured demand grows, first tune queries and increase host resources, then add stateless API replicas and worker capacity while retaining global queue/provider limits. Consider a dedicated broker only when database job contention is demonstrated. Consider managed database replication and tested failover when availability requirements justify their cost. Split services only for independently scaling or owned domains; do not adopt microservices solely because the app uses AI.
+Scale measured worker or database bottlenecks before adding services. Single-host deployment has a single point of failure; backups provide recovery, not high availability. Network complexity and revision retention may dominate capacity before physician count does.
 
 ## 13. Architecture decision records
 
-All ADRs below are **Proposed**, dated **2026-09-20**. **Deciders:** project owner and implementation lead; the research content owner also reviews ADR-03. Team familiarity is unknown for every option.
+Product rules in Section 1 are confirmed; infrastructure choices below remain proposed. Updated 2026-09-28.
 
-### ADR-01: Modular monolith with a separate worker
+| Decision | Rationale and consequence |
+|---|---|
+| Modular monolith with separate worker | Coherent transactions and small deployment; API remains responsive during long work |
+| PostgreSQL plus durable job tables | Atomic saves, revision events and job creation; shared database is also a common failure point |
+| LLM estimates all CPTs; app executes with empty evidence | Implements the confirmed role of patient inputs; requires complete stored CPTs and fixed inference definitions |
+| Original baseline plus append-only CPT revisions | Preserves provenance and reset; adds storage but prevents overwriting original estimates |
+| Integer percentage units and deterministic redistribution | Exact row totals and stable rounding; selected six-decimal precision becomes versioned policy |
+| Local recalculation isolated from initial generation | Slider use consumes no provider/MCP calls and cannot restart unrelated questions |
+| Revision-bound results and acceptance | Prevents older responses and stale results from authorizing signing; requires atomic pointer/freshness checks |
+| One private open draft per patient | Enforces confirmed collaboration policy; abandoned/deactivated-author drafts can block new work until resumed or explicitly discarded |
+| Any physician may append signed-record addenda | Supports shared follow-up while preserving original signer, plan and probability artifacts |
 
-**Context:** Small shared user pool, tightly related records, asynchronous provider calls, and an adaptive research workflow.
+## 14. Requirement traceability and verification plan
 
-**Decision:** One modular application release plus independently running worker and private MCP process.
+These are acceptance criteria for future implementation, not executed software tests.
 
-| Option | Complexity | Cost | Scalability | Team familiarity |
-|---|---|---|---|---|
-| Modular monolith + worker | Low–medium | Few processes on one host | Suitable initial scale; workers can grow | Unknown |
-| Domain microservices | High | More deployment and observability overhead | Independent domain scaling | Unknown |
-
-**Trade-off analysis:** The chosen option preserves transactional signing and simpler operation; module discipline is necessary to avoid tight internal coupling. Microservices would add distributed consistency work before any demonstrated scaling need.
-
-**Consequences:** Easier coherent releases and debugging; API and worker still share domain dependencies. Revisit if teams or workload domains become independently operated.
-
-**Action items:** Define module interfaces; establish worker job contracts; benchmark representative inference separately from API traffic.
-
-### ADR-02: PostgreSQL for records and the initial durable queue
-
-**Context:** Concurrent edits, immutable signed history, and durable work scheduling need a coherent transaction model.
-
-**Decision:** Use PostgreSQL for domain data, immutable XML/content and leased jobs; omit a separate message broker initially.
-
-| Option | Complexity | Cost | Scalability | Team familiarity |
-|---|---|---|---|---|
-| PostgreSQL + job table | Medium | One stateful service | Appropriate at proposed load | Unknown |
-| SQLite + local queue | Low initially | Minimal service overhead | More constraints under multiple writing processes | Unknown |
-| PostgreSQL + dedicated broker | Higher | Extra service and recovery model | Better queue isolation at larger scale | Unknown |
-
-**Trade-off analysis:** A single transaction can persist a draft snapshot and queue its job. The application must implement leases, idempotency and fair scheduling carefully. A broker is justified later if queue traffic competes materially with record operations.
-
-**Consequences:** Simpler backup consistency; database outage stops both jobs and writes. Revisit with measured queue contention or multi-host availability requirements.
-
-**Action items:** Specify claim/lease/fencing rules; validate duplicate-job recovery; measure queue and clinical-record contention.
-
-### ADR-03: Fixed network structure with run-specific LLM-estimated CPTs
-
-**Context:** FR-32 requires sequential questions with fixed definitions and question-scoped patient inputs. FR-33 assigns CPT percentage estimation to the LLM; FR-34 assigns inference and template rendering to the app. FR-35 requires transparency; NFR-04 requires reproducible application execution.
-
-**Decision:** Preserve immutable registered structures and manifests. Process clinical questions sequentially. For each question, send its predefined prompt, fixed network structure and only represented patient inputs to the LLM through the MCP-mediated workflow. Estimate every CPT, validate and freeze the complete artifact, then execute inference and render its predefined proposal template in the app before advancing. This supersedes designated-CPT estimation with default-table fallback.
-
-| Option | Complexity | Cost | Scalability | Team familiarity |
-|---|---|---|---|---|
-| Fixed structure + run-specific CPTs + application inference | Medium–high | LLM estimation plus artifact storage | Bound by CPT size and inference complexity | Unknown |
-| Fixed CPTs + LLM evidence only | Medium | Fewer generated values | Smaller provider workload | Unknown |
-| LLM changes structure and executes reasoning | High validation burden | Provider-dependent | Provider-dependent | Unknown |
-
-**Trade-off analysis:** Sequential processing increases per-encounter latency but gives each question a durable result and resume point. Concurrency remains available across encounters. Predefined templates require maintained result mappings but remove an additional LLM drafting dependency. The chosen approach satisfies patient-specific estimation while preserving inspectable structure and reproducible replay of accepted artifacts. Fixed CPTs alone do not satisfy FR-33. Allowing structural edits or LLM-owned execution violates its fixed-definition and application-execution boundaries. Larger tables increase context size, latency and validation cost; numerical validity alone does not prove clinical validity.
-
-**Consequences:** More artifacts and validation work; fresh estimation can differ for identical records. Historical results remain replayable because the exact accepted probabilities are retained. Revisit estimation granularity, model admission limits and evaluation methods as model sizes and research evidence grow.
-
-**Action items:** Declare all CPT dimensions in each manifest; supply question-specific prompts, patient-variable mappings, fixed definitions and proposal templates; test structural-change rejection, incomplete/invalid tables, percentage display, note exclusion, cross-patient isolation and replay with stored CPTs.
-
-### ADR-04: Internal read-only MCP with application mediation
-
-**Context:** MCP is required, but the provider is only specified as OpenAI-compatible and the database remains authoritative.
-
-**Decision:** Worker-hosted MCP client talks to a private stdio server exposing run-scoped reads; the adapter bridges tool calls to the provider.
-
-| Option | Complexity | Cost | Scalability | Team familiarity |
-|---|---|---|---|---|
-| Private MCP + adapter | Medium | Extra local process | Sufficient single-host prototype | Unknown |
-| Public provider-facing MCP | High | Remote authorization and network operation | Remote consumers possible | Unknown |
-| Direct database access without MCP | Low | Lowest integration cost | Adequate performance | Unknown |
-
-**Trade-off analysis:** Direct database access alone fails FR-35. Public exposure is unnecessary for the requested workflow. The chosen bridge requires provider capability tests but limits data access and avoids assuming native MCP support.
-
-**Consequences:** Private deployment and narrow tools; additional protocol lifecycle testing. Revisit transport if workers and MCP need separate hosts.
-
-**Action items:** Pin tested SDK/protocol compatibility; verify cross-patient denial and note exclusion; test supported provider tool-call behavior.
-
-### ADR-05: Immutable signed snapshots with append-only corrections
-
-**Context:** Shared patients coexist with author-owned drafts and immutable signed encounters.
-
-**Decision:** Maintain revisioned drafts and immutable signed snapshots, with separately attributed addenda and new follow-up encounters.
-
-| Option | Complexity | Cost | Scalability | Team familiarity |
-|---|---|---|---|---|
-| Draft revisions + signed snapshots | Medium | Additional retained storage | Suitable research scale | Unknown |
-| Mutable records plus change log only | Lower initially | Less snapshot storage | Straightforward | Unknown |
-
-**Trade-off analysis:** Snapshots make the exact signed state inspectable even after demographic or content changes. A mutable record plus logs makes reconstruction harder and risks violating FR-22.
-
-**Consequences:** Clear attribution and proposal/final-plan comparison; retention and addendum-authority policy must be defined. Revisit archival storage when historical volume is measured.
-
-**Action items:** Define snapshot schema and sign transaction; decide addendum permissions; test concurrent sign/edit races.
-
-## 14. Requirement traceability and acceptance evidence
-
-The following are implementation acceptance criteria, not a claim that software has been built or tested.
-
-| Requirements | Design coverage | Required evidence |
+| Requirements | Sections | Required evidence |
 |---|---|---|
-| FR-01–04 | Sections 3, 5, 10 | Post-login research warning; admin/admin initialization; role checks; no self-registration; deactivation retains records and requires discard confirmation |
-| FR-10 | Sections 4–5 | Leading-zero ID round trip; concurrent duplicate rejection; age/name/sex validation |
-| FR-11–13 | Sections 4, 6 | Versioned DSM-5-TR/PANSS/C-SSRS definitions; below-threshold warning; bypass without reason; both skip states and no fabricated default scores |
-| FR-14 | Sections 6–7 | Drug-only entries with excluded fields absent; covered vs uncovered pairs; versioned interaction report |
-| FR-15–16 | Sections 4–5 | Original proposal unchanged by final-plan edits; durable autosave; page-note noninterference |
-| FR-20–23 | Sections 3–5 | Complete follow-up fields; author-only edits/signing; addenda; shared search; archive-only lifecycle |
-| FR-30 | Section 7.1 | Fixture coverage for every listed question and true/false/unknown gates |
-| FR-31–32 | Sections 7–8 | One predefined prompt and XMLBIF network per question; separate XSD/semantic validation; sequential execution; only represented patient variables supplied; fixed definitions |
-| FR-33–34 | Sections 7–8 | LLM returns validated CPT percentages; app inserts values and runs deterministic inference; predefined template renders each section before advancing |
-| FR-35 | Sections 5, 7–8 | Automatic run; internal MCP over authoritative database; stored and displayed question, version, supplied inputs, returned CPT percentages and result |
-| FR-36 | Section 9 | Two retries after initial failure; clear failed-question state; retained records and completed results; later retry resumes that step |
-| FR-37 | Sections 7, 10 | XML import/edit/export, graph read, validation, version activation and rollback |
-| FR-40–43 | Sections 8–11 | Safe CSV/print HTML; complete restore drill; append-only audit; masked settings and concurrent queued calls |
-| NFR-01 | Sections 2, 9, 12 | Self-hosted/VPS Linux deployment and concurrent-use test |
-| NFR-02 | Sections 3, 11 | HTTPS; authentication; no password-complexity or session-timeout gate; prototype security boundary |
-| NFR-03 | Sections 3–4, 11 | Chrome/Firefox desktop walkthrough; English UI, theme, validation, confirmations and printing |
-| NFR-04 | Sections 4–5, 7, 9 | Committed draft recovery; deterministic replay using stored evidence and CPT artifacts |
-| NFR-05 | Sections 5, 7, 11–12 | Network/template version retention; XSD validation; audit and restore verification |
+| FR-01–04 | 3 | Warning, admin initialization, role checks, password/theme behavior, deactivation without silent discard |
+| FR-10 | 4–5 | Leading-zero round trip, archived-ID uniqueness and concurrent registration rejection |
+| FR-11–13 | 4, 6 | Standard versioned instruments, allowed bypass/warning, no default scores for missing items |
+| FR-14 | 6 | Catalog-only medications, excluded fields absent, explicit unavailable DDI coverage |
+| FR-15–16 | 4–5, 8 | Separate proposal/adjustments/plan; saved draft/revision recovery; notes never affect algorithms |
+| FR-20–23 | 3–5 | Follow-up fields, immutable signing, any-physician addenda, shared directory with private drafts |
+| FR-30–35 | 7, 9 | Complete inventory, XSD plus semantic validation, sequential questions, scoped MCP, original baseline provenance |
+| FR-36–37 | 7, 9 | Bounded original retries, completed work retained, no adjustable failed baseline, versioned admin XML management |
+| FR-40–43 | 9–11 | Complete printable probability history, full restore, audit and queued provider settings; local calculation uses no external calls |
+| FR-50, FR-51 | 8.1 | Every CPT/root/parent row reachable; labels, exact values, row totals and read-only outputs |
+| FR-52 | 7.4, 8.2 | Proportional, zero-remainder, all-zero-other-states, single-state, 0/100 endpoint and rounding/tie cases |
+| FR-53, FR-54 | 8.1–8.4 | Only affected network executes, original comparison persists, same template/input snapshot, unchanged recommendation allowed |
+| FR-55, FR-56 | 5, 8.3–8.4 | Reset restores baseline without deleting history; durable edits and actor/revision association |
+| FR-57 | 8.5 | Exact acceptance and atomic immutable signing; pending/failed/stale revisions rejected |
+| FR-58 | 8.3–8.4, 9 | Out-of-order responses cannot overwrite latest state; retry preserves current values and labels previous result |
+| FR-59 | 7.5 | Relevant changes require new baseline; unaffected questions retained; no silent adjustment carry-forward; note-only changes excluded |
+| NFR-01–02 | 2–3, 11–12 | Linux/VPS and concurrent use, HTTPS, no session timeout, API-enforced ownership |
+| NFR-03 | 4, 8.1, 11 | English desktop Chrome/Firefox, keyboard sliders, readable large CPTs, theme and print review |
+| NFR-04–05 | 5, 7–9, 11 | Replay saved CPTs/configuration/template, durable drafts, immutable baselines and signed artifacts |
+| NFR-06 | 2, 8–9 | Responsive edits under queued calculation load; isolated local work and no stale acceptance |
+| Owner clarifications | 1, 3–5, 7.3 | Empty inference evidence; other-physician draft denial; any-physician addenda; atomic single-draft constraint |
 
-Cross-cutting release gates include server-side rejection of signing after failed proposal generation (including manual-plan submissions), stale-run signing rejection, page-note exclusion from every LLM payload, cross-patient MCP denial, no effect of page-note changes on evidence or CPT-estimation inputs, account-deactivation race handling, failure during autosave/sign/restore, and XML round-trip preservation of CPT/state ordering. Test synthetic fixtures and expected mathematical outputs; do not label these tests clinical validation.
+Critical race fixtures include two simultaneous draft creates, two browser tabs adjusting the same row, adjustment during calculation, reset before an old result returns, sign versus demographic update, sign versus adjustment, deactivation during queued work, and restore with pending jobs. Test the inference adapter with an observed patient variable and verify that no evidence argument is passed. Test signed reports for complete original/final probability rows and absence of unauthorized drafts. These are software correctness checks, not clinical validation.
 
-## 15. Confirmed decisions and remaining questions
+## 15. Remaining content and policy inputs
 
-**Confirmed by the project owner:** Every CPT in each clinical question’s network is estimated per run; no tables retain their registered defaults during patient-specific execution. Physicians must not sign a manual plan when AI proposal generation fails. The draft remains saved for retry; a current successful proposal and physician review are prerequisites for signing. These confirmations do not settle the other unresolved design choices.
+The owner has resolved evidence semantics, draft privacy, addendum authorship and simultaneous drafts. Do not reopen those decisions as implementation options.
 
-The architecture is sufficiently specified for review, but the following inputs affect implementation. The proposed defaults make the design concrete without presenting unanswered questions as settled requirements.
+| Remaining input | Status or proposed handling |
+|---|---|
+| Clinical instruments, history schema, severity categories, prompts, networks, gates and templates | Content owner must supply versioned definitions and expected examples; no thresholds invented here |
+| Archive handling of open drafts | Proposed read-only while archived and resumable after unarchive; not confirmed |
+| Discarded draft-content retention | Proposed retain committed artifacts for audit; physical retention policy not confirmed |
+| Physician printable-report permission | Proposed signed patient HTML access; administrator exports are explicitly required |
+| Name punctuation/spacing and phone validation | Literal letters-only names; phone optional unless a later requirement specifies otherwise |
+| Provider/model capabilities and numerical/runtime validation | Verify during implementation; six-decimal storage and 0.01 slider step are explicit proposed technical choices |
+| Dataset size, exact resource budgets and recovery targets | Benchmark representative networks and retained revision volumes; no unapproved SLA |
 
-| Priority | Question | Proposed default / impact |
-|---|---|---|
-| Before model integration | What are each question’s patient-variable mapping, prompt, full CPT schema and result-to-template mapping? | Every CPT is estimated; the content owner supplies versioned definitions and fixtures |
-| Before content/inference work | Who supplies the exact DSM-5-TR criteria, PANSS/C-SSRS forms and rules, history fields, adverse-effect severity categories, drug/DDI data, network definitions, estimation instructions and templates? | Content owner supplies versioned definitions and reference examples; LLM estimates run-specific CPTs under that contract |
-| Before model integration | How is uncertain evidence intended to work in each supplied network? | Hard/unknown/conflict by default; explicitly approved likelihood evidence only |
-| Before access-policy implementation | May all physicians see others' drafts, and may any physician add an addendum? | Read-only shared drafts; addenda restricted to original signer |
-| Before workflow finalization | Can one patient have simultaneous follow-up drafts, and what should archiving do to open drafts? | Separate drafts allowed with baseline checks; archive makes drafts read-only |
-| Before validation/content work | Do names permit spaces, apostrophes or hyphens; is phone optional; is clinical status mandatory? | Literal letters-only names, optional phone, required clinical status |
-| Before deployment | Team expertise, budget, expected dataset/model size, and availability/recovery targets? | Proposed stack and sizing in Sections 2 and 9; no HA SLA |
-| Before retention/export finalization | What content survives confirmed draft discard; may physicians export reports? | Audit tombstone required; draft-content retention unresolved; physician patient HTML allowed |
-
-No clinical thresholds or CPT values are implied by this document. Interpret fixed “relevance” in FR-32 as fixed graph relationships and input mappings; the content owner must specify any additional relevance metadata. Content gaps can be developed alongside infrastructure, but must be resolved before an end-to-end reasoning demonstration is considered complete.
-
-## 16. Technical references
-
-The [user requirements](../user-requirements.md#reasoning-pipeline) and confirmed project-owner decisions govern product scope. External references support only technical integration choices; they do not validate clinical content.
-
-- [MCP architecture overview](https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture): host/client/server roles and stdio transport inform Section 8. Pin the actually tested SDK/protocol combination during implementation.
-- [pgmpy XMLBIF documentation](https://pgmpy.org/readwrite/xmlbif.html): documents reader/writer support, supporting the proposed adapter. Application-specific XSD, semantic validation and round-trip fixtures remain necessary.
-
-MCP reference checked on 2026-09-20; the pgmpy documentation link could not be revalidated during this revision, so reader/writer compatibility remains an implementation check. This document contains no claim of a completed build, benchmark, security certification or clinical validation.
+The supplied requirements remain unchanged. This design incorporates the owner's clarifications without adding observed-evidence inference, shared drafts, parallel drafts for one patient, or manual signing after failed generation.
