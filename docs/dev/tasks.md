@@ -781,7 +781,7 @@ Run the S25 validator and S23 inference harness on independently worked examples
 
 ### S61 — Verify desktop usability, both themes, and complete administration
 
-**Depends:** S59–S60. **Requirements:** FR-01–04, FR-23, FR-37, FR-40–42, NFR-03. **Seam:** T9.
+**Depends:** S60. **Requirements:** FR-01–04, FR-23, FR-37, FR-40–42, NFR-03. **Seam:** T9.
 
 **Tests/files:** existing Playwright journeys, accessibility evidence and any targeted fixes in owning UI module.
 

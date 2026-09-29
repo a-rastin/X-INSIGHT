@@ -745,3 +745,14 @@ Green evidence: make test-e2e audit 5/5 + restore-validation 4/4 + registration 
 Review/limitations/unrun checks: Full e2e suite not run in one warm pass (scoped subsets green; cold-run flakes match the known TRUNCATE/contention pattern, rerun-green). make check backend scope / ruff full not run (no backend files touched; backend probe noted 33 ruff errors all in sibling-owned test files). S57 docker drill, full 10k load, signing-flake hunt still unrun (pre-existing). Restore reopen emits no audit row by design (restore.py:1611, needs owner approval to add); ops-metrics save_failures is honest 0 (no ledger yet) — UI presents it as-is.
 Content approvals: n/a (synthetic e2e fixtures only, never released).
 Remaining work and next eligible session: S62 (release rehearsal). Next: signing-flake hunt + S57 docker drill + full 10k load on prod-like host before S62.
+
+
+Session: plan2 remaining-work audit (status: complete; planning only, no Sxx implementation completion claimed)
+Outcome and FR/NFR covered: Audited current plan/tasks, progress and targeted repository evidence; wrote root plan2.md with remaining release gates and the next verification-repair session. Cross-cutting FR/NFR evidence review only.
+Files/migrations/content versions changed: plan2.md (new); this tracker handoff. No implementation, migrations, tests, or clinical content changed. Existing tasks.md and graphify work preserved.
+Approved seams exercised: T5 read-only package validation; static checks and pytest collection. No new test seam.
+Red evidence: make check reaches Ruff and fails with 33 errors; backend/.venv/bin/mypy src (from backend) reports four accounts.py RowMapping errors; pytest tests --collect-only -q reports 471 collected and three import-file mismatches. These pre-existing failures were audited, not repaired.
+Green evidence: T5 validate_package/load_package reports 11 valid packages out of 12; established_case_clozapine fails undeclared_template_state. DDI source inventory remains 128 files / 8,091,001 bytes. No full-suite green claimed.
+Review/limitations/unrun checks: Planning-only session. No database mutation suites, browser acceptance, deployment/restore drill, load or live provider run. Docker executable now exists; daemon readiness untested. plan2.md distinguishes repository inspection from historical evidence and records missing S59, R3, release packages, CI, audit/storage, recovery/deployment and capacity work.
+Content approvals: No new approvals. Existing owner approvals retained; twelve questions remain activation-disabled, history reviewed but not runtime-released, DDI aliases draft.
+Remaining work and next eligible session: Verification repair (S01/S04 closure) first; content-release workstream S12/S17/S18/S28/S32/S39; then storage/audit, recovery/deployment/capacity, explicit S59 and final S60-S62 release evidence. See ../../plan2.md.
